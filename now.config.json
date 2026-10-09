@@ -1,0 +1,8 @@
+{
+    "scope": "x_acllens",
+    "scopeId": "96479ce2c986db2838c45c613384009b",
+    "name": "ACL Lens",
+    "tsconfigPath": "./src/server/tsconfig.json",
+    "packageSourceCodeOnInstance": false,
+    "description": "Analyze and compare detailed access permissions across users, roles, tables, records, and fields."
+}

@@ -1,0 +1,13 @@
+.DS_Store
+.now/
+dist/
+node_modules/
+target/
+*.tsbuildinfo
+.jest_cache
+.test-build/
+
+# Instance-specific install profiles and per-profile build folders (never commit)
+acl-lens.local.json
+.deploy/
+.claude/

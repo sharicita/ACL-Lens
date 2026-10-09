@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>ACL Lens setup</title>
+        <link rel="stylesheet" href="/wizard.css" />
+    </head>
+    <body>
+        <a class="skip" href="#main">Skip to the current step</a>
+        <header class="top">
+            <div class="wrap">
+                <p class="brand">ACL Lens <span>guided setup</span></p>
+                <p class="lede">Analyze and compare detailed access permissions across users, roles, tables, records, and fields.</p>
+            </div>
+        </header>
+
+        <div class="wrap layout">
+            <nav aria-label="Setup steps">
+                <ol class="steps" id="steps">
+                    <li data-step="1">Get ready</li>
+                    <li data-step="2">Connect to ServiceNow</li>
+                    <li data-step="3">Choose the app scope</li>
+                    <li data-step="4">Install</li>
+                    <li data-step="5">Next steps</li>
+                </ol>
+                <p class="side-help">
+                    Stuck? Read the <a href="/docs/INSTALL.md" target="_blank" rel="noopener">installation guide</a> (opens in a new window).
+                </p>
+            </nav>
+
+            <main id="main" tabindex="-1">
+                <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+                <div id="error" class="alert alert--error" role="alert" hidden></div>
+
+                <!-- Step 1 -->
+                <section data-panel="1" aria-labelledby="h1">
+                    <h1 id="h1" tabindex="-1">Step 1 of 5 · Get ready</h1>
+                    <p>This setup installs ACL Lens on your ServiceNow instance. It takes about 5–10 minutes. Nothing is changed on your instance until step 4.</p>
+                    <h2>What you need</h2>
+                    <ul class="checklist">
+                        <li>
+                            A ServiceNow instance where you can sign in as an <strong>administrator</strong>. A free Personal Developer Instance works well.
+                            <a class="ext" href="https://developer.servicenow.com/dev.do" target="_blank" rel="noopener" aria-label="Get a free developer instance at developer.servicenow.com (opens in a new window)">Get a free instance</a>
+                        </li>
+                        <li>Your instance address, for example <code>https://dev12345.service-now.com</code>, plus your user name and password.</li>
+                    </ul>
+                    <h2>This computer</h2>
+                    <ul class="checks" id="checks">
+                        <li id="check-node">Checking Node.js…</li>
+                        <li id="check-deps">Checking the ServiceNow SDK…</li>
+                    </ul>
+                    <div class="actions">
+                        <button type="button" class="btn" id="btn-deps" hidden>Install the SDK and other tools</button>
+                        <button type="button" class="btn btn--primary" id="btn-next-1" disabled>Continue</button>
+                    </div>
+                    <details class="help">
+                        <summary>What gets installed here?</summary>
+                        <p>
+                            The ServiceNow SDK and the build tools listed in <code>package.json</code>, at the exact versions in <code>package-lock.json</code>. They are saved in
+                            this folder only (<code>node_modules</code>). Nothing is installed system-wide.
+                        </p>
+                    </details>
+                    <pre class="log" id="log-deps" role="log" aria-label="Installation output" hidden></pre>
+                </section>
+
+                <!-- Step 2 -->
+                <section data-panel="2" aria-labelledby="h2" hidden>
+                    <h1 id="h2" tabindex="-1">Step 2 of 5 · Connect to ServiceNow</h1>
+                    <p>Save a login so the setup can install the app for you. Your password goes straight to the ServiceNow SDK, which keeps it in your computer's secure credential store. It is never written to this project.</p>
+
+                    <fieldset id="saved-logins" hidden>
+                        <legend>Use a saved login</legend>
+                        <div id="login-list" class="radios"></div>
+                    </fieldset>
+
+                    <details class="add-login" id="add-login" open>
+                        <summary>Add a new login</summary>
+                        <form id="form-login" novalidate>
+                            <div class="field">
+                                <label for="f-instance">Instance address</label>
+                                <input id="f-instance" name="instance" autocomplete="url" placeholder="https://dev12345.service-now.com" aria-describedby="f-instance-hint" required />
+                                <p class="hint" id="f-instance-hint">The address you see in the browser when you use ServiceNow. Just the name (dev12345) also works.</p>
+                            </div>
+                            <div class="field">
+                                <label for="f-user">User name</label>
+                                <input id="f-user" name="username" autocomplete="username" required aria-describedby="f-user-hint" />
+                                <p class="hint" id="f-user-hint">An administrator account, for example <code>admin</code> on a developer instance.</p>
+                            </div>
+                            <div class="field">
+                                <label for="f-pass">Password</label>
+                                <input id="f-pass" name="password" type="password" autocomplete="current-password" required />
+                            </div>
+                            <div class="field">
+                                <label for="f-alias">Name for this login</label>
+                                <input id="f-alias" name="alias" autocomplete="off" aria-describedby="f-alias-hint" required />
+                                <p class="hint" id="f-alias-hint">A short nickname, such as <code>pdi</code> or <code>dev12345</code>. You will use it later to update the app.</p>
+                            </div>
+                            <div class="actions">
+                                <button type="submit" class="btn" id="btn-login">Save login</button>
+                            </div>
+                        </form>
+                        <details class="help">
+                            <summary>My company uses single sign-on (SSO) or multi-factor authentication</summary>
+                            <p>
+                                Password login may not work. Ask your ServiceNow administrator for an OAuth client, then run this in a terminal from this folder and
+                                choose the login it creates above (refresh this page afterwards):
+                            </p>
+                            <pre><code>npx now-sdk auth --add https://your-instance.service-now.com --type oauth --alias mylogin</code></pre>
+                        </details>
+                    </details>
+
+                    <div class="actions">
+                        <button type="button" class="btn btn--ghost" data-back="1">Back</button>
+                        <button type="button" class="btn btn--primary" id="btn-next-2" disabled>Continue</button>
+                    </div>
+                </section>
+
+                <!-- Step 3 -->
+                <section data-panel="3" aria-labelledby="h3" hidden>
+                    <h1 id="h3" tabindex="-1">Step 3 of 5 · Choose the app scope</h1>
+                    <p>
+                        Every custom ServiceNow app has a <strong>scope</strong>: a unique name that prefixes its tables, roles and settings. It normally starts with your
+                        instance's company code, so we look that up for you.
+                    </p>
+                    <p id="inspect-status" class="muted progress"><span class="spinner" aria-hidden="true"></span><span id="inspect-text">Looking at your instance… (this can take up to 20 seconds)</span></p>
+
+                    <fieldset id="scope-choice" hidden>
+                        <legend>What should the setup do?</legend>
+                        <div id="scope-options" class="radios"></div>
+                    </fieldset>
+
+                    <div class="field" id="scope-field" hidden>
+                        <label for="f-scope">Scope</label>
+                        <input id="f-scope" autocomplete="off" spellcheck="false" aria-describedby="f-scope-hint f-scope-check" />
+                        <p class="hint" id="f-scope-hint">Lowercase letters, numbers and underscores, up to 18 characters. Keep the suggestion unless you have a reason to change it.</p>
+                        <p class="hint" id="f-scope-check" aria-live="polite"></p>
+                    </div>
+
+                    <div class="field" id="profile-field" hidden>
+                        <label for="f-profile">Profile name</label>
+                        <input id="f-profile" autocomplete="off" aria-describedby="f-profile-hint" />
+                        <p class="hint" id="f-profile-hint">
+                            Saved in <code>acl-lens.local.json</code> on this computer only (it is never committed). Later updates run with <code>npm run deploy</code>.
+                        </p>
+                    </div>
+
+                    <details class="help">
+                        <summary>Why not use the scope in the source code?</summary>
+                        <p>
+                            The source uses the placeholder <code>x_acllens</code> so anyone can share it publicly. The setup builds a private copy with your scope in
+                            <code>.deploy/</code>, so your company code never ends up in the shared code.
+                        </p>
+                    </details>
+
+                    <div class="actions">
+                        <button type="button" class="btn btn--ghost" data-back="2">Back</button>
+                        <button type="button" class="btn btn--primary" id="btn-next-3" disabled>Continue</button>
+                    </div>
+                </section>
+
+                <!-- Step 4 -->
+                <section data-panel="4" aria-labelledby="h4" hidden>
+                    <h1 id="h4" tabindex="-1">Step 4 of 5 · Install</h1>
+                    <dl class="summary" id="summary"></dl>
+                    <p>
+                        Installing builds the app and sends it to your instance. It usually takes 2–5 minutes. ServiceNow records an undo point first, and the output
+                        below includes a <strong>Rollback</strong> link if you ever want to remove this install.
+                    </p>
+                    <div class="actions">
+                        <button type="button" class="btn btn--ghost" data-back="3">Back</button>
+                        <button type="button" class="btn btn--primary" id="btn-install">Install ACL Lens</button>
+                    </div>
+                    <div class="progress" id="install-progress" hidden>
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span id="install-phase">Starting…</span>
+                    </div>
+                    <details class="help" id="log-wrap" hidden>
+                        <summary>Show technical details</summary>
+                        <pre class="log" id="log-install" role="log" aria-label="Install output"></pre>
+                    </details>
+                </section>
+
+                <!-- Step 5 -->
+                <section data-panel="5" aria-labelledby="h5" hidden>
+                    <h1 id="h5" tabindex="-1">Step 5 of 5 · You're done</h1>
+                    <p class="alert alert--ok">ACL Lens is installed on <strong id="done-instance"></strong>.</p>
+                    <h2>Next steps</h2>
+                    <ol class="next">
+                        <li>
+                            <strong>Open the app.</strong> <a id="link-app" class="ext" target="_blank" rel="noopener">Open ACL Lens<span class="sr-only"> (opens in a new window)</span></a>. You can also find it in the
+                            ServiceNow menu under <em>ACL Lens</em>.
+                        </li>
+                        <li>
+                            <strong>Give people access.</strong> Assign the role <code id="role-user"></code> to people who analyze access, and
+                            <code id="role-admin"></code> to people who manage settings and AI providers. Administrators can already use everything.
+                            <a id="link-roles" class="ext" target="_blank" rel="noopener">Open the roles list<span class="sr-only"> (opens in a new window)</span></a>
+                        </li>
+                        <li>
+                            <strong>Optional: turn on the AI assistant.</strong> Add a provider under <em>ACL Lens › AI Providers</em>. Note that Now Assist is not available
+                            on free developer instances.
+                            <a id="link-ai" class="ext" target="_blank" rel="noopener">Open AI providers<span class="sr-only"> (opens in a new window)</span></a>
+                        </li>
+                        <li>
+                            <strong>Update later.</strong> When you get a newer version of the code, run <code>npm run deploy</code> in this folder. It updates the same
+                            install.
+                        </li>
+                    </ol>
+                    <h2>Learn more</h2>
+                    <ul class="links">
+                        <li><a href="/docs/user-guide.md" target="_blank" rel="noopener">ACL Lens user guide</a> (opens in a new window)</li>
+                        <li><a href="/docs/install-and-deploy.md" target="_blank" rel="noopener">All install and update options</a> (opens in a new window)</li>
+                        <li>
+                            <a href="https://www.servicenow.com/docs/r/platform-security/access-control/access-control-rules.html" target="_blank" rel="noopener">ServiceNow: Access control list rules</a>
+                            (opens in a new window)
+                        </li>
+                    </ul>
+                    <div class="actions">
+                        <button type="button" class="btn" id="btn-another">Install on another instance</button>
+                        <button type="button" class="btn btn--primary" id="btn-quit">Close the setup</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <script src="/wizard.js"></script>
+    </body>
+</html>

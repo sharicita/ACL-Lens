@@ -1,0 +1,51 @@
+# Creates a branch of this repository that uses your ServiceNow application scope, for installing
+# with the ServiceNow IDE (Git import) without any tools on your computer.
+#
+# GitHub: Actions tab -> "Prepare a branch with my scope" -> Run workflow -> enter your scope.
+# Then import the new branch (scope/<your scope>) in the ServiceNow IDE. See INSTALL.md, option B.
+#
+# Uses no third-party actions: only git and the Node.js that GitHub's runner already has.
+name: Prepare a branch with my scope
+
+on:
+    workflow_dispatch:
+        inputs:
+            scope:
+                description: 'Your scope, e.g. x_12345_acllens (x_ + your instance company code + _acllens, max 18 characters)'
+                required: true
+                type: string
+
+permissions:
+    contents: write
+
+jobs:
+    set-scope:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check the scope
+              env:
+                  SCOPE: ${{ inputs.scope }}
+              run: |
+                  if ! printf '%s' "$SCOPE" | grep -Eq '^x_[a-z0-9_]{1,16}$'; then
+                    echo "::error::The scope must start with x_, use only lowercase letters, numbers and underscores, and be at most 18 characters."
+                    exit 1
+                  fi
+
+            - name: Get the code
+              env:
+                  TOKEN: ${{ github.token }}
+              run: git clone --depth 1 --branch "$GITHUB_REF_NAME" "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+
+            - name: Apply the scope and push a branch
+              working-directory: repo
+              env:
+                  SCOPE: ${{ inputs.scope }}
+              run: |
+                  node tools/scope.mjs "$SCOPE"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git checkout -b "scope/$SCOPE"
+                  git commit -am "Use application scope $SCOPE"
+                  git push --force origin "scope/$SCOPE"
+                  echo "### Branch ready: scope/$SCOPE" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Import this branch in the ServiceNow IDE (INSTALL.md, option B)." >> "$GITHUB_STEP_SUMMARY"
