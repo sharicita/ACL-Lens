@@ -77,6 +77,9 @@ All lookups use `GlideRecordSecure` as the signed-in user. A table the user can'
 - **Endpoint:** `POST /api/x_acllens/lens/mcp`. Stateless JSON-RPC 2.0, protocol `2025-06-18`. It writes the raw JSON-RPC body (bypassing the platform's `{result}` wrapper). Notifications return 202.
 - **Methods:** `initialize` (its instructions are the system prompt), `ping`, `tools/list` (with `readOnlyHint` annotations), `tools/call`, `resources/list|read` (`acl-lens://guidance/<topic>`), `prompts/list|get` (`troubleshoot_access`, `design_acls`, `review_acl`).
 - **Auth:** normal ServiceNow authentication (basic or OAuth bearer). The caller needs `x_acllens.user`, and every tool runs as that caller.
+- **Off by default:** property `x_acllens.mcp.enabled` (admin-only). When off, the endpoint answers 403 / JSON-RPC `-32003` before doing anything else.
+- **Admin page:** *ACL Lens → Configuration → MCP Server*. It has the on/off switch, the endpoint, connection steps for Claude Code, VS Code and curl, a self-test (`tools/list` as the admin) and the tool, prompt and guidance lists (`GET /admin/mcp`, admin only).
+- **Not used by the in-app assistant**, which calls the same tools directly. MCP is only for outside AI tools.
 
 ## 6. Storage
 

@@ -51,6 +51,18 @@ export interface Settings {
     retention_days: number
     retention_action: 'delete' | 'archive'
     instance_theme: boolean
+    mcp_enabled: boolean
+}
+
+export interface McpInfo {
+    enabled: boolean
+    endpoint: string
+    protocol_version: string
+    transport: string
+    required_role: string
+    tools: { name: string; description: string }[]
+    prompts: { name: string; description: string }[]
+    resources: { uri: string; title: string }[]
 }
 
 export interface ClearRequest {
@@ -128,6 +140,25 @@ export const LensApi = {
     },
     clearHistory(r: ClearRequest) {
         return request<{ deleted: number }>('/admin/history/clear', { method: 'POST', body: JSON.stringify(r) })
+    },
+    mcpInfo() {
+        return request<McpInfo>('/admin/mcp')
+    },
+    /** Calls the MCP endpoint as the signed-in user (tools/list) and summarizes the answer. */
+    async mcpSelfTest(): Promise<{ ok: boolean; text: string }> {
+        try {
+            const r = await fetch(`${BASE}/mcp`, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-UserToken': window.g_ck },
+                body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+            })
+            const data = await r.json().catch(() => null)
+            if (data && data.error) return { ok: false, text: `Refused: ${data.error.message}` }
+            if (!r.ok || !data || !data.result) return { ok: false, text: `The endpoint answered with HTTP ${r.status}.` }
+            return { ok: true, text: `Working: the endpoint returned ${data.result.tools.length} tools.` }
+        } catch (e: any) {
+            return { ok: false, text: `Could not reach the endpoint: ${e.message}` }
+        }
     },
     deleteRun(id: string) {
         return request<{ deleted: number; number: string }>(`/runs/${id}`, { method: 'DELETE' })

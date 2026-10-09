@@ -5,6 +5,7 @@ import { listRuns } from '../engine/storage.ts'
 import { executeRun, loadRun, rerun } from '../engine/runs.ts'
 import { rankedSearch } from '../engine/search.ts'
 import { aclDetail } from '../engine/acl-detail.ts'
+import { mcpInfo } from '../ai/mcp.ts'
 import { clearHistory, deleteRun, getSettings, historyEnabled, instanceTheme, previewClear, saveSettings, setArchived } from '../admin/settings.ts'
 import { SubjectRef } from '../engine/types.ts'
 
@@ -172,6 +173,13 @@ export function postHistoryClear(request: any, response: any) {
     handle(request, response, (req) => {
         requireAdmin()
         return clearHistory(body(req))
+    })
+}
+
+export function getMcpInfo(request: any, response: any) {
+    handle(request, response, () => {
+        requireAdmin()
+        return mcpInfo()
     })
 }
 

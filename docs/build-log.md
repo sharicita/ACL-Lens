@@ -284,3 +284,33 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - no admin buttons.
 - As admin (dev preview): Settings shows Appearance; the instance-theme property saves and reads back (restored to off).
 - The setup wizard server and the profile tool still work. Test runs were deleted.
+
+---
+
+## 1.11 Configuration section and MCP setup
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+### Built
+- **Navigator:** new **Configuration** separator in the ACL Lens menu, containing **MCP Server** (new), **Properties** and **AI Providers** (moved). The separator and every module under it require `x_acllens.admin` or `admin`.
+- **All app properties are now admin-only to read and write** (were readable by app users). Server code still reads them for everyone.
+- **New property `x_acllens.mcp.enabled`** (off by default). The MCP endpoint refuses every request while it is off.
+- **MCP Server page** (`?view=mcp`, admins only):
+  - on/off switch and the endpoint with a copy button;
+  - connection steps, with examples for Claude Code, VS Code and curl;
+  - self-test;
+  - tools, prompts and guidance;
+  - data from new `GET /admin/mcp` (admin).
+- Shared **Configuration** sub-navigation on the Properties and MCP pages; the header's Settings tab covers both.
+
+### Verified on the PDI
+- Menu records: separator and modules (orders 1000–1300) with roles `x_acllens.admin,admin`. All six properties have read/write roles `x_acllens.admin`.
+- As the role-only user:
+  - `GET /admin/mcp` returns 403;
+  - the MCP endpoint is refused while off (403, clear message);
+  - properties are invisible through the Table API;
+  - `?view=mcp` shows only an admins-only notice;
+  - no Settings tab.
+- As admin: the page loads with the real endpoint. Switching on worked, and the self-test returned 10 tools. With MCP on, the role-only user's MCP call returned 10 tools and `/me` still read `history_enabled`, so properties stay readable by server code. MCP was switched back off afterwards.

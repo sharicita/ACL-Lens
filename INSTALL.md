@@ -137,7 +137,7 @@ What carries over and what doesn't:
 
 1. **Open the app:** **All → ACL Lens → Access Workspace**, or go to `/<your scope>_lens.do`.
 2. **Give people access.** Assign the role `<your scope>.user` to people who analyze access, and `<your scope>.admin` to people who manage settings and AI providers, ideally through a group. System administrators can already use everything.
-3. **Optional AI assistant:** add a provider under **ACL Lens → AI Providers**. The [assistant guide](docs/architecture/05-ai-assistant-and-mcp.md) explains the options.
+3. **Optional AI assistant:** add a provider under **ACL Lens → Configuration → AI Providers**. Other app settings (history, appearance, the MCP server for outside AI tools) are in the same **Configuration** section, visible to admins only. The [assistant guide](docs/architecture/05-ai-assistant-and-mcp.md) explains the options.
 
 > [!IMPORTANT]
 > **Now Assist and other ServiceNow generative AI features are not available on free Personal Developer Instances.** On a PDI, use an external provider (Anthropic Claude, an OpenAI-compatible API, or Azure OpenAI) with your own API key. On a licensed company instance, Now Assist can be used once your admin has turned it on.

@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { ClearRequest, LensApi, Settings } from '../services/LensApi'
 import Tip from './Tip'
+import ConfigNav from './ConfigNav'
 
 interface Props {
     onSaved: (s: Settings) => void
+    onNavigate: (view: 'settings' | 'mcp') => void
 }
 
 const today = () => new Date().toISOString().substring(0, 10)
 
-export default function SettingsView({ onSaved }: Props) {
+export default function SettingsView({ onSaved, onNavigate }: Props) {
     const [saved, setSaved] = useState<Settings | null>(null)
     const [form, setForm] = useState<Settings | null>(null)
     const [busy, setBusy] = useState('')
@@ -79,6 +81,7 @@ export default function SettingsView({ onSaved }: Props) {
 
     return (
         <div className="lens-settings">
+            <ConfigNav current="settings" onNavigate={onNavigate} />
             {message && (
                 <div className="lens-alert lens-alert--positive" role="status">
                     {message}

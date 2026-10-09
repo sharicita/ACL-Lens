@@ -13,9 +13,17 @@ declare global {
                         table: 'sys_app_module'
                         id: 'bf64c843f86b4cbdbfb1e32a9ebe4ade'
                     }
+                    'acl-lens-module-config-separator': {
+                        table: 'sys_app_module'
+                        id: 'e260c4b2848c4915afba5c60123a4316'
+                    }
                     'acl-lens-module-history': {
                         table: 'sys_app_module'
                         id: 'cd347776d3ff45fc9de729df17b03a28'
+                    }
+                    'acl-lens-module-mcp': {
+                        table: 'sys_app_module'
+                        id: 'fac3ff08923649faa2b0e830508f9a57'
                     }
                     'acl-lens-module-properties': {
                         table: 'sys_app_module'
@@ -142,6 +150,10 @@ declare global {
                         table: 'sys_ws_operation'
                         id: '2a361c7c2a144813bd8cf41ce5d94bcb'
                     }
+                    'lens-api-mcp-info': {
+                        table: 'sys_ws_operation'
+                        id: '7806d554744c4ee8a3909031b4a42b0c'
+                    }
                     'lens-api-me': {
                         table: 'sys_ws_operation'
                         id: 'e84e20c66d584fce8074ca10bb8da6fe'
@@ -205,6 +217,10 @@ declare global {
                     'prop-history-enabled': {
                         table: 'sys_properties'
                         id: 'eee877b8277f4df399a5145bf6c7c9fd'
+                    }
+                    'prop-mcp-enabled': {
+                        table: 'sys_properties'
+                        id: 'b3224649a67241bb9b3bde1e65573e21'
                     }
                     'prop-retention-action': {
                         table: 'sys_properties'

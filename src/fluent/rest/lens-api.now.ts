@@ -16,6 +16,7 @@ import {
     postRun,
     postRunArchive,
     deleteRunRoute,
+    getMcpInfo,
     putSettingsRoute,
 } from '../../server/rest/handlers'
 import { getAiConversation, getAiConversations, getAiStatus, postAiChat, postMcp } from '../../server/rest/ai-handlers'
@@ -134,6 +135,7 @@ RestApi({
         { $id: Now.ID['lens-api-history-preview'], name: 'Preview history clear (admin)', method: 'POST', path: '/admin/history/preview', script: postHistoryPreview },
         { $id: Now.ID['lens-api-history-clear'], name: 'Clear history (admin)', method: 'POST', path: '/admin/history/clear', script: postHistoryClear },
         { $id: Now.ID['lens-api-run-archive'], name: 'Archive or restore a run (admin)', method: 'POST', path: '/runs/{id}/archive', script: postRunArchive },
+        { $id: Now.ID['lens-api-mcp-info'], name: 'MCP setup information (admin)', method: 'GET', path: '/admin/mcp', script: getMcpInfo },
         { $id: Now.ID['lens-api-run-delete'], name: 'Delete a run (admin)', method: 'DELETE', path: '/runs/{id}', script: deleteRunRoute },
     ],
 })

@@ -8,12 +8,14 @@ interface Props {
 }
 
 export default function Header({ view, isAdmin, onNavigate }: Props) {
+    // the Configuration pages (properties, MCP server) all sit under the Settings tab
+    const active = (name: ViewName) => view === name || (name === 'settings' && view === 'mcp')
     const tab = (name: ViewName, label: string, tipText: string) => (
         <button
             data-tip={tipText}
             type="button"
-            className={`lens-tab${view === name ? ' lens-tab--active' : ''}`}
-            aria-current={view === name ? 'page' : undefined}
+            className={`lens-tab${active(name) ? ' lens-tab--active' : ''}`}
+            aria-current={active(name) ? 'page' : undefined}
             onClick={() => onNavigate(name)}
         >
             {label}
@@ -36,7 +38,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
             <nav className="lens-header__tabs" aria-label="ACL Lens views">
                 {tab('workspace', 'Workspace', 'Choose users and roles and run an analysis or comparison.')}
                 {tab('history', 'History', 'Saved runs: open, export or rerun them.')}
-                {isAdmin && tab('settings', 'Settings', 'Admin: history, clearing and retention settings.')}
+                {isAdmin && tab('settings', 'Settings', 'Admin configuration: properties, MCP server and AI providers.')}
             </nav>
         </header>
     )

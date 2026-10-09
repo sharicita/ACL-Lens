@@ -8,6 +8,7 @@ export const PROPS = {
     retentionDays: 'x_acllens.history.retention.days',
     retentionAction: 'x_acllens.history.retention.action',
     instanceTheme: 'x_acllens.ui.instance_theme',
+    mcpEnabled: 'x_acllens.mcp.enabled',
 }
 
 export interface Settings {
@@ -16,6 +17,7 @@ export interface Settings {
     retention_days: number
     retention_action: 'delete' | 'archive'
     instance_theme: boolean
+    mcp_enabled: boolean
 }
 
 export function historyEnabled(): boolean {
@@ -26,6 +28,10 @@ export function instanceTheme(): boolean {
     return gs.getProperty(PROPS.instanceTheme, 'false') === 'true'
 }
 
+export function mcpEnabled(): boolean {
+    return gs.getProperty(PROPS.mcpEnabled, 'false') === 'true'
+}
+
 export function getSettings(): Settings {
     const days = parseInt(gs.getProperty(PROPS.retentionDays, '90'), 10)
     return {
@@ -34,6 +40,7 @@ export function getSettings(): Settings {
         retention_days: isNaN(days) || days < 1 ? 90 : days,
         retention_action: gs.getProperty(PROPS.retentionAction, 'delete') === 'archive' ? 'archive' : 'delete',
         instance_theme: instanceTheme(),
+        mcp_enabled: mcpEnabled(),
     }
 }
 
@@ -52,6 +59,7 @@ export function saveSettings(input: Partial<Settings>): Settings {
         if (!(d >= 1 && d <= 3650)) throw new Error('Retention days must be between 1 and 3650')
         setProperty(PROPS.retentionDays, String(d))
     }
+    if (input.mcp_enabled !== undefined) setProperty(PROPS.mcpEnabled, input.mcp_enabled ? 'true' : 'false')
     if (input.instance_theme !== undefined) setProperty(PROPS.instanceTheme, input.instance_theme ? 'true' : 'false')
     if (input.retention_action !== undefined) setProperty(PROPS.retentionAction, input.retention_action === 'archive' ? 'archive' : 'delete')
     return getSettings()

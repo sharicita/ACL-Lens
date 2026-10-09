@@ -3,8 +3,10 @@ import { Property, ScheduledScript, UiPolicy, UiAction } from '@servicenow/sdk/c
 import { applyRetention } from '../server/admin/settings'
 
 // ---- application properties (managed in ACL Lens > Properties) -------------
+// App configuration is visible to and changeable by ACL Lens admins only (and admin, which passes
+// every role check). Server code still reads the values for everyone through gs.getProperty.
 const ADMIN = ['x_acllens.admin']
-const READERS = ['x_acllens.user']
+const READERS = ADMIN
 
 Property({
     $id: Now.ID['prop-history-enabled'],
@@ -49,6 +51,15 @@ Property({
     type: 'boolean',
     value: 'false',
     description: "Use the instance's Next Experience theme colours (backgrounds, text, borders) instead of the ACL Lens light theme. Access colours stay the same.",
+    roles: { read: READERS, write: ADMIN },
+})
+
+Property({
+    $id: Now.ID['prop-mcp-enabled'],
+    name: 'x_acllens.mcp.enabled',
+    type: 'boolean',
+    value: 'false',
+    description: "Allow MCP clients (AI tools outside ServiceNow) to call the ACL Lens MCP endpoint. Off by default. Tools are read-only and run with the calling user's permissions.",
     roles: { read: READERS, write: ADMIN },
 })
 

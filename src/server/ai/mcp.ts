@@ -1,6 +1,7 @@
 import { gs } from '@servicenow/glide'
 import { GUIDANCE, MCP_PROMPTS, SYSTEM_PROMPT } from './guidance.ts'
 import { TOOLS, runTool } from './tools.ts'
+import { mcpEnabled } from '../admin/settings.ts'
 
 /**
  * Minimal stateless MCP server (JSON-RPC 2.0 over Streamable HTTP, POST only) exposing the ACL Lens
@@ -84,6 +85,7 @@ export function handleMcp(request: any, response: any) {
         response.setContentType('application/json')
         if (body !== null && body !== undefined) response.getStreamWriter().writeString(JSON.stringify(body))
     }
+    if (!mcpEnabled()) return write(403, fail(null, -32003, 'The ACL Lens MCP server is turned off. An ACL Lens admin can turn it on under ACL Lens > Configuration > MCP Server.'))
     if (!gs.hasRole('x_acllens.user')) return write(403, fail(null, -32001, 'The x_acllens.user role is required'))
     let msg: any
     try {
@@ -97,4 +99,19 @@ export function handleMcp(request: any, response: any) {
     }
     const res = handleOne(msg)
     return res === null ? write(202, null) : write(200, res)
+}
+
+/** Setup information for the admin MCP page (no secrets). */
+export function mcpInfo() {
+    const base = String(gs.getProperty('glide.servlet.uri', '') || '')
+    return {
+        enabled: mcpEnabled(),
+        endpoint: `${base.replace(/\/$/, '')}/api/x_acllens/lens/mcp`,
+        protocol_version: PROTOCOL_VERSION,
+        transport: 'Streamable HTTP (POST, JSON-RPC 2.0, stateless)',
+        required_role: 'x_acllens.user',
+        tools: TOOLS.map((t) => ({ name: t.name, description: t.description })),
+        prompts: Object.keys(MCP_PROMPTS).map((k) => ({ name: k, description: MCP_PROMPTS[k].description })),
+        resources: Object.keys(GUIDANCE).map((k) => ({ uri: `acl-lens://guidance/${k}`, title: GUIDANCE[k].title })),
+    }
 }

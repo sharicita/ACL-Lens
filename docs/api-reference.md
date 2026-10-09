@@ -22,6 +22,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | GET | `/tables` | `q` | `{results: [{name, label, scope}], prefixCount}`: tables the caller can read in `sys_db_object` (`GlideRecordSecure`), ranked by name then label; `prefixCount` = tables whose name starts with `q` |
 | GET | `/acl/{id}` | — | `{name, operation, decision, description, roles, condition, condition_query, applies_to, security_attribute, has_script, script, script_hidden, admin_overrides}`. `script` is returned only when the caller can read `sys_security_acl`; otherwise `script_hidden=true` |
 | GET | `/me` | — | `{user, is_admin, history_enabled, instance_theme}` |
+| GET | `/admin/mcp` **admin** | — | MCP setup information (see the MCP section) |
 
 `filter`:
 - `mode`: `secured_by_roles` · `tables` · `prefix` · `scope` · `all`
@@ -49,6 +50,8 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 ## MCP — `POST /mcp`
 
 Stateless JSON-RPC 2.0 (MCP `2025-06-18`). Single requests or batches; notifications return 202.
+
+**Off by default.** While the property `x_acllens.mcp.enabled` is false, every request gets HTTP 403 with JSON-RPC error `-32003`. Admins turn it on under *ACL Lens → Configuration → MCP Server*. Setup information for that page comes from `GET /admin/mcp` (**admin**): `{enabled, endpoint, protocol_version, transport, required_role, tools, prompts, resources}`.
 
 | Method | Notes |
 |---|---|

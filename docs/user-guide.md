@@ -121,9 +121,17 @@ Compares the subjects' roles in collapsible groups:
 - It only looks up what **you** can access and never changes anything. If you lack access to something, it says so.
 - Answers include steps, testing and rollback. Tools used are listed under each answer. **History** reopens earlier chats.
 
-## 6. Settings (ACL Lens admins)
+## 6. Configuration (ACL Lens admins)
 
-**ACL Lens → Properties** (or the *Settings* tab):
+Everything that configures the app sits under **ACL Lens → Configuration** in the navigator, and under the **Settings** tab in the app. Only `admin` and `x_acllens.admin` can see or change it.
+
+| Module | What it's for |
+|---|---|
+| **MCP Server** | Turn the MCP endpoint on or off, copy the endpoint, follow the steps to connect an AI tool, test it, and see the tools it offers |
+| **Properties** | The settings below |
+| **AI Providers** | The Security Assistant's AI connection |
+
+### Properties
 
 | Setting | Effect |
 |---|---|
@@ -131,5 +139,17 @@ Compares the subjects' roles in collapsible groups:
 | Clean up old runs automatically | Daily at 02:30; keep N days (default 90); then delete or archive |
 | Clear history now | Older than N days / date range / all; optionally include archived. **Preview** shows the count first; deleting can't be undone |
 | Use the instance theme | Off (default): ACL Lens's own light theme. On: backgrounds, text and borders follow the instance's Next Experience theme. Access colours never change |
+
+### MCP server
+
+Lets AI tools outside ServiceNow (for example Claude Code or VS Code) use ACL Lens's read-only security tools. It is **off by default**.
+
+1. **ACL Lens → Configuration → MCP Server**: turn on **Allow MCP clients** (saved immediately).
+2. Each person connects as themselves (OAuth recommended) and needs the ACL Lens user role. Tools run with that person's permissions and can't change anything.
+3. Copy the example for your tool, then use **Test the endpoint now**.
+
+Turning it off makes the endpoint refuse every request straight away.
+
+### AI providers
 
 **AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. See [05 §2](architecture/05-ai-assistant-and-mcp.md#2-providers).

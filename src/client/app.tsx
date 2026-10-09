@@ -8,6 +8,7 @@ import RunView from './components/RunView'
 import { AssistantProvider, useAssistant } from './assistant/AssistantContext'
 import AssistantPanel from './assistant/AssistantPanel'
 import SettingsView from './components/SettingsView'
+import McpSetupView from './components/McpSetupView'
 import TooltipLayer from './components/TooltipLayer'
 import ReportList from './components/ReportList'
 import { isListKind } from './utils/reportLists'
@@ -72,7 +73,8 @@ function Shell() {
 
     useEffect(() => {
         if (view.view === 'history') setTitle('ACL Lens – History')
-        else if (view.view === 'settings') setTitle('ACL Lens – Settings')
+        else if (view.view === 'settings') setTitle('ACL Lens – Properties')
+        else if (view.view === 'mcp') setTitle('ACL Lens – MCP Server')
         else if (view.view === 'workspace') setTitle('ACL Lens – Workspace')
     }, [view])
 
@@ -111,9 +113,15 @@ function Shell() {
                 {view.view === 'history' && <HistoryView isAdmin={me.is_admin} historyEnabled={me.history_enabled} onOpen={(id) => navigate('run', id)} onRunComplete={openRun} />}
                 {view.view === 'settings' &&
                     (me.is_admin ? (
-                        <SettingsView onSaved={(s) => setMe({ ...me, history_enabled: s.history_enabled, instance_theme: s.instance_theme })} />
+                        <SettingsView onNavigate={(v) => navigate(v)} onSaved={(s) => setMe({ ...me, history_enabled: s.history_enabled, instance_theme: s.instance_theme })} />
                     ) : (
                         <div className="lens-alert lens-alert--warning">Settings are available to ACL Lens admins (x_acllens.admin).</div>
+                    ))}
+                {view.view === 'mcp' &&
+                    (me.is_admin ? (
+                        <McpSetupView onNavigate={(v) => navigate(v)} />
+                    ) : (
+                        <div className="lens-alert lens-alert--warning">The MCP server setup is available to ACL Lens admins (x_acllens.admin).</div>
                     ))}
                 {view.view === 'list' && view.id && isListKind(view.list || null) && (
                     <ReportList key={`${view.id}-${view.list}`} runId={view.id} list={view.list as any} onOpenRun={(id) => navigate('run', id)} />
