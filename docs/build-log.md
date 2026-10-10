@@ -494,3 +494,12 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - The run header shows "extended tables included".
 - **Verified on the original PDI:** itil on `task` analyzed 1 table without the option and 127 with it (incident, problem, change_request, asset_task…). The test runs were deleted.
 
+
+## 1.21 Security Assistant moves to the header
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- The floating bottom-right launcher covered results (cards and table rows). It is removed.
+- An **Assistant** button now sits in the header after a divider, styled like the other header tabs. It toggles the slide-out and sets `aria-expanded`.

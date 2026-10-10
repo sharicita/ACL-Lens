@@ -2988,3 +2988,14 @@ tr.lens-group > th {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+
+/* Security Assistant opens from the header (no floating button over results) */
+.lens-header__divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 0.3rem 0.15rem;
+    background: var(--lx-border-strong);
+}
+.lens-tab--assistant {
+    color: var(--lx-text);
+}

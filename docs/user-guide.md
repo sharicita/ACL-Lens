@@ -136,7 +136,7 @@ Compares the subjects' roles in collapsible groups:
 
 ## 5. Security Assistant
 
-- Click **Security Assistant** (bottom right). It knows the run and table you have open.
+- Click **Assistant** in the header (top right, after Settings). It knows the run and table you have open.
 - Ask, for example:
   - *"Why can't Abel update incidents?"*
   - *"Review the ACLs on incident against best practices."*

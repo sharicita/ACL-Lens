@@ -1,6 +1,7 @@
 import React from 'react'
 import { ViewName } from '../utils/nav'
 import Icon from './Icon'
+import { useAssistant } from '../assistant/AssistantContext'
 
 interface Props {
     view: ViewName
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function Header({ view, isAdmin, onNavigate }: Props) {
+    const assistant = useAssistant()
     // the Configuration pages (properties, MCP server) all sit under the Settings tab
     const active = (name: ViewName) => view === name || (name === 'settings' && view === 'mcp')
     const ICON: { [v: string]: string } = { workspace: 'workspace', history: 'history', settings: 'settings' }
@@ -55,6 +57,17 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
                 {tab('workspace', 'Workspace', 'Choose users and roles and run an analysis or comparison.')}
                 {tab('history', 'History', 'Saved runs: open, export or rerun them.')}
                 {isAdmin && tab('settings', 'Settings', 'Admin configuration: properties, MCP server and AI providers.')}
+                <span className="lens-header__divider" aria-hidden="true" />
+                <button
+                    type="button"
+                    className={`lens-tab lens-tab--assistant${assistant.open ? ' lens-tab--active' : ''}`}
+                    aria-expanded={assistant.open}
+                    onClick={() => (assistant.open ? assistant.close() : assistant.ask())}
+                    data-tip="Security Assistant: ask about access, troubleshooting or designing ACLs. Read-only; it sees only what you can access."
+                >
+                    <Icon name="shield" className="lens-icon--accent" />
+                    Assistant
+                </button>
             </nav>
         </header>
     )

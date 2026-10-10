@@ -5,7 +5,7 @@ import Header from './components/Header'
 import Workspace from './components/Workspace'
 import HistoryView from './components/HistoryView'
 import RunView from './components/RunView'
-import { AssistantProvider, useAssistant } from './assistant/AssistantContext'
+import { AssistantProvider } from './assistant/AssistantContext'
 import AssistantPanel from './assistant/AssistantPanel'
 import SettingsView from './components/SettingsView'
 import McpSetupView from './components/McpSetupView'
@@ -41,18 +41,6 @@ export default function App() {
     )
 }
 
-function AssistantLauncher() {
-    const a = useAssistant()
-    if (a.open) return null
-    return (
-        <button type="button" className="lens-launcher" onClick={() => a.ask()} aria-label="Open Security Assistant">
-            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Zm-1 13-3-3 1.4-1.4 1.6 1.6 4.6-4.6L17 9l-6 6Z" />
-            </svg>
-            Security Assistant
-        </button>
-    )
-}
 
 function Shell() {
     const [view, setView] = useState<ViewState>(getViewFromUrl)
@@ -169,7 +157,6 @@ function Shell() {
                     />
                 )}
             </main>
-            <AssistantLauncher />
             <AssistantPanel />
             <TooltipLayer />
         </div>
