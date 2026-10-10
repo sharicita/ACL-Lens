@@ -23,6 +23,8 @@ interface Props {
     onOpenRun: (id: string) => void
     onEdit: (p: RunPayload) => void
     isAdmin?: boolean
+    /** the signed-in user can run the platform's live access evaluation */
+    canLiveCheck?: boolean
     /** called after the run is deleted (e.g. go back to History) */
     onDeleted: () => void
 }
@@ -46,7 +48,7 @@ function writeBaseline(runId: string, key: string) {
     }
 }
 
-export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, onDeleted }: Props) {
+export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, canLiveCheck, onDeleted }: Props) {
     const [payload, setPayload] = useState<RunPayload | null>(cached || null)
     const [error, setError] = useState('')
     const [busy, setBusy] = useState('')
@@ -286,7 +288,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                         )}
                         {tab === 'roles' && <RoleComparison subjects={results.subjects} />}
                     </div>
-                    {detail !== null && <TableDetail results={results} index={detail} onClose={() => setDetail(null)} />}
+                    {detail !== null && <TableDetail results={results} index={detail} canLiveCheck={!!canLiveCheck} onClose={() => setDetail(null)} />}
                 </>
             )}
         </div>

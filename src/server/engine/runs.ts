@@ -29,7 +29,7 @@ function normalizeFilter(f: AnalysisFilter | undefined): AnalysisFilter {
  * A rerun passes originalRun so the new record references the run it was created from.
  */
 export function executeRun(req: RunRequest, originalRun?: string) {
-    const subjects = (req.subjects || []).map((s) => ({ type: s.type === 'role' ? 'role' : 'user', id: s.id }) as SubjectRef)
+    const subjects = (req.subjects || []).map((s) => ({ type: s.type === 'role' || s.type === 'group' ? s.type : 'user', id: s.id }) as SubjectRef)
     const filter = normalizeFilter(req.filter)
     const runType = req.run_type === 'compare' ? 'compare' : 'analyze'
     if (runType === 'compare' && subjects.length < 2) throw new Error('Select at least two users/roles to compare')

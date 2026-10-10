@@ -43,7 +43,9 @@ Index: `run_kind_seq` (`run`, `kind`, `seq`).
 - `results` — `AnalysisResult`:
   - `defaultDeny`, `filter`, `tableCount`, `truncated`, `warnings`, `timings`;
   - `acls[]` (only the ACLs referenced by the run);
-  - `subjects[]` → `{subject, counts, tables[] → {t, l, ops{create|read|write|delete: Cell}, fields[] → {f, ops}}}`.
+  - `ops[]`: the table operations evaluated: `create`, `read`, `write`, `delete`, `list_edit`, `query_match`, `query_range`, `add_to_list`, `save_as_template`, `report_on`, `personalize_choices`, `report_view`. Missing on older runs, which hold the first four only;
+  - `dataFilters[]` (security data filters referenced by the run) → `{id, table, mode: if|unless, filter, securityAttribute, description}`;
+  - `subjects[]` → `{subject (type user|role|group), counts (first four operations), tables[] → {t, l, ops{<operation>: Cell}, fields[] → {f, ops}, sdf?[] → {i: dataFilterIndex, r: A (applied) | N (not applied) | C (depends)}}}`.
   - `Cell` = `{s: G|C|D|N, lvl, dlvl?, a[] → {i: aclIndex, r: P|C|F, c: reason}}`.
 - `comparison` — `{subjects, defaultDeny, summary, roles[], pairs[], diffs[]}`.
 - `drift` — `{total, truncated, notes[], rows[]}`.

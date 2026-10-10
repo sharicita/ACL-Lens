@@ -10,7 +10,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 
 | Method | Path | Body / query | Returns |
 |---|---|---|---|
-| GET | `/subjects` | `type=user\|role`, `q`, `limit` | `[{id, label, sub}]`, ranked (prefix matches first). Users match user name, name, first/last name and email; roles match name and description |
+| GET | `/subjects` | `type=user\|role\|group`, `q`, `limit` | `[{id, label, sub}]`, ranked (prefix matches first). Users match user name, name, first/last name and email; roles and groups match name and description |
 | GET | `/scopes` | `q` | Up to 10 `{scope, name}` the caller can read (`GlideRecordSecure`). Ranked: scope starts with `q` → name starts with `q` → contains. Empty `q`: custom (`x_`) apps first |
 | POST | `/runs` | `{name?, run_type: analyze\|compare, subjects: [{type, id}], filter}` | `{run, results, comparison, drift}`. With history off, `run.unsaved=true` and nothing is stored |
 | GET | `/runs` | `q`, `type`, `original`, `limit` (≤200), `archived=true` | Run records (newest first) with `rerun_count` |
@@ -18,10 +18,10 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | POST | `/runs/{id}/rerun` | — | New run whose `original_run` = `{id}`, including drift |
 | POST | `/runs/{id}/archive` **admin** | `{archived: boolean}` | `{sys_id, archived}` |
 | DELETE | `/runs/{id}` **admin** | — | `{deleted: 1, number}`. Removes the run, its `_run_data` rows and attachments |
-| GET | `/fields` | `table`, `subjects=user:<id>,role:<id>` | Live evaluation of every column of `table` |
+| GET | `/fields` | `table`, `subjects=user:<id>,role:<id>,group:<id>` | Live evaluation of every column of `table`, plus `tableCells` for all 12 table operations and `dataFilters` per subject |
 | GET | `/tables` | `q` | `{results: [{name, label, scope}], prefixCount}`: tables the caller can read in `sys_db_object` (`GlideRecordSecure`), ranked by name then label; `prefixCount` = tables whose name starts with `q` |
 | GET | `/acl/{id}` | — | `{name, operation, decision, description, roles, condition, condition_query, applies_to, security_attribute, has_script, script, script_hidden, admin_overrides}`. `script` is returned only when the caller can read `sys_security_acl`; otherwise `script_hidden=true` |
-| GET | `/me` | — | `{user, is_admin, history_enabled, instance_theme}` |
+| GET | `/me` | — | `{user, is_admin, can_live_check, history_enabled, instance_theme}`. `can_live_check` is true for `admin`, `user_admin` or `access_analyzer_admin` (the platform enforces it on the live check itself) |
 | GET | `/admin/mcp` **admin** | — | MCP setup information (see the MCP section) |
 
 `filter`:
@@ -68,3 +68,13 @@ curl -u <user>:<password> -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_my_access","arguments":{"table":"incident"}}}' \
   https://<instance>.service-now.com/api/x_acllens/lens/mcp
 ```
+
+## Live check (platform API, called from the browser)
+
+The **Check live** tab doesn't use an ACL Lens endpoint. The platform only lets its Access Analyzer scope run the live access evaluation (`sn_identity.IdentitySecurityApi`; other scopes get `Unsupported caller scope`). So the browser calls the Access Analyzer's own data broker with the signed-in user's session:
+
+- `POST /api/now/uxf/databroker/exec`
+- Body: `[{type: "TRANSFORM", definitionSysId: "84b4614577c22110eba8fe21fe5a9943" (Get access debug logs), inputValues: {requestPayload: {type: "JSON_LITERAL", value: {entitySysId, entityType: User|Group|Role, targetName, targetResource: "record", targetField, targetMethod: "", targetRecord, targetOperations[]}}}}]`
+- The platform's ACL on that data broker allows `admin`, `user_admin` and `access_analyzer_admin` only. It needs the Access Analyzer plugin (`sn_access_analyzer`).
+- `src/client/utils/liveCheck.ts` turns the debug log into the Access Analyzer's columns, using the same rules as the analyzer's own `AccessAnalyzerUtil.parseResponse`.
+

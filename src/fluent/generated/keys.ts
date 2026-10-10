@@ -326,9 +326,17 @@ declare global {
                         table: 'sys_module'
                         id: '55d7894a01bf402285da419490b4ab04'
                     }
+                    src_server_engine_attributes_ts: {
+                        table: 'sys_module'
+                        id: '313d636c66d74435852f9ac86abb592d'
+                    }
                     src_server_engine_compare_ts: {
                         table: 'sys_module'
                         id: '048ccb0a73e14d1f989d5cb3544f4646'
+                    }
+                    'src_server_engine_data-filters_ts': {
+                        table: 'sys_module'
+                        id: '0864d170e85142c7b53650d817019a3f'
                     }
                     src_server_engine_evaluator_ts: {
                         table: 'sys_module'

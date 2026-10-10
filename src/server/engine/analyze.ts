@@ -1,9 +1,12 @@
 import { gs, GlideDateTime } from '@servicenow/glide'
 import { AclIndex } from './acl-index.ts'
+import { AttributeInfo } from './attributes.ts'
+import { DataFilterIndex, dataFilterOutcomes, loadAttributes } from './data-filters.ts'
 import { Evaluator, emptyCounts } from './evaluator.ts'
 import { Schema, tablesDefiningFields, listFields, FieldMeta } from './schema.ts'
 import { loadElevatedRoles, resolveSubject } from './subjects.ts'
 import {
+    ALL_TABLE_OPS,
     AnalysisFilter,
     AnalysisResult,
     Cell,
@@ -56,6 +59,8 @@ export interface AnalysisContext {
     index: AclIndex
     elevated: { [r: string]: boolean }
     defaultDeny: boolean
+    dataFilters: DataFilterIndex
+    attrs: { [name: string]: AttributeInfo }
 }
 
 export function buildContext(schema: Schema, tables: string[] | null): AnalysisContext {
@@ -65,11 +70,15 @@ export function buildContext(schema: Schema, tables: string[] | null): AnalysisC
         for (const t of tables) for (const c of schema.chain(t)) all[c] = true
         names = Object.keys(all)
     }
+    const index = new AclIndex().load(names)
+    const dataFilters = new DataFilterIndex().load(names)
     return {
         schema,
-        index: new AclIndex().load(names),
+        index,
         elevated: loadElevatedRoles(),
         defaultDeny: gs.getProperty('glide.sm.default_mode', 'deny') !== 'allow',
+        dataFilters,
+        attrs: loadAttributes(index.attributeNames().concat(dataFilters.attributeNames())),
     }
 }
 
@@ -82,7 +91,7 @@ function evaluateTable(
 ): TableResult {
     const chain = ctx.schema.chain(table)
     const ops: { [op: string]: Cell } = {}
-    for (const op of TABLE_OPS) ops[op] = ev.evalLevels(ev.tableLevels(chain), op)
+    for (const op of ALL_TABLE_OPS) ops[op] = ev.evalLevels(ev.tableLevels(chain), op)
 
     const fields: FieldRow[] = []
     if (includeFields) {
@@ -100,7 +109,10 @@ function evaluateTable(
             fields.push({ f, ops: fo })
         }
     }
-    return { t: table, l: ctx.schema.label(table), ops, fields }
+    const out: TableResult = { t: table, l: ctx.schema.label(table), ops, fields }
+    const sdf = dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles())
+    if (sdf.length) out.sdf = sdf
+    return out
 }
 
 export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisResult {
@@ -159,7 +171,7 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
     lap('starFields')
 
     const results: SubjectResult[] = subjects.map((subject) => {
-        const ev = new Evaluator(ctx.index, subject, ctx.elevated)
+        const ev = new Evaluator(ctx.index, subject, ctx.elevated, ctx.attrs)
         const counts = emptyCounts(TABLE_OPS)
         const tr = (tables as string[]).map((t) => {
             const r = evaluateTable(ev, ctx, t, includeFields, starFieldTables)
@@ -181,6 +193,8 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
         warnings,
         timings,
         acls: ctx.index.acls,
+        dataFilters: ctx.dataFilters.filters,
+        ops: ALL_TABLE_OPS,
         subjects: results,
     }
 }
@@ -204,6 +218,20 @@ export function pruneAcls(result: AnalysisResult): AnalysisResult {
             for (const f of t.fields) for (const op in f.ops) remap(f.ops[op])
         }
     result.acls = acls
+    if (result.dataFilters) {
+        const usedF: { [i: number]: number } = {}
+        const filters: typeof result.dataFilters = []
+        for (const s of result.subjects)
+            for (const t of s.tables)
+                for (const o of t.sdf || []) {
+                    if (usedF[o.i] === undefined) {
+                        usedF[o.i] = filters.length
+                        filters.push(result.dataFilters[o.i])
+                    }
+                    o.i = usedF[o.i]
+                }
+        result.dataFilters = filters
+    }
     return result
 }
 
@@ -219,7 +247,7 @@ export function fieldDetail(table: string, refs: SubjectRef[]) {
     const ctx = buildContext(schema, [table])
     const chain = ctx.schema.chain(table)
     const subjects = refs.map((r) => resolveSubject(r))
-    const evaluators = subjects.map((s) => new Evaluator(ctx.index, s, ctx.elevated))
+    const evaluators = subjects.map((s) => new Evaluator(ctx.index, s, ctx.elevated, ctx.attrs))
     const rows: FieldDetailRow[] = listFields(ctx.schema, table).map((field) => {
         const cells: { [k: string]: { [op: string]: Cell } } = {}
         evaluators.forEach((ev, i) => {
@@ -232,7 +260,7 @@ export function fieldDetail(table: string, refs: SubjectRef[]) {
     const tableCells: { [k: string]: { [op: string]: Cell } } = {}
     evaluators.forEach((ev, i) => {
         const o: { [op: string]: Cell } = {}
-        for (const op of TABLE_OPS) o[op] = ev.evalLevels(ev.tableLevels(chain), op)
+        for (const op of ALL_TABLE_OPS) o[op] = ev.evalLevels(ev.tableLevels(chain), op)
         tableCells[subjects[i].key] = o
     })
     return {
@@ -242,6 +270,8 @@ export function fieldDetail(table: string, refs: SubjectRef[]) {
         defaultDeny: ctx.defaultDeny,
         subjects: subjects.map((s) => ({ key: s.key, label: s.label, type: s.type })),
         tableCells,
+        dataFilters: evaluators.map((ev, i) => ({ key: subjects[i].key, sdf: dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles()) })),
+        filters: ctx.dataFilters.filters,
         rows,
         acls: ctx.index.acls,
     }

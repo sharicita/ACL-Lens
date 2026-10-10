@@ -43,6 +43,11 @@ export function BaselineHelp() {
 
 function assignmentSummary(sr: SubjectResult): string {
     const s = sr.subject
+    if (s.type === 'group') {
+        const direct = s.roleSources.filter((r) => r.kind === 'group').length
+        const contained = s.roles.length - direct
+        return direct ? `${direct} group role${direct === 1 ? '' : 's'}${contained > 0 ? ` + ${contained} contained` : ''}` : 'the group gives no roles'
+    }
     if (s.type === 'role') {
         const contained = s.roles.length - 1
         return contained ? `the role + ${contained} contained role${contained === 1 ? '' : 's'}` : 'contains no other roles'
@@ -85,8 +90,8 @@ export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, 
                                 <span className="lens-subject__title">
                                     <strong data-tip={s.label}>{s.label}</strong>
                                     <RecordLink
-                                        href={s.type === 'user' ? recordUrl.user(s.id) : recordUrl.role(s.id)}
-                                        what={`${s.type === 'user' ? 'user' : 'role'} record for ${s.label}`}
+                                        href={s.type === 'user' ? recordUrl.user(s.id) : s.type === 'group' ? recordUrl.group(s.id) : recordUrl.role(s.id)}
+                                        what={`${s.type} record for ${s.label}`}
                                     />
                                 </span>
                                 {s.sub && (

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
-import { AnalysisResult, Cell, FIELD_OPS, Op, TABLE_OPS } from '../types'
-import { OP_SHORT, rank, statusText } from '../utils/status'
+import { AnalysisResult, Cell, EXTRA_OPS, FIELD_OPS, Op, TABLE_OPS } from '../types'
+import { OP_HELP, OP_SHORT, rank, statusText } from '../utils/status'
+import Icon from './Icon'
 import { rankFilter } from '../utils/rank'
 import { StatusCell } from './StatusCell'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
@@ -36,8 +37,12 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     const subjectVisible = useSubjectVisible()
     const visible = results.subjects.filter((s) => !hidden.has(s.subject.key) && subjectVisible(s.subject.key))
     const baseIdx = Math.max(0, visible.findIndex((s) => s.subject.key === baseline))
-    const ops = TABLE_OPS.filter((op) => opSel.has(op))
-    const allOps = ops.length === TABLE_OPS.length
+    // runs saved before the extra operations were analyzed hold only the core four
+    const available = results.ops && results.ops.length ? results.ops : TABLE_OPS
+    const extras = EXTRA_OPS.filter((op) => available.indexOf(op) >= 0)
+    const ops = available.filter((op) => opSel.has(op))
+    const coreOnly = ops.length === TABLE_OPS.length && TABLE_OPS.every((op) => opSel.has(op))
+    const allOps = ops.length === available.length
     const toggleOp = (op: Op) => {
         const n = new Set(opSel)
         n.has(op) ? n.delete(op) : n.add(op)
@@ -58,7 +63,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
             for (const op of ops) {
                 const st = visible.map((s) => s.tables[ti].ops[op].s)
                 if (new Set(st).size > 1) differs = true
-                if (st.some((x) => rank(x, dd) > 0)) any = true
+                if (st.some((x) => rank(x, dd, op) > 0)) any = true
             }
             if (!differs)
                 t.fields.forEach((_f, fi) => {
@@ -76,9 +81,9 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
 
     // optional column sort; with none chosen, rows keep the search ranking
     const sortCols: { [key: string]: (r: { ti: number; differs: boolean }) => string | number } = { table: (r) => results.subjects[0].tables[r.ti].l || results.subjects[0].tables[r.ti].t }
-    for (const s of visible) for (const op of ops) sortCols[`${s.subject.key}:${op}`] = (r) => rank(s.tables[r.ti].ops[op].s, dd)
+    for (const s of visible) for (const op of ops) sortCols[`${s.subject.key}:${op}`] = (r) => rank(s.tables[r.ti].ops[op].s, dd, op)
     const groupLabel: { [key: string]: (r: { ti: number; differs: boolean }) => string } = {}
-    for (const s of visible) for (const op of ops) groupLabel[`${s.subject.key}:${op}`] = (r) => statusText(s.tables[r.ti].ops[op].s, dd)
+    for (const s of visible) for (const op of ops) groupLabel[`${s.subject.key}:${op}`] = (r) => statusText(s.tables[r.ti].ops[op].s, dd, op)
     const sorter = useSort(rows, sortCols, { groupLabel })
 
     React.useEffect(() => {
@@ -114,22 +119,27 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                 <input className="lens-input lens-mx__search" placeholder="Filter tables…" value={q} aria-label="Filter tables" onChange={(e) => { setQ(e.target.value); setLimit(PAGE) }} />
                 <div className="lens-opsel" role="group" aria-label="Operations to show">
                     <span className="lens-opsel__label">Operations</span>
-                    {TABLE_OPS.map((op) => (
+                    {available.map((op) => (
                         <button
                             key={op}
                             type="button"
-                            className={`lens-opsel__op${opSel.has(op) ? ' lens-opsel__op--on' : ''}`}
+                            className={`lens-opsel__op${opSel.has(op) ? ' lens-opsel__op--on' : ''}${op === extras[0] ? ' lens-opsel__op--sep' : ''}`}
                             aria-pressed={opSel.has(op)}
-                            disabled={opSel.has(op) && opSel.size === 1}
+                            disabled={opSel.has(op) && ops.length === 1}
                             onClick={() => toggleOp(op)}
-                            data-tip={opSel.has(op) && opSel.size === 1 ? 'At least one operation stays selected.' : `${opSel.has(op) ? 'Hide' : 'Show'} ${op}`}
+                            data-tip={opSel.has(op) && ops.length === 1 ? 'At least one operation stays selected.' : `${opSel.has(op) ? 'Hide' : 'Show'} ${op}: ${OP_HELP[op]}`}
                         >
                             {OP_SHORT[op]}
                             <span className="lens-sr"> ({op})</span>
                         </button>
                     ))}
+                    {!coreOnly && (
+                        <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(TABLE_OPS))} data-tip="Show create, read, write and delete only">
+                            CRUD
+                        </button>
+                    )}
                     {!allOps && (
-                        <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(TABLE_OPS))}>
+                        <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(available))} data-tip="Show every operation">
                             All
                         </button>
                     )}
@@ -193,7 +203,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                         abbr={op}
                                         label={`${s.subject.label} ${op}`}
                                         className={`lens-mx__op${op === ops[0] ? ' lens-mx__cell--first' : ''}`}
-                                        tip={`Sort by ${s.subject.label}'s ${op} access (most first)`}
+                                        tip={`${op}: ${OP_HELP[op]}. Sort by ${s.subject.label}'s ${op} access (most first)`}
                                     >
                                         {OP_SHORT[op]}
                                     </SortTh>
@@ -221,6 +231,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                                 <span>{t.l}</span>
                                                 <code>{t.t}</code>
                                             </button>
+                                            <DataFilterMark results={results} ti={ti} subjects={visible.map((s) => s.subject.key)} />
                                         </th>
                                         {visible.map((s, si) =>
                                                 ops.map((op) => (
@@ -310,5 +321,30 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                 </div>
             )}
         </section>
+    )
+}
+
+/**
+ * Marker beside a table that has security data filters: they hide rows from some subjects even
+ * when the ACLs grant access. The tip says who the filters apply to.
+ */
+function DataFilterMark({ results, ti, subjects }: { results: AnalysisResult; ti: number; subjects: string[] }) {
+    const first = results.subjects[0]?.tables[ti]
+    if (!first || !first.sdf || !first.sdf.length || !results.dataFilters) return null
+    const n = first.sdf.length
+    const lines = results.subjects
+        .filter((s) => subjects.indexOf(s.subject.key) >= 0)
+        .map((s) => {
+            const sdf = s.tables[ti].sdf || []
+            const applied = sdf.filter((o) => o.r === 'A').length
+            const depends = sdf.filter((o) => o.r === 'C').length
+            return `${s.subject.label}: ${applied ? `${applied} applied` : 'none applied'}${depends ? `, ${depends} depend on a security attribute` : ''}`
+        })
+    const anyApplied = results.subjects.some((s) => subjects.indexOf(s.subject.key) >= 0 && (s.tables[ti].sdf || []).some((o) => o.r !== 'N'))
+    const tip = `${n} security data filter${n === 1 ? '' : 's'} on this table: they hide rows even when the ACLs allow access. ${lines.join(' · ')}. Open the table for details.`
+    return (
+        <span className={`lens-dfmark${anyApplied ? ' lens-dfmark--on' : ''}`} data-tip={tip} aria-label={tip} tabIndex={0}>
+            <Icon name="filter" size={12} />
+        </span>
     )
 }

@@ -8,8 +8,14 @@ export interface SubjectOption {
     sub: string
 }
 
-/** Typeahead search for users or roles, ranked: starts-with first, then contains. */
+/** Typeahead search for users, roles or groups, ranked: starts-with first, then contains. */
 export function searchSubjects(type: string, text: string, limit = 20): SubjectOption[] {
+    if (type === 'group') {
+        return rankedSearch(
+            { table: 'sys_user_group', fields: ['name', 'description'], text, limit, secure: false, orderBy: 'name' },
+            (g) => ({ id: g.getUniqueValue(), label: g.getValue('name'), sub: `${g.getValue('description') || 'Group'}${bool(g.getValue('active')) ? '' : ' (inactive)'}` })
+        )
+    }
     if (type === 'role') {
         return rankedSearch(
             { table: 'sys_user_role', fields: ['name', 'description'], text, limit, secure: false, orderBy: 'name' },
@@ -143,17 +149,12 @@ function resolveUser(id: string): Subject {
     }
 }
 
-function resolveRole(id: string): Subject {
-    const r = gr('sys_user_role')
-    if (!r.get(id)) throw new Error(`Role ${id} not found`)
-    const rootName = r.getValue('name')
-    const roles: { [name: string]: boolean } = { [rootName]: true }
-    const sources: RoleSource[] = [{ role: rootName, via: 'selected role', kind: 'selected' }]
-    const seen: { [k: string]: boolean } = {}
-    const visited: { [sysId: string]: boolean } = { [id]: true }
-
+/** Adds every role contained (at any depth) in the given roles, with where each came from. */
+function addContained(rootIds: string[], roles: { [name: string]: boolean }, sources: RoleSource[], seen: { [k: string]: boolean }) {
+    const visited: { [sysId: string]: boolean } = {}
+    for (const id of rootIds) visited[id] = true
     // Breadth-first walk of sys_user_role_contains so nested containment is captured.
-    let frontier = [id]
+    let frontier = rootIds.slice()
     while (frontier.length) {
         const next: string[] = []
         const c = gr('sys_user_role_contains')
@@ -173,6 +174,15 @@ function resolveRole(id: string): Subject {
         }
         frontier = next
     }
+}
+
+function resolveRole(id: string): Subject {
+    const r = gr('sys_user_role')
+    if (!r.get(id)) throw new Error(`Role ${id} not found`)
+    const rootName = r.getValue('name')
+    const roles: { [name: string]: boolean } = { [rootName]: true }
+    const sources: RoleSource[] = [{ role: rootName, via: 'selected role', kind: 'selected' }]
+    addContained([id], roles, sources, {})
     const names = Object.keys(roles).sort()
     return {
         type: 'role',
@@ -187,8 +197,43 @@ function resolveRole(id: string): Subject {
     }
 }
 
+/** A group: the roles it grants its members (and the roles those contain), as a member would hold them. */
+function resolveGroup(id: string): Subject {
+    const g = gr('sys_user_group')
+    if (!g.get(id)) throw new Error(`Group ${id} not found`)
+    const name = g.getValue('name')
+    const roles: { [name: string]: boolean } = {}
+    const sources: RoleSource[] = []
+    const seen: { [k: string]: boolean } = {}
+    const ids: string[] = []
+    const h = gr('sys_group_has_role')
+    h.addQuery('group', id)
+    h.query()
+    while (h.next()) {
+        const role = h.getDisplayValue('role')
+        if (!role) continue
+        roles[role] = true
+        ids.push(h.getValue('role'))
+        addSource(sources, seen, { role, kind: 'group', from: name, via: `group: ${name}` })
+    }
+    addContained(ids, roles, sources, seen)
+    const names = Object.keys(roles).sort()
+    return {
+        type: 'group',
+        id,
+        key: `group:${id}`,
+        label: name,
+        sub: g.getValue('description') || 'Group',
+        active: bool(g.getValue('active')),
+        isAdmin: !!roles['admin'],
+        roles: names,
+        roleSources: sources.sort((a, b) => (a.role < b.role ? -1 : a.role > b.role ? 1 : 0)),
+    }
+}
+
 export function resolveSubject(ref: SubjectRef): Subject {
     if (!ref || !ref.id) throw new Error('Subject id is required')
+    if (ref.type === 'group') return resolveGroup(ref.id)
     return ref.type === 'role' ? resolveRole(ref.id) : resolveUser(ref.id)
 }
 

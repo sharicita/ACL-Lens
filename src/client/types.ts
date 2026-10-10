@@ -1,9 +1,25 @@
 // Mirrors src/server/engine/types.ts and the run/comparison payloads returned by the REST API.
-export type Op = 'create' | 'read' | 'write' | 'delete'
+export type Op =
+    | 'create'
+    | 'read'
+    | 'write'
+    | 'delete'
+    | 'list_edit'
+    | 'query_match'
+    | 'query_range'
+    | 'add_to_list'
+    | 'save_as_template'
+    | 'report_on'
+    | 'personalize_choices'
+    | 'report_view'
+/** the core record operations (cards, counts and summaries use these) */
 export const TABLE_OPS: Op[] = ['create', 'read', 'write', 'delete']
+/** the other table operations the platform checks */
+export const EXTRA_OPS: Op[] = ['list_edit', 'query_match', 'query_range', 'add_to_list', 'save_as_template', 'report_on', 'personalize_choices', 'report_view']
+export const ALL_TABLE_OPS: Op[] = TABLE_OPS.concat(EXTRA_OPS)
 export const FIELD_OPS: Op[] = ['create', 'read', 'write']
 export type Status = 'G' | 'C' | 'D' | 'N'
-export type SubjectType = 'user' | 'role'
+export type SubjectType = 'user' | 'role' | 'group'
 
 export interface SubjectOption {
     id: string
@@ -75,11 +91,30 @@ export interface FieldRow {
     ops: { [op: string]: Cell }
 }
 
+/** A = applied (rows outside the filter are hidden), N = not applied, C = depends on a security attribute */
+export type FilterResult = 'A' | 'N' | 'C'
+
+export interface DataFilterInfo {
+    id: string
+    table: string
+    mode: 'if' | 'unless'
+    filter: string
+    securityAttribute: string
+    description: string
+}
+
+export interface DataFilterOutcome {
+    i: number
+    r: FilterResult
+}
+
 export interface TableResult {
     t: string
     l: string
     ops: { [op: string]: Cell }
     fields: FieldRow[]
+    /** security data filters (missing on runs saved before they were analyzed) */
+    sdf?: DataFilterOutcome[]
 }
 
 export interface SubjectResult {
@@ -109,6 +144,9 @@ export interface AnalysisResult {
     truncated: boolean
     warnings: string[]
     acls: AclInfo[]
+    dataFilters?: DataFilterInfo[]
+    /** table operations evaluated (missing on runs saved before the extra operations: TABLE_OPS) */
+    ops?: Op[]
     subjects: SubjectResult[]
 }
 
@@ -182,6 +220,8 @@ export interface FieldDetail {
     defaultDeny: boolean
     subjects: { key: string; label: string; type: string }[]
     tableCells: { [key: string]: { [op: string]: Cell } }
+    dataFilters?: { key: string; sdf: DataFilterOutcome[] }[]
+    filters?: DataFilterInfo[]
     rows: {
         field: { name: string; label: string; type: string; definedOn: string }
         cells: { [key: string]: { [op: string]: Cell } }

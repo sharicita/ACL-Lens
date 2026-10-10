@@ -1,11 +1,11 @@
 import { gr, chunk, bool, cleanQuery } from './glide.ts'
-import { AclInfo, Op } from './types.ts'
+import { ALL_TABLE_OPS, AclInfo, Op } from './types.ts'
 
-const OPS_QUERY = 'operation.nameINcreate,read,write,delete'
+const OPS_QUERY = `operation.nameIN${ALL_TABLE_OPS.join(',')}`
 const MAX_TARGETED_NAMES = 150
 
 /**
- * Loads active record ACLs (create/read/write/delete) with their roles and indexes them by
+ * Loads active record ACLs (create/read/write/delete and the other table operations) with their roles and indexes them by
  * "<acl name>|<operation>" for fast hierarchy lookups.
  */
 export class AclIndex {
@@ -107,6 +107,11 @@ export class AclIndex {
             if (t && t !== '*') out[t] = true
         }
         return Object.keys(out).sort()
+    }
+
+    /** names of the security attributes the loaded ACLs use */
+    attributeNames(): string[] {
+        return this.acls.map((a) => a.securityAttribute).filter((n) => !!n)
     }
 
     starFields(): string[] {

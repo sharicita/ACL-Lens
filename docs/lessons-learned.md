@@ -60,6 +60,11 @@ These came up repeatedly as feedback. Build them in from the start.
 | P-06 | Next Experience theme tokens are available on UI pages as RGB triplets (`--now-color_background--primary`, `--now-color_text--primary`, `--now-color_border--*`). | Use `rgb(var(--token, fallback))` so pages work with and without a theme. |
 | P-07 | Now Assist / generative AI is not available on Personal Developer Instances. | Document it up front; test AI features with an external provider on PDIs. |
 
+| P-08 | Fluent server modules don't get platform namespaces as globals (`sn_identity`, `sn_access_analyzer`, `x_scope.*` are undefined). | Import them: `import { X } from '@servicenow/glide/<namespace>'`, with a small `.d.ts` if no types are generated. |
+| P-09 | Some platform APIs check the *original* calling scope, even through another scope's public wrapper (`Unsupported caller scope`). The Access Analyzer's evaluation is one. | Look for how the platform's own UI calls it (often a UX data broker) and call that from the browser with the user's session, so the platform's own ACL still decides. |
+| P-10 | ServiceNow has 12 record operations, not 4, and "no rule" behaves differently per operation (query_match and report_on allow; list_edit, add_to_list, save_as_template and personalize_choices block). | Confirm platform behaviour with a live evaluation, not documentation summaries. |
+| P-11 | Most security attributes are compound role checks (`Role=<sys_id>^ORRole=…`) with an empty template script. | Resolve them from the subject's roles; keep anything scripted or non-role as Conditional. |
+
 ## 4. AI assistant and providers
 
 | # | Lesson | Do next time |
@@ -108,6 +113,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | T-03 | Credential-printing commands are blocked by the agent's safety rules. | Read the SDK source for formats instead of printing tokens; never handle passwords directly. |
 | T-04 | The preview tool reads `launch.json` from the session's original folder. | If the session moved folders, add a matching `launch.json` there using `npm --prefix <project>`. |
 | T-05 | Stale browser element references clicked the wrong thing. | Re-query (`find`) after navigation or re-render; take a fresh screenshot before coordinate clicks. |
+| T-06 | A bash heredoc that starts with `cat > file` and no input waits for stdin until the timeout. | Write helper scripts with the Write tool, then run them. |
 
 ## 8. Testing and verification
 

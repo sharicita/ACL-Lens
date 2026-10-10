@@ -1,4 +1,5 @@
 import { AclIndex } from './acl-index.ts'
+import { AttributeInfo, evalAttribute } from './attributes.ts'
 import { AclInfo, AclOutcome, AclResult, Cell, Op, Reason, Status, Subject } from './types.ts'
 
 /** Security attributes whose outcome is known without a session/record. */
@@ -29,11 +30,18 @@ export class Evaluator {
     constructor(
         private index: AclIndex,
         private subject: Subject,
-        private elevated: { [r: string]: boolean }
+        private elevated: { [r: string]: boolean },
+        /** resolved security attributes by name; unresolved ones stay Conditional */
+        private attrs: { [name: string]: AttributeInfo } = {}
     ) {
         for (const r of subject.roles) this.roleSet[r] = true
         // implicit roles every session holds, never stored in sys_user_has_role
         for (const r of IMPLICIT_ROLES) this.roleSet[r] = true
+    }
+
+    /** the subject's roles, including implicit ones */
+    roles(): { [r: string]: boolean } {
+        return this.roleSet
     }
 
     evalAcl(acl: AclInfo): { r: AclResult; c: Reason } {
@@ -58,7 +66,11 @@ export class Evaluator {
         if (attr) {
             if (ATTR_ALWAYS_FAIL[attr]) return { r: 'F', c: 'attrfail' }
             if (ATTR_ADMIN[attr] && !s.isAdmin) return { r: 'F', c: 'attrfail' }
-            if (!ATTR_ALWAYS_PASS[attr] && !ATTR_ADMIN[attr]) return { r: 'C', c: 'attr' }
+            if (!ATTR_ALWAYS_PASS[attr] && !ATTR_ADMIN[attr]) {
+                const met = evalAttribute(this.attrs[attr], this.roleSet)
+                if (met === 'F') return { r: 'F', c: 'attrfail' }
+                if (met === 'C') return { r: 'C', c: 'attr' }
+            }
         }
         if (acl.hasScript) return { r: 'C', c: 'script' }
         if (acl.condition) return { r: 'C', c: 'cond' }

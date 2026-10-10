@@ -631,6 +631,10 @@ code {
     background: var(--lx-diff-soft);
     color: var(--lx-diff);
 }
+.lens-kind--group {
+    background: var(--lx-g-bg);
+    color: var(--lx-g-fg);
+}
 .lens-filter {
     display: flex;
     flex-direction: column;
@@ -2998,4 +3002,194 @@ tr.lens-group > th {
 }
 .lens-tab--assistant {
     color: var(--lx-text);
+}
+
+/* extra operations and security data filters */
+.lens-opsel__op--sep {
+    margin-left: 0.5rem;
+}
+.lens-dfmark {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.35rem;
+    color: var(--lx-faint);
+    vertical-align: middle;
+    border-radius: 4px;
+}
+.lens-dfmark--on {
+    color: var(--lx-c-fg);
+}
+.lens-dfmark:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--lx-focus);
+}
+
+.lens-detail-more {
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--lx-border);
+    padding-top: 0.5rem;
+}
+.lens-detail-more > summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--lx-muted);
+    padding: 0.25rem 0;
+}
+.lens-dflist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.lens-dflist > li {
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius-sm);
+    padding: 0.7rem 0.85rem;
+    background: var(--lx-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.lens-dflist__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+.lens-dflist__subjects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+}
+.lens-dfres {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    margin-left: 0.3rem;
+}
+.lens-dfres--A {
+    background: var(--lx-c-bg);
+    color: var(--lx-c-fg);
+}
+.lens-dfres--N {
+    background: var(--lx-g-bg);
+    color: var(--lx-g-fg);
+}
+.lens-dfres--C {
+    background: var(--lx-bg);
+    color: var(--lx-muted);
+    border: 1px dashed var(--lx-border-strong);
+}
+
+/* live check */
+.lens-live {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-space);
+}
+.lens-live__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+.lens-live__form .lens-field {
+    min-width: 180px;
+}
+.lens-live__result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.lens-live__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+}
+.lens-live__meta .lens-btn {
+    margin-left: auto;
+}
+.lens-live__table th[scope='row'] {
+    white-space: nowrap;
+    text-align: left;
+    font-weight: 600;
+}
+.lens-live__table td,
+.lens-live__table th {
+    text-align: left;
+}
+.lens-live__st {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.08rem 0.45rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.lens-live__st--passed,
+.lens-live__st--not_applied {
+    background: var(--lx-g-bg);
+    color: var(--lx-g-fg);
+}
+.lens-live__st--blocked {
+    background: var(--lx-d-bg, #fde8e8);
+    color: var(--lx-d-fg, #b42318);
+}
+.lens-live__st--applied {
+    background: var(--lx-c-bg);
+    color: var(--lx-c-fg);
+}
+.lens-live__st--skipped,
+.lens-live__st--undefined,
+.lens-live__st--none {
+    color: var(--lx-muted);
+    font-weight: 600;
+}
+.lens-live__insight td {
+    font-size: 0.82rem;
+    color: var(--lx-c-fg);
+    padding-top: 0;
+}
+.lens-live__detail > td {
+    background: var(--lx-bg);
+    padding: 0.6rem 0.8rem;
+}
+.lens-live__acls {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.lens-live__acls th,
+.lens-live__acls td {
+    text-align: left;
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--lx-border);
+    vertical-align: top;
+}
+.lens-live__roles {
+    font-size: 0.78rem;
+}
+.lens-live__steps {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.82rem;
+}
+.lens-live__legend {
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.lens-live__pred,
+.lens-live__time {
+    white-space: nowrap;
 }

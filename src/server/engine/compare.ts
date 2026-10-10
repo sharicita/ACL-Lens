@@ -1,4 +1,4 @@
-import { AnalysisResult, FIELD_OPS, Status, TABLE_OPS } from './types.ts'
+import { ALL_TABLE_OPS, AnalysisResult, FIELD_OPS, Status, TABLE_OPS } from './types.ts'
 
 export interface DiffRow {
     kind: 'table' | 'field'
@@ -80,9 +80,11 @@ export function compare(result: AnalysisResult): Comparison {
     for (let ti = 0; ti < tableCount; ti++) {
         const base = subs[0].tables[ti]
         let tableDiffers = false
-        for (const op of TABLE_OPS) {
+        // every evaluated operation counts as a difference; the "who has more" tallies use the core four
+        for (const op of ALL_TABLE_OPS) {
+            if (!subs.every((s) => s.tables[ti].ops[op])) continue
             const statuses = subs.map((s) => s.tables[ti].ops[op].s)
-            tally(statuses)
+            if (TABLE_OPS.indexOf(op) >= 0) tally(statuses)
             if (!allSame(statuses)) {
                 tableDiffers = true
                 tableCellsDifferent++
@@ -168,7 +170,8 @@ export function drift(original: AnalysisResult, rerun: AnalysisResult, cap = 200
         for (const t of now.tables) {
             const p = prev[t.t]
             if (!p) continue
-            for (const op of TABLE_OPS) {
+            for (const op of ALL_TABLE_OPS) {
+                if (!p.ops[op] || !t.ops[op]) continue
                 if (p.ops[op].s !== t.ops[op].s) {
                     total++
                     if (rows.length < cap) rows.push({ subject: now.subject.label, kind: 'table', t: t.t, f: '', op, from: p.ops[op].s, to: t.ops[op].s })

@@ -12,10 +12,19 @@ export function exportMatrixCsv(results: AnalysisResult, fileBase: string, onlyT
     const rows: unknown[][] = [head]
     subs[0]?.tables.forEach((t, ti) => {
         if (onlyTables && !onlyTables.has(t.t)) return
-        for (const op of TABLE_OPS) {
+        for (const op of results.ops && results.ops.length ? results.ops : TABLE_OPS) {
+            if (!subs.every((s) => s.tables[ti].ops[op])) continue
             const st = subs.map((s) => s.tables[ti].ops[op].s)
-            rows.push(['table', t.t, t.l, '', op].concat(st.map((x) => statusText(x, dd))).concat([new Set(st).size > 1 ? 'yes' : '']))
+            rows.push(['table', t.t, t.l, '', op].concat(st.map((x) => statusText(x, dd, op))).concat([new Set(st).size > 1 ? 'yes' : '']))
         }
+        // security data filters: one row per filter, the result for each subject
+        ;(t.sdf || []).forEach((o, n) => {
+            const f = (results.dataFilters || [])[o.i]
+            if (!f) return
+            const st = subs.map((s) => (s.tables[ti].sdf || [])[n]?.r || 'C')
+            const text = (r: string) => (r === 'A' ? 'Filter applied' : r === 'N' ? 'Filter not applied' : 'Depends on security attribute')
+            rows.push(['data filter', t.t, t.l, '', `${f.mode} ${f.securityAttribute || '(always)'}${f.table !== t.t ? ` (from ${f.table})` : ''}`].concat(st.map(text)).concat([new Set(st).size > 1 ? 'yes' : '']))
+        })
         t.fields.forEach((f, fi) => {
             for (const op of FIELD_OPS) {
                 const st = subs.map((s) => s.tables[ti].fields[fi]?.ops[op].s || 'N')
@@ -30,7 +39,7 @@ export function exportComparisonCsv(cmp: Comparison, fileBase: string) {
     const head = ['Level', 'Table', 'Table label', 'Field', 'Operation'].concat(cmp.subjects.map((s) => `${s.label} (${s.type})`))
     const rows: unknown[][] = [head]
     for (const d of cmp.diffs) {
-        rows.push([d.kind === 'table' ? 'Table' : 'Field', d.t, d.l, d.kind === 'table' ? '' : d.f === '*' ? '* (all other fields)' : d.f, d.op].concat(d.statuses.map((s) => statusText(s, cmp.defaultDeny))))
+        rows.push([d.kind === 'table' ? 'Table' : 'Field', d.t, d.l, d.kind === 'table' ? '' : d.f === '*' ? '* (all other fields)' : d.f, d.op].concat(d.statuses.map((s) => statusText(s, cmp.defaultDeny, d.op))))
     }
     rows.push([])
     rows.push(['Roles'].concat(cmp.subjects.map((s) => s.label)))
@@ -42,7 +51,7 @@ export function exportComparisonCsv(cmp: Comparison, fileBase: string) {
 export function exportFilteredDiffsCsv(cmp: Comparison, diffs: Comparison['diffs'], fileBase: string, filterText: string) {
     const rows: unknown[][] = [[`Filtered: ${filterText} (${diffs.length} of ${cmp.diffs.length} differences)`], []]
     rows.push(['Level', 'Table', 'Table label', 'Field', 'Operation'].concat(cmp.subjects.map((s) => `${s.label} (${s.type})`)))
-    for (const d of diffs) rows.push([d.kind === 'table' ? 'Table' : 'Field', d.t, d.l, d.kind === 'table' ? '' : d.f === '*' ? '* (all other fields)' : d.f, d.op].concat(d.statuses.map((s) => statusText(s, cmp.defaultDeny))))
+    for (const d of diffs) rows.push([d.kind === 'table' ? 'Table' : 'Field', d.t, d.l, d.kind === 'table' ? '' : d.f === '*' ? '* (all other fields)' : d.f, d.op].concat(d.statuses.map((s) => statusText(s, cmp.defaultDeny, d.op))))
     download(`${safeName(fileBase)}-differences-filtered.csv`, toCsv(rows), 'text/csv;charset=utf-8')
 }
 

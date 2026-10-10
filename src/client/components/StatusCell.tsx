@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function StatusCell({ s, op, defaultDeny, differs, subjectLabel, clickable }: Props) {
-    const text = statusText(s, defaultDeny)
+    const text = statusText(s, defaultDeny, op.split(' ').pop())
     const hint = s === 'C' ? (clickable ? ' – click to see the condition' : ' – open the table to see the condition') : ''
     const title = `${subjectLabel ? subjectLabel + ' – ' : ''}${op}: ${text}${hint}${differs ? ' (differs from the baseline subject)' : ''}`
     return (
@@ -59,7 +59,9 @@ export function Legend({ defaultDeny, baseline = true }: { defaultDeny: boolean;
                 </HelpTip>
             </li>
             )}
-            <li className="lens-muted">Columns: C = create, R = read, W = write, D = delete</li>
+            <li className="lens-muted" data-tip="LE list_edit · QM query_match · QR query_range · AL add_to_list · ST save_as_template · RO report_on · PC personalize_choices · RV report_view">
+                Columns: C = create, R = read, W = write, D = delete (more operations in the matrix)
+            </li>
             <li>
                 <HelpTip label="What do the results mean?">
                     <span>

@@ -2,9 +2,10 @@
 
 **Analyze and compare detailed access permissions across users, roles, tables, records, and fields.**
 
-ACL Lens is a ServiceNow scoped application (Fluent / ServiceNow SDK). It shows what a user or role can create, read, write and delete, table by table and field by field, and which ACLs decided each result. You can:
+ACL Lens is a ServiceNow scoped application (Fluent / ServiceNow SDK). It shows what a user, role or group can do on each table and field (create, read, write, delete and the other table operations such as list edit, query and reporting), which ACLs and security data filters decided each result, and it can confirm any result live with the platform's own access evaluation. You can:
 
-- **Compare** up to 8 users and roles side by side, including their roles: shared, direct, group and inherited.
+- **Compare** up to 8 users, roles and groups side by side, including their roles: shared, direct, group and inherited.
+- **Check live** (admins): the same evaluation as the platform's Access Analyzer (overall access, security data filters, ACLs, access handlers, data filtration, execution time), next to ACL Lens's prediction.
 - **Explain** conditional results by showing the condition or script behind them.
 - **Export** a server-side comparison report (CSV, JSON, PDF).
 - **Keep a history** of runs you can reopen and rerun. A rerun saves a new run that references the original and shows what changed.

@@ -3,7 +3,7 @@ import { Subject, SubjectResult } from '../types'
 import { AccountIcon } from './AccountBadge'
 
 /** Account-type groups used by the filter: users by identity type, plus roles. */
-export type SubjectKind = 'human' | 'machine' | 'ai_agent' | 'unclassified' | 'unknown' | 'role'
+export type SubjectKind = 'human' | 'machine' | 'ai_agent' | 'unclassified' | 'unknown' | 'role' | 'group'
 
 const KIND_LABEL: { [k in SubjectKind]: string } = {
     human: 'Human',
@@ -12,12 +12,14 @@ const KIND_LABEL: { [k in SubjectKind]: string } = {
     unclassified: 'Unclassified',
     unknown: 'Not recorded',
     role: 'Role',
+    group: 'Group',
 }
-const KIND_ORDER: SubjectKind[] = ['human', 'machine', 'ai_agent', 'unclassified', 'unknown', 'role']
+const KIND_ORDER: SubjectKind[] = ['human', 'machine', 'ai_agent', 'unclassified', 'unknown', 'role', 'group']
 
 export function kindOf(s: Subject | undefined): SubjectKind {
     if (!s) return 'unknown'
     if (s.type === 'role') return 'role'
+    if (s.type === 'group') return 'group'
     // runs saved before account types were recorded have none
     return (s.account && (s.account.identity || 'unclassified')) || 'unknown'
 }

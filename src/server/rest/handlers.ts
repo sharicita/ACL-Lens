@@ -51,7 +51,7 @@ function parseSubjects(value: string): SubjectRef[] {
         .filter((p) => !!p)
         .map((p) => {
             const [type, id] = p.split(':')
-            return { type: type === 'role' ? 'role' : 'user', id } as SubjectRef
+            return { type: type === 'role' || type === 'group' ? type : 'user', id } as SubjectRef
         })
 }
 
@@ -143,6 +143,8 @@ export function getMe(request: any, response: any) {
     handle(request, response, () => ({
         user: gs.getUserName(),
         is_admin: gs.hasRole(ADMIN_ROLE),
+        // the platform's live access evaluation (Access Analyzer) runs for these roles only; the platform enforces it
+        can_live_check: gs.hasRole('admin') || gs.hasRole('user_admin') || gs.hasRole('access_analyzer_admin'),
         history_enabled: historyEnabled(),
         instance_theme: instanceTheme(),
         theme: userTheme(),

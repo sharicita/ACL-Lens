@@ -503,3 +503,27 @@ The instance listed hundreds of npm packages being installed for the app. This w
 
 - The floating bottom-right launcher covered results (cards and table rows). It is removed.
 - An **Assistant** button now sits in the header after a divider, styled like the other header tabs. It toggles the slide-out and sets `aria-expanded`.
+
+## 1.22 Access Analyzer parity
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+The platform's Access Analyzer showed data points ACL Lens didn't have. ACL Lens now pulls at least the same ones.
+
+- **12 table operations.** The engine also evaluates list_edit, query_match, query_range, add_to_list, save_as_template, report_on, personalize_choices and report_view (about 2,600 active rules on the original PDI were previously ignored).
+  - Matrix operation toggles, a *CRUD* / *All* switch, tooltips that explain each operation.
+  - Differences, drift and CSV exports include them; summary counts stay on the core four.
+  - "No rule" per operation follows what the platform does, confirmed with live checks.
+- **Security data filters** (`sys_security_data_filter`): loaded per table chain and evaluated per subject (Applied / Not applied / Depends). There's a filter marker in the matrix, a *Data filters* tab in table details, and export rows.
+- **Security attributes resolved.** Compound role conditions are evaluated from the subject's roles, so ACLs using them are Granted or Denied instead of Conditional. A missing role is never held.
+- **Groups as subjects.** A group's roles plus the roles those contain. Search, cards, record link, the account-type filter and the assistant tool all support it.
+- **Check live** in table details: the platform's live evaluation, through the Access Analyzer's "Get access debug logs" data broker, called from the browser.
+  - It shows overall access, security data filter, ACL, access handler, data filtration, script, admin override, execution time and the ACL Lens prediction. Each operation expands to every ACL's role, condition, script and attribute results, access handlers and query business rules. It flags records hidden by a query business rule, and exports to CSV.
+  - The server can't call that evaluation itself: the platform refuses other scopes (`Unsupported caller scope`), even through the analyzer's public wrapper.
+- **Verified on the original PDI:**
+  - Run ALR0001025 (Service Desk group, itil, admin) shows the operations, the filters (`sc_catalog` filtered even for admin, who lacks maint) and the group.
+  - A live check of the group on `incident` matched ACL Lens on all 12 operations.
+  - With a record, the `incident query` business rule hid it and the notice explained why.
+

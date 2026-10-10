@@ -49,7 +49,7 @@ function Shell() {
     const cache = useRef<{ [id: string]: RunPayload }>({})
     // e.g. "External User Not Authorized" when the Explicit Roles plugin is active and the user lacks snc_internal
     const [accessProblem, setAccessProblem] = useState('')
-    const [me, setMe] = useState<{ is_admin: boolean; history_enabled: boolean; instance_theme?: boolean }>({ is_admin: false, history_enabled: true })
+    const [me, setMe] = useState<{ is_admin: boolean; can_live_check?: boolean; history_enabled: boolean; instance_theme?: boolean }>({ is_admin: false, history_enabled: true })
 
     useEffect(() => {
         LensApi.me()
@@ -149,6 +149,7 @@ function Shell() {
                         onOpenRun={(id) => navigate('run', id)}
                         onEdit={editInWorkspace}
                         isAdmin={me.is_admin}
+                        canLiveCheck={!!me.can_live_check}
                         onDeleted={() => {
                             // forget the deleted run so Back can't show it from memory
                             delete cache.current[view.id as string]

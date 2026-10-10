@@ -6,6 +6,7 @@ const enc = encodeURIComponent
 export const recordUrl = {
     user: (sysId: string) => `/sys_user.do?sys_id=${enc(sysId)}`,
     role: (sysId: string) => `/sys_user_role.do?sys_id=${enc(sysId)}`,
+    group: (sysId: string) => `/sys_user_group.do?sys_id=${enc(sysId)}`,
     roleByName: (name: string) => `/sys_user_role.do?sysparm_query=${enc(`name=${name}`)}`,
     groupByName: (name: string) => `/sys_user_group.do?sysparm_query=${enc(`name=${name}`)}`,
     table: (name: string) => `/sys_db_object.do?sysparm_query=${enc(`name=${name}`)}`,

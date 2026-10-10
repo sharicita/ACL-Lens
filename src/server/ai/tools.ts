@@ -49,10 +49,17 @@ function tableReadable(table: string): boolean {
     return secure(table).canRead()
 }
 
-/** Resolve a user or role by sys_id, user_name/name or display name - only if the user can read it. */
+/** Resolve a user, role or group by sys_id, user_name/name or display name - only if the user can read it. */
 function resolveSubjectRef(type: string, value: string): { ref: SubjectRef; label: string } | null {
     const v = queryText(value)
     if (!v) return null
+    if (type === 'group') {
+        const g = secure('sys_user_group')
+        g.addEncodedQuery(`sys_id=${v}^ORname=${v}`)
+        g.setLimit(1)
+        g.query()
+        return g.next() ? { ref: { type: 'group', id: g.getUniqueValue() }, label: g.getValue('name') } : null
+    }
     if (type === 'role') {
         const r = secure('sys_user_role')
         r.addEncodedQuery(`sys_id=${v}^ORname=${v}`)
@@ -287,12 +294,12 @@ export const TOOLS: ToolDef[] = [
     },
     {
         name: 'evaluate_access',
-        description: 'ACL Lens static evaluation of a user or role on a table (CRUD) and optionally one field. Returns outcomes and reasons. ACL names, matched levels and required roles are included only if the signed-in user can read ACL definitions. The subject must be visible to the signed-in user.',
+        description: 'ACL Lens static evaluation of a user, role or group on a table (create/read/write/delete plus list_edit, query_match, query_range, add_to_list, save_as_template, report_on, personalize_choices, report_view, and security data filters) and optionally one field. Returns outcomes and reasons. ACL names, matched levels and required roles are included only if the signed-in user can read ACL definitions. The subject must be visible to the signed-in user.',
         inputSchema: {
             type: 'object',
             properties: {
-                subject_type: { type: 'string', enum: ['user', 'role'] },
-                subject: { type: 'string', description: 'sys_id, user_name or role name' },
+                subject_type: { type: 'string', enum: ['user', 'role', 'group'] },
+                subject: { type: 'string', description: 'sys_id, user_name, role name or group name' },
                 table: { type: 'string' },
                 field: { type: 'string' },
             },
@@ -311,6 +318,12 @@ export const TOOLS: ToolDef[] = [
             const ops: any = {}
             for (const op in d.tableCells[key]) ops[op] = explain(d.tableCells[key][op])
             const out: any = { subject: s.label, table: a.table, default_deny: d.defaultDeny, record_access: ops }
+            const sdf = d.dataFilters[0].sdf
+            if (sdf.length && tableReadable('sys_security_data_filter'))
+                out.security_data_filters = sdf.map((o: any) => {
+                    const f = d.filters[o.i]
+                    return { table: f.table, mode: f.mode, security_attribute: f.securityAttribute, filter: f.filter, description: f.description, result: o.r === 'A' ? 'applied' : o.r === 'N' ? 'not_applied' : 'depends' }
+                })
             if (tableReadable('sys_db_object')) out.hierarchy = d.chain
             if (!detail) out.note = HIDDEN_NOTE
             if (a.field) {

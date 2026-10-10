@@ -4,9 +4,11 @@ import DocLink from './DocLink'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import { LensApi } from '../services/LensApi'
-import { AnalysisResult, FIELD_OPS, FieldDetail, TABLE_OPS } from '../types'
+import { AnalysisResult, EXTRA_OPS, FIELD_OPS, FieldDetail, TABLE_OPS } from '../types'
+import DataFilterList from './DataFilterList'
+import LiveCheck from './LiveCheck'
 import { download, safeName, toCsv } from '../utils/download'
-import { OP_SHORT, rank, statusText } from '../utils/status'
+import { OP_HELP, OP_SHORT, rank, statusText } from '../utils/status'
 import AclList from './AclList'
 import { StatusCell } from './StatusCell'
 import Tip from './Tip'
@@ -19,16 +21,17 @@ import { useSubjectVisible } from './SubjectName'
 interface Props {
     results: AnalysisResult
     index: number
+    canLiveCheck?: boolean
     onClose: () => void
 }
 
-export default function TableDetail({ results, index, onClose }: Props) {
+export default function TableDetail({ results, index, canLiveCheck, onClose }: Props) {
     const subs = results.subjects
     const subjectVisible = useSubjectVisible()
     const shownSubs = subs.filter((s) => subjectVisible(s.subject.key))
     const table = subs[0].tables[index]
     const dd = results.defaultDeny
-    const [tab, setTab] = useState<'table' | 'fields'>('table')
+    const [tab, setTab] = useState<'table' | 'fields' | 'filters' | 'live'>('table')
     const [live, setLive] = useState<FieldDetail | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -156,10 +159,25 @@ export default function TableDetail({ results, index, onClose }: Props) {
                 </header>
                 <div className="lens-segment lens-drawer__tabs" role="tablist">
                     <button type="button" role="tab" aria-selected={tab === 'table'} className={`lens-segment__item${tab === 'table' ? ' lens-segment__item--on' : ''}`} onClick={() => setTab('table')}>
-                        Record (CRUD) rules
+                        Record rules
                     </button>
                     <button type="button" role="tab" aria-selected={tab === 'fields'} className={`lens-segment__item${tab === 'fields' ? ' lens-segment__item--on' : ''}`} onClick={() => setTab('fields')}>
                         Field rules
+                    </button>
+                    {!!table.sdf && table.sdf.length > 0 && (
+                        <button type="button" role="tab" aria-selected={tab === 'filters'} className={`lens-segment__item${tab === 'filters' ? ' lens-segment__item--on' : ''}`} onClick={() => setTab('filters')}>
+                            Data filters ({table.sdf.length})
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === 'live'}
+                        className={`lens-segment__item${tab === 'live' ? ' lens-segment__item--on' : ''}`}
+                        onClick={() => setTab('live')}
+                        data-tip="Ask the platform to evaluate access right now, as its Access Analyzer does, and compare with ACL Lens's prediction."
+                    >
+                        Check live
                     </button>
                 </div>
                 <div className="lens-drawer__body">
@@ -181,11 +199,26 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                             <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} />
                                         </div>
                                     ))}
+                                    {EXTRA_OPS.some((op) => s.tables[index].ops[op]) && (
+                                        <details className="lens-detail-more">
+                                            <summary>Other operations (list edit, query, reports…)</summary>
+                                            {EXTRA_OPS.filter((op) => s.tables[index].ops[op]).map((op) => (
+                                                <div key={op} className="lens-detail-op">
+                                                    <h4 data-tip={OP_HELP[op]}>
+                                                        {op} <span className="lens-muted">· {OP_HELP[op]}</span>
+                                                    </h4>
+                                                    <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} />
+                                                </div>
+                                            ))}
+                                        </details>
+                                    )}
                                 </section>
                             ))}
                         </div>
                         </>
                     )}
+                    {tab === 'live' && <LiveCheck results={results} index={index} canRun={!!canLiveCheck} />}
+                    {tab === 'filters' && <DataFilterList results={results} index={index} subjects={shownSubs} />}
                     {tab === 'fields' && (
                         <>
                             <p className="lens-muted">

@@ -22,12 +22,13 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
             <div className="lens-card__header">
                 <h2 id="pick-title">
                     <Icon name="users" />
-                    1. Users and roles
+                    1. Users, roles and groups
                 </h2>
                 <HelpTip label="Users or roles?">
                     <span>
                         A <strong>user</strong> is analyzed with every role they hold: assigned directly, through their groups, and roles contained in those roles.
                         A <strong>role</strong> is analyzed with the role itself plus every role it contains, which is what anyone given that role would get.
+                        A <strong>group</strong> is analyzed with the roles it gives its members, which is what a new member would get from the group alone.
                     </span>
                 </HelpTip>
                 <span className="lens-muted lens-card__aside">
@@ -37,7 +38,7 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
             <div className="lens-card__body">
                 <div className="lens-picker">
                     <div className="lens-segment" role="radiogroup" aria-label="Search for">
-                        {(['user', 'role'] as SubjectType[]).map((t) => (
+                        {(['user', 'role', 'group'] as SubjectType[]).map((t) => (
                             <button
                                 key={t}
                                 type="button"
@@ -45,17 +46,17 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
                                 aria-checked={type === t}
                                 className={`lens-segment__item${type === t ? ' lens-segment__item--on' : ''}`}
                                 onClick={() => setType(t)}
-                                data-tip={t === 'user' ? 'Analyze a person: all roles they hold directly, through groups and inherited.' : 'Analyze a role: the role and every role it contains.'}
+                                data-tip={t === 'user' ? 'Analyze a person: all roles they hold directly, through groups and inherited.' : t === 'role' ? 'Analyze a role: the role and every role it contains.' : 'Analyze a group: the roles it gives its members, plus the roles those contain.'}
                             >
-                                {t === 'user' ? 'User' : 'Role'}
+                                {t === 'user' ? 'User' : t === 'role' ? 'Role' : 'Group'}
                             </button>
                         ))}
                     </div>
                     <SearchCombo
                         key={type}
-                        label={type === 'user' ? 'Search users' : 'Search roles'}
+                        label={type === 'user' ? 'Search users' : type === 'role' ? 'Search roles' : 'Search groups'}
                         hideLabel
-                        placeholder={full ? 'Maximum reached' : type === 'user' ? 'Start typing a user ID, name or email…' : 'Start typing a role name…'}
+                        placeholder={full ? 'Maximum reached' : type === 'user' ? 'Start typing a user ID, name or email…' : type === 'role' ? 'Start typing a role name…' : 'Start typing a group name…'}
                         disabled={full}
                         clearOnPick
                         search={async (q) =>
@@ -70,7 +71,7 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
                         onPick={(o) => onAdd({ id: o.key, type, label: o.primary, sub: o.secondary || '' })}
                     />
                 </div>
-                <ul className="lens-chips" aria-label="Selected users and roles">
+                <ul className="lens-chips" aria-label="Selected users, roles and groups">
                     {selected.map((s) => (
                         <li key={`${s.type}:${s.id}`} className="lens-chip">
                             <span className={`lens-kind lens-kind--${s.type}`}>{s.type}</span>

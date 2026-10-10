@@ -12,6 +12,7 @@ Module._resolveFilename = function (req, ...rest) {
 }
 const { Evaluator } = require(path.join(BUILD, 'engine', 'evaluator.js'))
 const { compare, drift } = require(path.join(BUILD, 'engine', 'compare.js'))
+const { parseCondition, evalAttribute, evalDataFilter, scriptIsEmpty } = require(path.join(BUILD, 'engine', 'attributes.js'))
 
 function acl(name, op, extra = {}) {
     return Object.assign({ id: name + op, name, op, decision: 'allow', roles: [], adminOverrides: false, condition: '', hasScript: false, securityAttribute: '', appliesTo: '', description: '', scope: 'global' }, extra)
@@ -100,4 +101,57 @@ assert.equal(c.summary.fieldCellsDifferent, 1, 'only priority write differs')
 assert.equal(c.pairs[0].aMore + c.pairs[0].bMore + c.pairs[0].same, 4)
 const d = drift(result([itil]), result([itil]))
 assert.equal(d.total, 0)
+
+// security attributes: compound role conditions resolve exactly
+const ROLE_IDS = { a1: 'maint', b2: 'udc_admin', c3: 'itil' }
+const attr = (name, cond, script = '') => {
+    const groups = parseCondition(cond, ROLE_IDS)
+    const known = groups.length > 0 && groups.every((g) => g.every((t) => t.kind !== 'unknown') || g.some((t) => t.kind === 'loggedin' && !t.negate))
+    return { name, groups, resolvable: known && scriptIsEmpty(script) }
+}
+const HasMaint = attr('HasMaint', 'Role=a1')
+const HasEither = attr('HasEither', 'Role=a1^ORRole=c3')
+const Both = attr('Both', 'Role=a1^Role=c3')
+const Authn = attr('Authn', 'LoggedIn=true^ORAllowUnauthRolelessAcl=true')
+const Odd = attr('Odd', 'department=x')
+assert.ok(scriptIsEmpty("/** \n * Using 'current' in the script is not allowed. \n*/"))
+assert.ok(!scriptIsEmpty('/* x */ answer = true'))
+assert.equal(evalAttribute(HasMaint, { maint: true }), 'P')
+assert.equal(evalAttribute(HasMaint, { admin: true }), 'F', 'attributes check roles literally')
+assert.equal(evalAttribute(HasEither, { itil: true }), 'P')
+assert.equal(evalAttribute(Both, { itil: true }), 'F')
+assert.equal(evalAttribute(Both, { itil: true, maint: true }), 'P')
+assert.equal(evalAttribute(Authn, {}), 'P')
+assert.equal(evalAttribute(Odd, { itil: true }), 'C')
+assert.equal(evalAttribute(attr('Gone', 'Role=zz^ORRole=a1'), { maint: true }), 'P')
+assert.equal(evalAttribute(attr('Gone', 'Role=zz'), { itil: true }), 'F', 'a missing role is never held')
+assert.equal(evalAttribute(undefined, {}), 'C')
+assert.equal(evalAttribute(attr('Scripted', 'Role=a1', 'answer = gs.hasRole("x")'), { maint: true }), 'C')
+
+// ACLs that use a resolvable attribute are no longer Conditional
+const idx2 = index([acl('cat', 'read', { securityAttribute: 'HasMaint' }), acl('cat', 'report_on', { roles: ['itil'] })])
+const maintEv = new Evaluator(idx2, subj(['maint']), {}, { HasMaint })
+const itilEv = new Evaluator(idx2, subj(['itil']), {}, { HasMaint })
+assert.equal(maintEv.evalLevels(['cat'], 'read').s, 'G')
+assert.equal(itilEv.evalLevels(['cat'], 'read').s, 'D')
+// extra operations evaluate like the core ones
+assert.equal(itilEv.evalLevels(['cat', '*'], 'report_on').s, 'G')
+assert.equal(maintEv.evalLevels(['cat', '*'], 'report_on').s, 'D')
+assert.equal(itilEv.evalLevels(['cat', '*'], 'query_match').s, 'N')
+
+// security data filters: "unless" applies when the attribute is not met; "if" when it is
+const attrs = { HasMaint }
+const unless = { id: '1', table: 'sc_catalog', mode: 'unless', filter: 'sys_id!=x', securityAttribute: 'HasMaint', description: '' }
+const iff = Object.assign({}, unless, { mode: 'if' })
+assert.equal(evalDataFilter(unless, attrs, { itil: true }), 'A')
+assert.equal(evalDataFilter(unless, attrs, { maint: true }), 'N')
+assert.equal(evalDataFilter(iff, attrs, { maint: true }), 'A')
+assert.equal(evalDataFilter(iff, attrs, { itil: true }), 'N')
+assert.equal(evalDataFilter(Object.assign({}, unless, { securityAttribute: '' }), attrs, {}), 'A')
+assert.equal(evalDataFilter(Object.assign({}, unless, { securityAttribute: 'Unknown' }), attrs, {}), 'C')
+
+// comparison counts differences in the extra operations; runs without them still compare
+const withExtra = (ev) => ({ subject: ev.subject, counts: { create: { G: 0, C: 0, D: 0, N: 0 }, read: { G: 0, C: 0, D: 0, N: 0 }, write: { G: 0, C: 0, D: 0, N: 0 }, delete: { G: 0, C: 0, D: 0, N: 0 } }, tables: [{ t: 'cat', l: 'Cat', ops: Object.fromEntries(['create', 'read', 'write', 'delete', 'report_on'].map((op) => [op, ev.evalLevels(['cat', '*'], op)])), fields: [] }] })
+const c2 = compare({ defaultDeny: true, subjects: [withExtra(maintEv), withExtra(itilEv)] })
+assert.deepEqual(c2.diffs.map((x) => x.op).sort(), ['read', 'report_on'])
 console.log('engine: all tests passed')

@@ -7,7 +7,7 @@ import path from 'node:path'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const out = path.join(root, '.test-build')
-const sources = ['engine/evaluator.ts', 'engine/compare.ts', 'engine/types.ts', 'ai/agent.ts', 'ai/guidance.ts', 'ai/provider-safety.ts', 'ai/evaluation-view.ts'].map((f) =>
+const sources = ['engine/evaluator.ts', 'engine/attributes.ts', 'engine/compare.ts', 'engine/types.ts', 'ai/agent.ts', 'ai/guidance.ts', 'ai/provider-safety.ts', 'ai/evaluation-view.ts'].map((f) =>
     path.join(root, 'src', 'server', f)
 )
 const tsc = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc')

@@ -43,19 +43,19 @@ export default function AddSubjectCard({ existing, busy, onAdd }: Props) {
                 type="button"
                 className="lens-subject lens-subject--add"
                 onClick={() => setOpen(true)}
-                data-tip="Add another user or role to this comparison. The same tables are analyzed again and saved as a new run."
+                data-tip="Add another user, role or group to this comparison. The same tables are analyzed again and saved as a new run."
             >
                 <span className="lens-subject__plus" aria-hidden="true">
                     +
                 </span>
-                <span>Add user or role</span>
+                <span>Add user, role or group</span>
             </button>
         )
 
     return (
-        <div ref={panel} className="lens-subject lens-subject--add lens-subject--add-open" role="group" aria-label="Add a user or role">
+        <div ref={panel} className="lens-subject lens-subject--add lens-subject--add-open" role="group" aria-label="Add a user, role or group">
             <div className="lens-segment" role="radiogroup" aria-label="Add a">
-                {(['user', 'role'] as SubjectType[]).map((t) => (
+                {(['user', 'role', 'group'] as SubjectType[]).map((t) => (
                     <button
                         key={t}
                         type="button"
@@ -64,15 +64,15 @@ export default function AddSubjectCard({ existing, busy, onAdd }: Props) {
                         className={`lens-segment__item${type === t ? ' lens-segment__item--on' : ''}`}
                         onClick={() => setType(t)}
                     >
-                        {t === 'user' ? 'User' : 'Role'}
+                        {t === 'user' ? 'User' : t === 'role' ? 'Role' : 'Group'}
                     </button>
                 ))}
             </div>
             <SearchCombo
                 key={type}
-                label={type === 'user' ? 'Add a user' : 'Add a role'}
+                label={type === 'user' ? 'Add a user' : type === 'role' ? 'Add a role' : 'Add a group'}
                 hideLabel
-                placeholder={type === 'user' ? 'Type a user ID, name or email…' : 'Type a role name…'}
+                placeholder={type === 'user' ? 'Type a user ID, name or email…' : type === 'role' ? 'Type a role name…' : 'Type a group name…'}
                 search={async (q) =>
                     (await LensApi.searchSubjects(type, q)).map((o) => ({
                         key: o.id,
