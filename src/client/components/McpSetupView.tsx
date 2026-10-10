@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { LensApi, McpInfo } from '../services/LensApi'
 import ConfigNav from './ConfigNav'
 import HelpTip from './HelpTip'
+import FieldInfo from './FieldInfo'
 
 interface Props {
     onNavigate: (view: 'settings' | 'mcp') => void
@@ -111,17 +112,18 @@ export default function McpSetupView({ onNavigate }: Props) {
                     </HelpTip>
                 </div>
                 <div className="lens-card__body lens-settings__body">
+                    <div className="lens-switch-row">
                     <label className="lens-switch">
                         <input type="checkbox" checked={info.enabled} disabled={!!busy} onChange={(e) => toggle(e.target.checked)} />
                         <span>
-                            <strong>Allow MCP clients</strong>
-                            <span className="lens-muted">
-                                {info.enabled
-                                    ? 'On: MCP clients can call ACL Lens with a user who has the ACL Lens user role. Saved immediately.'
-                                    : 'Off (default): the endpoint refuses every request. Turn it on only if people will connect AI tools. Saved immediately.'}
-                            </span>
+                            <strong>Allow MCP clients</strong> <span className="lens-muted">{info.enabled ? 'On' : 'Off'}</span>
                         </span>
                     </label>
+                    <FieldInfo
+                        label="Allow MCP clients"
+                        text="Off (default): the endpoint refuses every request. On: MCP clients can call ACL Lens as a user with the ACL Lens user role. Saved immediately."
+                    />
+                    </div>
                     <ul className="lens-mcp__facts">
                         <li>
                             <strong>Read-only.</strong> No tool can change records, ACLs, roles or users.
@@ -143,12 +145,14 @@ export default function McpSetupView({ onNavigate }: Props) {
                 </div>
                 <div className="lens-card__body lens-settings__body">
                     <div className="lens-field">
-                        <span className="lens-field__label">Endpoint</span>
+                        <span className="lens-field__label lens-field__label--info">
+                            Endpoint
+                            <FieldInfo label="Endpoint" text={`${info.transport}. Protocol version ${info.protocol_version}.`} />
+                        </span>
                         <div className="lens-mcp__endpoint">
                             <code>{url}</code>
                             <Copy text={url} label="endpoint URL" />
                         </div>
-                        <span className="lens-muted">{info.transport}. Protocol version {info.protocol_version}.</span>
                     </div>
 
                     <ol className="lens-mcp__steps">

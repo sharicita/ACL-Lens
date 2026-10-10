@@ -5,6 +5,7 @@ import TablePicker from './TablePicker'
 import HelpTip from './HelpTip'
 import DocLink from './DocLink'
 import Tip from './Tip'
+import FieldInfo from './FieldInfo'
 
 interface Props {
     filter: AnalysisFilter
@@ -39,17 +40,19 @@ export default function FilterPanel({ filter, onChange }: Props) {
                 <DocLink doc="acl" label="ServiceNow docs: how Access Control Lists work" />
             </div>
             <div className="lens-card__body lens-filter">
-                <label className="lens-field">
-                    <span className="lens-field__label">Scope of analysis</span>
-                    <select className="lens-input" value={filter.mode} onChange={(e) => set({ mode: e.target.value as FilterMode })}>
+                <div className="lens-field">
+                    <span className="lens-field__label lens-field__label--info">
+                        <label htmlFor="filter-mode">Scope of analysis</label>
+                        <FieldInfo label={`Scope of analysis: ${mode.label}`} text={mode.help} />
+                    </span>
+                    <select id="filter-mode" className="lens-input" value={filter.mode} onChange={(e) => set({ mode: e.target.value as FilterMode })}>
                         {MODES.map((m) => (
-                            <option key={m.value} value={m.value}>
+                            <option key={m.value} value={m.value} title={m.help}>
                                 {m.label}
                             </option>
                         ))}
                     </select>
-                    <span className="lens-field__help">{mode.help}</span>
-                </label>
+                </div>
                 {(filter.mode === 'tables' || filter.mode === 'prefix') && (
                     <TablePicker key={filter.mode} mode={filter.mode} value={filter.value || ''} onChange={(value) => set({ value })} />
                 )}
@@ -71,10 +74,12 @@ export default function FilterPanel({ filter, onChange }: Props) {
                         <input type="checkbox" checked={filter.includeFields !== false} onChange={(e) => set({ includeFields: e.target.checked })} />
                         Include field-level rules
                     </label>
+                    <FieldInfo label="Include field-level rules" text="Also evaluate read and write rules on individual fields. Turn off for a faster, table-level overview." />
                     <label className="lens-check">
                         <input type="checkbox" checked={!!filter.excludeSystem} onChange={(e) => set({ excludeSystem: e.target.checked })} />
                         Exclude system tables (sys_*, v_*, ts_* …)
                     </label>
+                    <FieldInfo label="Exclude system tables" text="Skips platform tables such as sys_*, v_* and ts_* so results focus on business data." />
                     <label className="lens-check">
                         Max tables
                         <input
@@ -87,6 +92,7 @@ export default function FilterPanel({ filter, onChange }: Props) {
                             onChange={(e) => set({ maxTables: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                         />
                     </label>
+                    <FieldInfo label="Max tables" text="Stops after this many tables (default 1,500, up to 5,000) so very broad analyses stay fast." />
                 </div>
             </div>
         </section>

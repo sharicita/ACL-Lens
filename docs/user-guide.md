@@ -1,6 +1,6 @@
 # User Guide
 
-Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a tooltip.
+Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a tooltip. Field help works like ServiceNow field hints: hover or tab to the small **ⓘ** next to a field to read it; nothing is expanded on the page by default.
 
 - **Tips (💡)** suggest what to try next. **×** closes a tip for the rest of your ServiceNow session, in every tab (it can come back after you next sign in); **Don't show again** hides it for good in this browser.
 - **Sorting:** every list of results can be sorted. Select a column heading: text sorts A–Z first, numbers and access levels largest / most access first; select again to reverse.

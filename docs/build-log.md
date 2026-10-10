@@ -314,3 +314,20 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - `?view=mcp` shows only an admins-only notice;
   - no Settings tab.
 - As admin: the page loads with the real endpoint. Switching on worked, and the self-test returned 10 tools. With MCP on, the role-only user's MCP call returned 10 tools and `/me` still read `history_enabled`, so properties stay readable by server code. MCP was switched back off afterwards.
+
+---
+
+## 1.12 Field help as tooltips
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- New `FieldInfo` (ⓘ) shows field help on hover or keyboard focus, like ServiceNow field hints, instead of text under the field. It is the screen-reader description too.
+- Applied to:
+  - Scope of analysis (its help follows the chosen option), Include field-level rules, Exclude system tables and Max tables;
+  - Properties switches (save to History, instance theme, automatic cleanup);
+  - the MCP switch and endpoint;
+  - the Roles tab group hints.
+- Only state (On/Off) stays visible inline.
+- Verified in the preview: nothing is expanded by default; hover and Shift+Tab both show the text with `aria-describedby`.

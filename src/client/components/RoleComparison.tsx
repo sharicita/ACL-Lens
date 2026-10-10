@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { RoleSource, SubjectResult } from '../types'
 import { rankFilter } from '../utils/rank'
 import HelpTip from './HelpTip'
+import FieldInfo from './FieldInfo'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { useSort } from './SortTh'
 
@@ -139,7 +140,7 @@ export default function RoleComparison({ subjects }: Props) {
                                     </span>
                                     {g.title} <span className="lens-muted">({roles.length}{q ? ` of ${g.roles.length}` : ''})</span>
                                 </button>
-                                <span className="lens-muted lens-roles-cmp__hint">{g.hint}</span>
+                                <FieldInfo label={g.title} text={g.hint} />
                             </h3>
                             {open && (
                                 <div id={bodyId} className="lens-mx__scroll lens-mx__scroll--short">

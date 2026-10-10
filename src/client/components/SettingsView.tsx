@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { ClearRequest, LensApi, Settings } from '../services/LensApi'
 import Tip from './Tip'
 import ConfigNav from './ConfigNav'
+import FieldInfo from './FieldInfo'
 
 interface Props {
     onSaved: (s: Settings) => void
@@ -94,15 +95,15 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                     <h2 id="set-history">History</h2>
                 </div>
                 <div className="lens-card__body lens-settings__body">
+                    <div className="lens-switch-row">
                     <label className="lens-switch">
                         <input type="checkbox" checked={form.history_enabled} onChange={(e) => setForm({ ...form, history_enabled: e.target.checked })} />
                         <span>
                             <strong>Save runs to History</strong>
-                            <span className="lens-muted">
-                                When off, analyses and comparisons still work but are not stored. They can't be reopened, rerun or audited later.
-                            </span>
                         </span>
                     </label>
+                    <FieldInfo label="Save runs to History" text="When off, analyses and comparisons still work but are not stored. They can't be reopened, rerun or audited later." />
+                    </div>
                 </div>
             </section>
 
@@ -111,16 +112,18 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                     <h2 id="set-appearance">Appearance</h2>
                 </div>
                 <div className="lens-card__body lens-settings__body">
+                    <div className="lens-switch-row">
                     <label className="lens-switch">
                         <input type="checkbox" checked={!!form.instance_theme} onChange={(e) => setForm({ ...form, instance_theme: e.target.checked })} />
                         <span>
                             <strong>Use the instance theme</strong>
-                            <span className="lens-muted">
-                                Match the colours of your instance's Next Experience theme (backgrounds, text and borders). The Granted / Conditional / Denied colours
-                                stay the same so results always read the same way. Applies to everyone after saving.
-                            </span>
                         </span>
                     </label>
+                    <FieldInfo
+                        label="Use the instance theme"
+                        text="Match the colours of your instance's Next Experience theme (backgrounds, text and borders). Granted / Conditional / Denied colours stay the same. Applies to everyone after saving."
+                    />
+                    </div>
                 </div>
             </section>
 
@@ -129,13 +132,15 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                     <h2 id="set-retention">Automatic cleanup</h2>
                 </div>
                 <div className="lens-card__body lens-settings__body">
+                    <div className="lens-switch-row">
                     <label className="lens-switch">
                         <input type="checkbox" checked={form.retention_enabled} onChange={(e) => setForm({ ...form, retention_enabled: e.target.checked })} />
                         <span>
                             <strong>Clean up old runs automatically</strong>
-                            <span className="lens-muted">A daily job (2:30 AM) removes or archives runs older than the period below.</span>
                         </span>
                     </label>
+                    <FieldInfo label="Clean up old runs automatically" text="A daily job (2:30 AM) deletes or archives runs older than the period below." />
+                    </div>
                     <fieldset className="lens-settings__group" disabled={!form.retention_enabled}>
                         <label className="lens-field lens-settings__days">
                             <span className="lens-field__label">Keep runs for (days)</span>

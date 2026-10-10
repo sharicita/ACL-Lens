@@ -2438,3 +2438,41 @@ button.lens-subject--add:focus-visible {
 .lens-result--P {
     color: var(--lx-g-fg);
 }
+
+/* Field help: an info icon whose text shows on hover or focus (like ServiceNow field hints) */
+.lens-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--lx-faint);
+    cursor: help;
+    vertical-align: middle;
+    flex: none;
+}
+.lens-info:hover,
+.lens-info:focus-visible {
+    color: var(--lx-accent);
+}
+.lens-info:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--lx-focus);
+}
+.lens-field__label--info {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.lens-switch-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.lens-filter__opts > .lens-info {
+    margin-left: -0.6rem;
+}

@@ -53,7 +53,7 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                 </div>
                 <div className="lens-card__body lens-run">
                     <label className="lens-field lens-run__name">
-                        <span className="lens-field__label">Name (optional, shown in History)</span>
+                        <span className="lens-field__label">Name (optional)</span>
                         <input
                             className="lens-input"
                             value={draft.name}

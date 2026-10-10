@@ -25,6 +25,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | U-13 | Admins wanted the app to match the instance. | Offer an admin property to follow the instance theme (Next Experience tokens), off by default. |
 | U-14 | Adding someone to a comparison meant going back to the Workspace. | Put an "add" affordance where the items are: a subtle dashed card, same size as the others, with + and a label; open the picker in place and focus the search box. |
 | U-15 | Pages felt dense. | Use generous spacing between page sections (≈1.75rem) and inside cards. |
+| U-17 | Field help text sat on the page under fields. | Keep help out of the way like ServiceNow field hints: an ⓘ next to the label shows it on hover or keyboard focus (announced as the description). Show only state (e.g. On/Off) inline. |
 | U-16 | An action error wiped the whole page. | Show action errors inline next to the action; keep the page usable. |
 
 ## 2. ServiceNow SDK / Fluent
@@ -113,6 +114,7 @@ These came up repeatedly as feedback. Build them in from the start.
 
 ## 9. UX baseline (definition of done for every screen)
 
+- Field help is an ⓘ tooltip (hover/focus), never always-visible text under fields.
 - Labels say exactly what is counted; tooltips define terms; "?" help explains app concepts, including whether settings persist.
 - Cards: short, scannable, with detail one click away (tab, list view or record link).
 - Every data table: sortable headers (`aria-sort`), a text filter where useful, CSV export; when filtered, a green download-filtered button and a subtle clear-filter button.
