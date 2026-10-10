@@ -3193,3 +3193,19 @@ tr.lens-group > th {
 .lens-live__time {
     white-space: nowrap;
 }
+
+/* card headers: the ? help (and a docs link right after it) sit beside the title; anything else stays on the right */
+.lens-card__header h2:has(+ .lens-help) {
+    margin-right: 0;
+}
+.lens-card__header h2 + .lens-help {
+    margin-left: -0.35rem;
+    margin-right: auto;
+}
+.lens-card__header h2 + .lens-help:has(+ .lens-doclink) {
+    margin-right: 0;
+}
+.lens-card__header h2 + .lens-help + .lens-doclink {
+    margin-left: -0.35rem;
+    margin-right: auto;
+}
