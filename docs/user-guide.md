@@ -82,6 +82,7 @@ The **baseline** is the user or role that everyone else is compared to **on this
 | Does it carry to other runs, devices or people? | No. Each run starts with its first subject as the baseline for everyone else. |
 
 ### Matrix
+- **Click any C (Conditional) cell** (table or field row) to see right there **why it's Conditional**: the rule(s) that decide record by record, with the condition, the script (if you can read ACL scripts) and the description already open. *Open full details* goes to the table panel. Esc closes it.
 - **G** Granted · **C** Conditional (decided per record or session) · **D** Denied · **–** No rule (instance default applies).
 - Filters: **Operations** toggles (C, R, W, D: show any combination; at least one stays on; *All* restores them), *Differences only*, *Hide tables nobody can access*, and a text filter.
 - The **▸** arrow expands field rules: *all other fields (\*)* plus fields with their own rules.

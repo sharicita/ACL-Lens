@@ -114,6 +114,7 @@ Each item says **what**, and where useful **why**, in one line. ACL Lens is the 
 - [ ] **Cards are concise:** the most important facts in a few words. Detail lives in tooltips, tabs or list views.
 - [ ] **Hide empty or irrelevant sections.**
 - [ ] **Filters use the same words as the columns they act on;** add a column for whatever is filtered.
+- [ ] **Explanations sit next to the result:** clicking a status (e.g. Conditional) shows why in place, with a link to the full details; never make users hunt through a separate panel.
 - [ ] **Summary tiles act like a report:** each opens its full list (new window).
 - [ ] **Every record mentioned links to it** (open-record icon, new window, labelled).
 - [ ] **Add-new affordances sit where the items are** (e.g. a subtle dashed "+ Add" card next to existing cards, focusing its search box when opened).

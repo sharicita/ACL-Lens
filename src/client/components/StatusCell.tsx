@@ -11,11 +11,13 @@ interface Props {
     /** differs from the baseline subject */
     differs?: boolean
     subjectLabel?: string
+    /** the cell opens the condition when clicked */
+    clickable?: boolean
 }
 
-export function StatusCell({ s, op, defaultDeny, differs, subjectLabel }: Props) {
+export function StatusCell({ s, op, defaultDeny, differs, subjectLabel, clickable }: Props) {
     const text = statusText(s, defaultDeny)
-    const hint = s === 'C' ? ' – open the table to see the condition' : ''
+    const hint = s === 'C' ? (clickable ? ' – click to see the condition' : ' – open the table to see the condition') : ''
     const title = `${subjectLabel ? subjectLabel + ' – ' : ''}${op}: ${text}${hint}${differs ? ' (differs from the baseline subject)' : ''}`
     return (
         <span className={`lens-cell lens-cell--${s}${differs ? ' lens-cell--diff' : ''}`} data-tip={title} aria-label={title}>

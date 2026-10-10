@@ -2898,3 +2898,93 @@ tr.lens-group > th {
 .lens-kindsel {
     flex-wrap: wrap;
 }
+
+/* Conditional cells open the condition */
+.lens-cellbtn {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    line-height: 0;
+}
+.lens-cellbtn:hover .lens-cell,
+.lens-cellbtn:focus-visible .lens-cell {
+    box-shadow: 0 0 0 2px var(--lx-c-fg);
+}
+.lens-cellbtn:focus-visible {
+    outline: none;
+}
+.lens-condpop {
+    position: fixed;
+    z-index: 80;
+    width: min(440px, calc(100vw - 16px));
+    max-height: min(70vh, 560px);
+    overflow: auto;
+    background: var(--lx-surface);
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius);
+    box-shadow: var(--lx-shadow-pop);
+    text-align: left;
+    font-weight: 400;
+}
+.lens-condpop:focus {
+    outline: none;
+}
+.lens-condpop__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 0.9rem 0.6rem;
+    border-bottom: 1px solid var(--lx-border);
+    background: linear-gradient(100deg, rgba(var(--lx-accent-rgb), 0.07), transparent 80%), var(--lx-surface);
+}
+.lens-condpop__head h3 {
+    margin: 0;
+    font-size: 0.92rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.lens-condpop__head h3 .lens-muted {
+    font-size: 0.78rem;
+    font-weight: 400;
+}
+.lens-condpop__body {
+    padding: 0.75rem 0.9rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.lens-condpop__lead {
+    margin: 0;
+}
+.lens-condpop__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.lens-condpop__list > li {
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius-sm);
+    padding: 0.55rem 0.65rem;
+    background: var(--lx-bg);
+}
+.lens-condpop__rule {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+}
+.lens-condpop__more {
+    align-self: flex-start;
+}
+.lens-condpop pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

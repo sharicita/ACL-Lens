@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { AnalysisResult, FIELD_OPS, Op, TABLE_OPS } from '../types'
+import { AnalysisResult, Cell, FIELD_OPS, Op, TABLE_OPS } from '../types'
 import { OP_SHORT, rank, statusText } from '../utils/status'
 import { rankFilter } from '../utils/rank'
 import { StatusCell } from './StatusCell'
@@ -8,6 +8,7 @@ import ListActions from './ListActions'
 import { byNames } from '../utils/snList'
 import SubjectName from './SubjectName'
 import { useSubjectVisible } from './SubjectName'
+import ConditionPopover from './ConditionPopover'
 
 interface Props {
     results: AnalysisResult
@@ -29,6 +30,8 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     const [limit, setLimit] = useState(PAGE)
     const [expanded, setExpanded] = useState<Set<number>>(new Set())
     const [collapsing, setCollapsing] = useState<Set<number>>(new Set())
+    // the open "why Conditional" panel
+    const [cond, setCond] = useState<{ anchor: HTMLElement; cell: Cell; subjectLabel: string; op: string; target: string; ti: number } | null>(null)
     const dd = results.defaultDeny
     const subjectVisible = useSubjectVisible()
     const visible = results.subjects.filter((s) => !hidden.has(s.subject.key) && subjectVisible(s.subject.key))
@@ -153,6 +156,18 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                     />
                 </span>
             </div>
+            {cond && (
+                <ConditionPopover
+                    anchor={cond.anchor}
+                    cell={cond.cell}
+                    acls={results.acls}
+                    subjectLabel={cond.subjectLabel}
+                    op={cond.op}
+                    target={cond.target}
+                    onOpenDetails={() => onOpenTable(cond.ti)}
+                    onClose={() => setCond(null)}
+                />
+            )}
             <ListBreadcrumb sorter={sorter} />
             <div className="lens-mx__scroll">
                 <table className="lens-mx">
@@ -214,13 +229,33 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                                         className={`lens-mx__cell${op === ops[0] ? ' lens-mx__cell--first' : ''}`}
                                                         onContextMenu={sorter.cellMenu(`${s.subject.key}:${op}`, { ti, differs })}
                                                     >
-                                                        <StatusCell
-                                                            s={s.tables[ti].ops[op].s}
-                                                            op={op}
-                                                            defaultDeny={dd}
-                                                            differs={visible.length > 1 && si !== baseIdx && s.tables[ti].ops[op].s !== visible[baseIdx].tables[ti].ops[op].s}
-                                                            subjectLabel={s.subject.label}
-                                                        />
+                                                        {s.tables[ti].ops[op].s === 'C' ? (
+                                                            <button
+                                                                type="button"
+                                                                className="lens-cellbtn"
+                                                                aria-haspopup="dialog"
+                                                                onClick={(e) =>
+                                                                    setCond({ anchor: e.currentTarget, cell: s.tables[ti].ops[op], subjectLabel: s.subject.label, op, target: t.t, ti })
+                                                                }
+                                                            >
+                                                                <StatusCell
+                                                                    s="C"
+                                                                    op={op}
+                                                                    defaultDeny={dd}
+                                                                    differs={visible.length > 1 && si !== baseIdx && visible[baseIdx].tables[ti].ops[op].s !== 'C'}
+                                                                    subjectLabel={s.subject.label}
+                                                                    clickable
+                                                                />
+                                                            </button>
+                                                        ) : (
+                                                            <StatusCell
+                                                                s={s.tables[ti].ops[op].s}
+                                                                op={op}
+                                                                defaultDeny={dd}
+                                                                differs={visible.length > 1 && si !== baseIdx && s.tables[ti].ops[op].s !== visible[baseIdx].tables[ti].ops[op].s}
+                                                                subjectLabel={s.subject.label}
+                                                            />
+                                                        )}
                                                     </td>
                                                 ))
                                             )}
@@ -239,7 +274,18 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                                         const base = visible[baseIdx].tables[ti].fields[fi]?.ops[op]
                                                         return (
                                                             <td key={`${s.subject.key}-${op}`} className={`lens-mx__cell${op === ops[0] ? ' lens-mx__cell--first' : ''}`}>
-                                                                <StatusCell s={cell.s} op={`${f.f} ${op}`} defaultDeny={dd} differs={visible.length > 1 && si !== baseIdx && !!base && base.s !== cell.s} subjectLabel={s.subject.label} />
+                                                                {cell.s === 'C' ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="lens-cellbtn"
+                                                                        aria-haspopup="dialog"
+                                                                        onClick={(e) => setCond({ anchor: e.currentTarget, cell, subjectLabel: s.subject.label, op, target: `${t.t}.${f.f}`, ti })}
+                                                                    >
+                                                                        <StatusCell s="C" op={`${f.f} ${op}`} defaultDeny={dd} differs={visible.length > 1 && si !== baseIdx && !!base && base.s !== cell.s} subjectLabel={s.subject.label} clickable />
+                                                                    </button>
+                                                                ) : (
+                                                                    <StatusCell s={cell.s} op={`${f.f} ${op}`} defaultDeny={dd} differs={visible.length > 1 && si !== baseIdx && !!base && base.s !== cell.s} subjectLabel={s.subject.label} />
+                                                                )}
                                                             </td>
                                                         )
                                                     })

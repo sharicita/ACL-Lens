@@ -464,3 +464,19 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - hiding Role removed the itil columns and dimmed its card; showing it restored them.
 - Deployed to the original PDI only (`--profile pdi1`).
 
+---
+
+## 1.19 Conditions one click away
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- Conditional cells in the matrix (table and field rows) are buttons. They open `ConditionPopover` beside the cell:
+  - the deciding rules (outcome C) with the ACL link and reason;
+  - `ConditionDetail` already expanded (condition, applies-to, security attribute, script when readable, description);
+  - "Open full details for this table".
+- The panel is positioned against the window (it flips above when there's no room), focus moves into it, Esc closes it and returns focus to the cell, and script lines wrap.
+- The cell hover now says "click to see the condition".
+- **Verified in the preview:** Alva / create / incident showed the allow-if rule, its script and description; Esc returned focus to the cell.
+

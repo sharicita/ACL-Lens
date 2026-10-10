@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { AclDetail, LensApi } from '../services/LensApi'
 import { AclInfo, AclOutcome, Cell } from '../types'
 import { REASON_TEXT, RESULT_TEXT, statusText } from '../utils/status'
@@ -22,8 +22,8 @@ function loadDetail(id: string) {
 
 const SCRIPT_PREVIEW_LINES = 12
 
-function ConditionDetail({ acl }: { acl: AclInfo }) {
-    const [open, setOpen] = useState(false)
+export function ConditionDetail({ acl, initiallyOpen = false }: { acl: AclInfo; initiallyOpen?: boolean }) {
+    const [open, setOpen] = useState(initiallyOpen)
     const [data, setData] = useState<AclDetail | null>(null)
     const [error, setError] = useState('')
     const [fullScript, setFullScript] = useState(false)
@@ -37,6 +37,14 @@ function ConditionDetail({ acl }: { acl: AclInfo }) {
                 .then(setData)
                 .catch((e) => setError(e.message))
     }
+
+    // opened from the start (e.g. the matrix condition popover): load at once
+    useEffect(() => {
+        if (initiallyOpen)
+            loadDetail(acl.id)
+                .then(setData)
+                .catch((e) => setError(e.message))
+    }, [])
 
     const what = [acl.condition ? 'condition' : '', acl.hasScript ? 'script' : '', acl.securityAttribute ? 'security attribute' : '', acl.appliesTo ? '"applies to" filter' : '']
         .filter(Boolean)
