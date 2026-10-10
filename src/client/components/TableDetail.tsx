@@ -12,6 +12,7 @@ import { OP_HELP, OP_SHORT, rank, statusText } from '../utils/status'
 import AclList from './AclList'
 import { StatusCell } from './StatusCell'
 import Tip from './Tip'
+import Icon from './Icon'
 import { useAssistant } from '../assistant/AssistantContext'
 import ListActions from './ListActions'
 import { fieldsOf } from '../utils/snList'
@@ -148,8 +149,8 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
                             className="lens-btn lens-btn--secondary"
                             onClick={() => assistant.ask(`Explain the access results for the ${table.t} table in this run and anything I should check.`)}
                             data-tip="Opens the Security Assistant with a question about this table."
-
                         >
+                            <Icon name="shield" size={14} />
                             Ask assistant
                         </button>
                         <button type="button" className="lens-btn lens-btn--tertiary" onClick={requestClose} aria-label="Close details">
