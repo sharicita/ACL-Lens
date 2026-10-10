@@ -2476,3 +2476,14 @@ button.lens-subject--add:focus-visible {
 .lens-filter__opts > .lens-info {
     margin-left: -0.6rem;
 }
+
+/* app name links to the landing page (Workspace) */
+.lens-header__home {
+    color: inherit;
+    text-decoration: none;
+    text-underline-offset: 3px;
+}
+.lens-header__home:hover,
+.lens-header__home:focus-visible {
+    text-decoration: underline;
+}

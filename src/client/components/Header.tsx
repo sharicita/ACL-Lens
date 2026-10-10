@@ -31,7 +31,20 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
                     />
                 </svg>
                 <div>
-                    <h1 className="lens-header__title">ACL Lens</h1>
+                    <h1 className="lens-header__title">
+                        <a
+                            className="lens-header__home"
+                            href="?view=workspace"
+                            onClick={(e) => {
+                                // in-app navigation; ctrl/cmd-click still opens a new tab
+                                if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return
+                                e.preventDefault()
+                                onNavigate('workspace')
+                            }}
+                        >
+                            ACL Lens
+                        </a>
+                    </h1>
                     <p className="lens-header__sub">Analyze and compare detailed access permissions across users, roles, tables, records, and fields.</p>
                 </div>
             </div>

@@ -331,3 +331,4 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - the Roles tab group hints.
 - Only state (On/Off) stays visible inline.
 - Verified in the preview: nothing is expanded by default; hover and Shift+Tab both show the text with `aria-describedby`.
+- The app name **ACL Lens** in the header now links to the Workspace (landing page). Same text, underlined on hover or focus, and Ctrl/Cmd-click opens a new tab. Verified in the preview.
