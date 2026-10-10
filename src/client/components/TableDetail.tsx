@@ -11,6 +11,8 @@ import AclList from './AclList'
 import { StatusCell } from './StatusCell'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
+import ListActions from './ListActions'
+import { fieldsOf } from '../utils/snList'
 
 interface Props {
     results: AnalysisResult
@@ -103,7 +105,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
         if (!live) return
         const head = ['Field', 'Label', 'Type', 'Defined on'].concat(live.subjects.flatMap((s) => FIELD_OPS.map((op) => `${s.label} ${op}`)))
         const rows: unknown[][] = [head]
-        for (const r of live.rows) rows.push([r.field.name, r.field.label, r.field.type, r.field.definedOn].concat(live.subjects.flatMap((s) => FIELD_OPS.map((op) => statusText(r.cells[s.key][op].s, dd)))))
+        for (const r of liveSort.rows) rows.push([r.field.name, r.field.label, r.field.type, r.field.definedOn].concat(live.subjects.flatMap((s) => FIELD_OPS.map((op) => statusText(r.cells[s.key][op].s, dd)))))
         download(`${safeName(table.t)}-fields.csv`, toCsv(rows), 'text/csv;charset=utf-8')
     }
 
@@ -230,9 +232,12 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                                 <input type="checkbox" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} /> Differences only
                                             </label>
                                         )}
-                                        <button type="button" className="lens-btn lens-btn--tertiary" onClick={exportLive}>
-                                            Export CSV
-                                        </button>
+                                        <ListActions
+                                            list={fieldsOf(live.chain && live.chain.length ? live.chain : [table.t], liveSort.rows.map((r) => r.field.name), `the dictionary entries for these ${liveSort.rows.length} fields`)}
+                                            onExport={exportLive}
+                                            exportWhat={`the ${liveSort.rows.length} fields shown`}
+                                            filtered={liveSort.rows.length !== live.rows.length}
+                                        />
                                     </>
                                 )}
                             </div>

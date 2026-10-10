@@ -4,6 +4,9 @@ import { RunPayload, RunRecord } from '../types'
 import Tip from './Tip'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import Icon from './Icon'
+import ListActions from './ListActions'
+import { bySysIds } from '../utils/snList'
+import { download, toCsv } from '../utils/download'
 
 interface Props {
     isAdmin: boolean
@@ -91,6 +94,19 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                     </label>
                 )}
                 {loading && <span className="lens-muted">Loading…</span>}
+                <span className="lens-history__actions-bar">
+                    <ListActions
+                        list={bySysIds('x_acllens_run', runs.map((r) => r.sys_id), `these ${runs.length} runs`)}
+                        onExport={() => {
+                            const out: unknown[][] = [['Run', 'Name', 'Type', 'Subjects', 'Tables', 'Differences', 'Original run', 'Created', 'Run by']]
+                            for (const r of sorter.rows)
+                                out.push([r.number, r.name, r.run_type === 'compare' ? 'Comparison' : 'Analysis', r.subject_summary, r.table_count, r.run_type === 'compare' ? r.diff_count : '', r.original_number || '', r.created, r.run_by])
+                            download(`acl-lens-history.csv`, toCsv(out), 'text/csv;charset=utf-8')
+                        }}
+                        exportWhat={`the ${runs.length} runs listed${q || type ? ' (filtered)' : ''}`}
+                        filtered={!!(q || type)}
+                    />
+                </span>
             </div>
             {error && <div className="lens-alert lens-alert--critical">{error}</div>}
             <div className="lens-card__body lens-card__body--tight">

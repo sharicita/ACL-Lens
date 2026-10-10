@@ -4,6 +4,8 @@ import { OP_SHORT, rank, statusText } from '../utils/status'
 import { rankFilter } from '../utils/rank'
 import { StatusCell } from './StatusCell'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
+import ListActions from './ListActions'
+import { byNames } from '../utils/snList'
 
 interface Props {
     results: AnalysisResult
@@ -11,11 +13,13 @@ interface Props {
     baseline: string
     onOpenTable: (index: number) => void
     onFilteredChange?: (tables: Set<string>) => void
+    /** export the matrix rows currently shown */
+    onExport?: () => void
 }
 
 const PAGE = 100
 
-export default function AccessMatrix({ results, hidden, baseline, onOpenTable, onFilteredChange }: Props) {
+export default function AccessMatrix({ results, hidden, baseline, onOpenTable, onFilteredChange, onExport }: Props) {
     const [q, setQ] = useState('')
     const [diffsOnly, setDiffsOnly] = useState(false)
     const [hideNone, setHideNone] = useState(false)
@@ -136,6 +140,14 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                 </label>
                 <span className="lens-muted">
                     {rows.length} tables{visible.length > 1 ? ` · ${diffCount} with differences` : ''}
+                </span>
+                <span className="lens-mx__actions">
+                    <ListActions
+                        list={byNames('sys_db_object', rows.map((r) => results.subjects[0].tables[r.ti].t), `these ${rows.length} tables`)}
+                        onExport={onExport}
+                        exportWhat={`the matrix for the ${rows.length} tables shown`}
+                        filtered={rows.length !== results.subjects[0]?.tables.length}
+                    />
                 </span>
             </div>
             <ListBreadcrumb sorter={sorter} />

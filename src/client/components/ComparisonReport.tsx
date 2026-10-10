@@ -7,6 +7,9 @@ import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import DiffTable from './DiffTable'
 import Icon from './Icon'
+import ListActions from './ListActions'
+import { aclsFor, byNames } from '../utils/snList'
+import { download, safeName, toCsv } from '../utils/download'
 
 interface Props {
     runId: string
@@ -117,9 +120,15 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
         <section className="lens-card lens-report" aria-labelledby="cmp-title">
             <div className="lens-card__header">
                 <h2 id="cmp-title">Comparison script results</h2>
-                <button type="button" className="lens-btn lens-btn--secondary" onClick={onExport}>
+                <button
+                    type="button"
+                    className="lens-btn lens-btn--secondary lens-btn--small"
+                    onClick={onExport}
+                    data-tip="Export the full comparison (every difference and the roles table) as CSV"
+                    aria-label="Export the full comparison as CSV"
+                >
                     <Icon name="download" />
-                    Export comparison CSV
+                    Export
                 </button>
             </div>
             <div className="lens-card__body">
@@ -199,6 +208,15 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                     <button type="button" className="lens-link" onClick={onShowRoles}>
                         How each role is assigned
                     </button>
+                    <ListActions
+                        list={byNames('sys_user_role', roles.map((r) => r.role), `these ${roles.length} roles`)}
+                        onExport={() => {
+                            const out: unknown[][] = [['Role'].concat(cmp.subjects.map((x) => x.label))]
+                            for (const r of roles) out.push([r.role].concat(r.held.map((h) => h || '')))
+                            download(`${safeName(fileBase)}-roles.csv`, toCsv(out), 'text/csv;charset=utf-8')
+                        }}
+                        exportWhat={`the ${roles.length} roles shown`}
+                    />
                 </div>
                 <div className="lens-mx__scroll lens-mx__scroll--short">
                     {roles.length ? (
@@ -223,23 +241,20 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                         {filtered ? `${diffs.length} of ${cmp.diffs.length} differences` : `${diffs.length} differences`}
                     </span>
                     {filtered && (
-                        <>
-                            <button
-                                type="button"
-                                className="lens-btn lens-btn--success"
-                                disabled={!diffs.length}
-                                onClick={() => exportFilteredDiffsCsv(cmp, diffs, fileBase, filterText)}
-                                data-tip={`Download the ${diffs.length} differences shown (${filterText}) as CSV`}
-                            >
-                                <Icon name="download" />
-                                Download filtered list
-                            </button>
-                            <button type="button" className="lens-btn lens-btn--ghost lens-btn--small" onClick={clearFilter}>
-                                <Icon name="close" size={13} />
-                                Clear filter
-                            </button>
-                        </>
+                        <button type="button" className="lens-btn lens-btn--ghost lens-btn--small" onClick={clearFilter}>
+                            <Icon name="close" size={13} />
+                            Clear filter
+                        </button>
                     )}
+                    <ListActions
+                        list={aclsFor(
+                            diffs.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })),
+                            `the ACL records for ${filtered ? 'these' : 'all'} ${diffs.length} differences`
+                        )}
+                        onExport={() => exportFilteredDiffsCsv(cmp, diffs, fileBase, filterText || 'all differences')}
+                        exportWhat={filtered ? `the ${diffs.length} differences shown (${filterText})` : `all ${diffs.length} differences`}
+                        filtered={filtered}
+                    />
                 </div>
                 <div className="lens-mx__scroll">
                     <DiffTable

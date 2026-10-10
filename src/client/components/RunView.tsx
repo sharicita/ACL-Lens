@@ -279,7 +279,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                             />
                         )}
                         {tab === 'matrix' && (
-                            <AccessMatrix results={results} hidden={hidden} baseline={baseline} onOpenTable={setDetail} onFilteredChange={(s) => (filtered.current = s)} />
+                            <AccessMatrix results={results} hidden={hidden} baseline={baseline} onOpenTable={setDetail} onFilteredChange={(s) => (filtered.current = s)} onExport={() => exportMatrixCsv(results, fileBase, filtered.current)} />
                         )}
                         {tab === 'roles' && <RoleComparison subjects={results.subjects} />}
                     </div>

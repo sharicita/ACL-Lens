@@ -3,6 +3,8 @@ import { DriftResult } from '../types'
 import { StatusCell } from './StatusCell'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import { rank, statusText } from '../utils/status'
+import ListActions from './ListActions'
+import { aclsFor } from '../utils/snList'
 
 interface Props {
     drift: DriftResult
@@ -28,9 +30,11 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                     Open {originalNumber}
                 </button>
                 {drift.total > 0 && (
-                    <button type="button" className="lens-btn lens-btn--secondary" onClick={onExport}>
-                        Export changes CSV
-                    </button>
+                    <ListActions
+                        list={aclsFor(drift.rows.map((r) => ({ t: r.t, f: r.f, op: r.op })), `the ACL records for these ${drift.rows.length} changes`)}
+                        onExport={onExport}
+                        exportWhat={`the ${drift.rows.length} access changes since ${originalNumber}`}
+                    />
                 )}
             </div>
             <div className="lens-card__body">

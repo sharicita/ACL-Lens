@@ -2769,3 +2769,51 @@ tr.lens-group > th {
     box-shadow: 0 0 0 2px var(--lx-focus);
     border-radius: 4px;
 }
+
+/* list actions (open in ServiceNow list / copy query / export) */
+.lens-listactions {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.lens-btn--small {
+    min-height: 1.85rem;
+    padding: 0.2rem 0.65rem;
+}
+.lens-mx__actions,
+.lens-history__actions-bar {
+    margin-left: auto;
+}
+
+/* report list pages: room between toolbar, legend, breadcrumb and table */
+.lens-list .lens-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.4rem 1.5rem 1.5rem;
+}
+.lens-list .lens-card__body > .lens-actions {
+    margin: 0;
+}
+.lens-list .lens-legend {
+    margin: 0;
+}
+.lens-list .lens-crumbs {
+    margin: 0;
+}
+.lens-list .lens-card__header {
+    padding: 1rem 1.5rem;
+}
+.lens-list h2 {
+    margin: 0.15rem 0;
+}
+.lens-mx--compact th,
+.lens-mx--compact td {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.lens-mx--compact th:first-child,
+.lens-mx--compact td:first-child {
+    padding-left: 0.75rem;
+}

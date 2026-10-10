@@ -5,6 +5,9 @@ import HelpTip from './HelpTip'
 import FieldInfo from './FieldInfo'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
+import ListActions from './ListActions'
+import { byNames } from '../utils/snList'
+import { download, toCsv } from '../utils/download'
 
 interface Props {
     subjects: SubjectResult[]
@@ -116,6 +119,18 @@ export default function RoleComparison({ subjects }: Props) {
                         Collapse all
                     </button>
                 </span>
+                <ListActions
+                    list={byNames('sys_user_role', groups.flatMap((g) => rankFilter(g.roles, q, (r) => [r])), 'these roles')}
+                    onExport={() => {
+                        const out: unknown[][] = [['Group', 'Role'].concat(subjects.map((s) => s.subject.label))]
+                        for (const g of groups)
+                            for (const role of rankFilter(g.roles, q, (r) => [r]))
+                                out.push([g.title, role].concat(subjects.map((s) => (sourcesBy[s.subject.key][role] || []).map((x) => (x.kind || 'direct') + (x.from ? `: ${x.from}` : '')).join('; '))))
+                        download('acl-lens-roles.csv', toCsv(out), 'text/csv;charset=utf-8')
+                    }}
+                    exportWhat={`the roles listed${q ? ` (filtered by "${q}")` : ''}, with how each subject holds them`}
+                    filtered={!!q}
+                />
             </div>
             <div className="lens-card__body lens-roles-cmp">
                 {multi && (

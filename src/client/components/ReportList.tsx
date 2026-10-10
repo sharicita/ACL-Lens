@@ -12,6 +12,8 @@ import { Legend, StatusCell } from './StatusCell'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import Icon from './Icon'
+import ListActions from './ListActions'
+import { aclsFor, byNames, SnList } from '../utils/snList'
 
 interface Props {
     runId: string
@@ -84,7 +86,7 @@ interface ListProps {
     fileBase: string
 }
 
-function Toolbar({ q, setQ, shown, total, noun, onExport }: { q: string; setQ: (q: string) => void; shown: number; total: number; noun: string; onExport: () => void }) {
+function Toolbar({ q, setQ, shown, total, noun, onExport, list }: { q: string; setQ: (q: string) => void; shown: number; total: number; noun: string; onExport: () => void; list: SnList }) {
     return (
         <div className="lens-actions">
             <input className="lens-input" placeholder={`Filter ${noun}…`} value={q} onChange={(e) => setQ(e.target.value)} aria-label={`Filter ${noun}`} />
@@ -96,10 +98,9 @@ function Toolbar({ q, setQ, shown, total, noun, onExport }: { q: string; setQ: (
                     Clear filter
                 </button>
             )}
-            <button type="button" className="lens-btn lens-btn--secondary lens-list__export" onClick={onExport} disabled={!shown}>
-                <Icon name="download" />
-                Export CSV{q.trim() ? ' (filtered)' : ''}
-            </button>
+            <span className="lens-list__export">
+                <ListActions list={list} onExport={onExport} exportWhat={`the ${shown} ${noun} shown${q.trim() ? ` (filtered by "${q.trim()}")` : ''}`} filtered={!!q.trim()} />
+            </span>
         </div>
     )
 }
@@ -115,7 +116,7 @@ function RoleList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
     }
     return (
         <>
-            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="roles" onExport={exportCsv} />
+            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="roles" onExport={exportCsv} list={byNames('sys_user_role', rows.map((r) => r.role), `these ${rows.length} roles`)} />
             {rows.length ? <RolesTable rows={rows} cmp={cmp} /> : <p className="lens-empty">{all.length ? 'No roles match the filter.' : 'No roles in this list.'}</p>}
         </>
     )
@@ -134,6 +135,7 @@ function DiffList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
                 total={all.length}
                 noun="differences"
                 onExport={() => download(`${safeName(fileBase)}.csv`, toCsv(diffCsvRows(cmp, rows, statusText)), 'text/csv;charset=utf-8')}
+                list={aclsFor(rows.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })), `the ACL records for these ${rows.length} differences`)}
             />
             <Legend defaultDeny={cmp.defaultDeny} baseline={false} />
             <div className="lens-mx__scroll lens-list__scroll">
@@ -165,7 +167,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
     }
     return (
         <>
-            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="tables" onExport={exportCsv} />
+            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="tables" onExport={exportCsv} list={byNames('sys_db_object', rows.map((t) => t.t), `these ${rows.length} tables`)} />
             <Legend defaultDeny={dd} baseline={false} />
             <div className="lens-mx__scroll lens-list__scroll">
                 <ListBreadcrumb sorter={sorter} />
