@@ -14,6 +14,7 @@ import RoleComparison from './RoleComparison'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
 import Icon from './Icon'
+import { AccountTypeFilter, SubjectsProvider } from './SubjectName'
 
 interface Props {
     runId: string
@@ -139,6 +140,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
     }
 
     return (
+        <SubjectsProvider subjects={results ? results.subjects : []}>
         <div className="lens-run-view">
             <RunHeader
                 run={run}
@@ -242,6 +244,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                         }
                     />
                     <div className="lens-run-view__bar">
+                        <AccountTypeFilter />
                         <div className="lens-segment" role="tablist" aria-label="Result views">
                             {tabs.map((t) => (
                                 <button
@@ -287,5 +290,6 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                 </>
             )}
         </div>
+        </SubjectsProvider>
     )
 }

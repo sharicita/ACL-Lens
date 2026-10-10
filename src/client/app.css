@@ -2832,3 +2832,69 @@ tr.lens-group > th {
     width: 1.1rem;
     color: var(--lx-accent);
 }
+
+/* account-type marker next to compared users */
+.lens-subjname {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.lens-acct-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    flex: none;
+    color: var(--lx-muted);
+    background: var(--lx-subtle);
+    cursor: help;
+}
+.lens-acct-icon--machine {
+    color: #8a6210;
+    background: var(--lx-c-bg);
+}
+.lens-acct-icon--ai_agent {
+    color: var(--lx-diff);
+    background: var(--lx-diff-soft);
+}
+.lens-acct-icon:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--lx-focus);
+}
+
+/* account-type filter */
+.lens-kindsel__opt {
+    font: inherit;
+    font-size: 0.82rem;
+    min-height: 1.9rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--lx-border-strong);
+    background: var(--lx-surface);
+    color: var(--lx-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.lens-kindsel__opt.lens-opsel__op--on {
+    background: var(--lx-accent-soft-2);
+    border-color: var(--lx-accent);
+    color: var(--lx-accent);
+}
+.lens-kindsel__opt:disabled {
+    cursor: not-allowed;
+}
+.lens-kindsel__opt:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--lx-focus);
+}
+.lens-kindsel__count {
+    font-size: 0.72rem;
+    opacity: 0.8;
+}
+.lens-kindsel {
+    flex-wrap: wrap;
+}

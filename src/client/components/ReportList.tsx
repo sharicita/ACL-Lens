@@ -14,6 +14,9 @@ import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import Icon from './Icon'
 import ListActions from './ListActions'
 import { aclsFor, byNames, SnList } from '../utils/snList'
+import SubjectName from './SubjectName'
+import { SubjectsProvider } from './SubjectName'
+import { AccountTypeFilter, useSubjectVisible } from './SubjectName'
 
 interface Props {
     runId: string
@@ -56,6 +59,7 @@ export default function ReportList({ runId, list, onOpenRun }: Props) {
     const fileBase = `${run.number}-${list}`
 
     return (
+        <SubjectsProvider subjects={results.subjects}>
         <section className="lens-card lens-list" aria-labelledby="list-title">
             <div className="lens-card__header">
                 <div>
@@ -76,6 +80,7 @@ export default function ReportList({ runId, list, onOpenRun }: Props) {
                 {!isRoles && !isTables && <DiffList q={q} setQ={setQ} payload={payload} list={list} fileBase={fileBase} />}
             </div>
         </section>
+        </SubjectsProvider>
     )
 }
 
@@ -119,6 +124,7 @@ function RoleList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
     return (
         <>
             <Toolbar q={q} setQ={setQ} shown={shown.length} total={all.length} noun="roles" onExport={exportCsv} list={byNames('sys_user_role', shown.map((r) => r.role), `these ${shown.length} roles`)} />
+            <AccountTypeFilter />
             {rows.length ? <RolesTable rows={rows} cmp={cmp} listId="list-roles" onVisible={setVisible} /> : <p className="lens-empty">{all.length ? 'No roles match the filter.' : 'No roles in this list.'}</p>}
         </>
     )
@@ -142,6 +148,7 @@ function DiffList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
                 list={aclsFor(shown.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })), `the ACL records for these ${shown.length} differences`)}
             />
             <Legend defaultDeny={cmp.defaultDeny} baseline={false} />
+            <AccountTypeFilter />
             <div className="lens-mx__scroll lens-list__scroll">
                 <DiffTable cmp={cmp} rows={rows} listId="list-diffs" onVisible={setVisible} emptyText={all.length ? 'No differences match the filter.' : 'No differences in this list.'} />
             </div>
@@ -160,6 +167,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
     groupLabel.table = (t) => t.t
     const sorter = useSort(rows, columns, { groupLabel, id: 'list-tables', required: ['table'] })
     const on = (col: string, t: TableRow) => ({ onContextMenu: sorter.cellMenu(col, t) })
+    const vis = useSubjectVisible()
     const exportCsv = () => {
         const head: unknown[] = ['Table', 'Table label', 'Differences']
         cmp.subjects.forEach((s) => TABLE_OPS.forEach((op) => head.push(`${s.label} – ${op}`)))
@@ -175,6 +183,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
         <>
             <Toolbar q={q} setQ={setQ} shown={sorter.rows.length} total={all.length} noun="tables" onExport={exportCsv} list={byNames('sys_db_object', sorter.rows.map((t) => t.t), `these ${sorter.rows.length} tables`)} />
             <Legend defaultDeny={dd} baseline={false} />
+            <AccountTypeFilter />
             <div className="lens-mx__scroll lens-list__scroll">
                 <ListBreadcrumb sorter={sorter} />
                 <table className="lens-mx lens-mx--compact">
@@ -186,9 +195,9 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
                             <SortTh sorter={sorter} col="diffs" tip="Table and field rules on this table where the subjects differ (most first)">
                                 Differences
                             </SortTh>
-                            {cmp.subjects.map((s) => (
+                            {cmp.subjects.map((s) => !vis(s.key) ? null : (
                                 <SortTh key={s.key} sorter={sorter} col={s.key} tip={`Sort by ${s.label}'s access (most first). Letters: C = create, R = read, W = write, D = delete.`}>
-                                    {s.label}
+                                    <SubjectName subjectKey={s.key} label={s.label} />
                                 </SortTh>
                             ))}
                         </tr>
@@ -200,7 +209,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
                                     {t.l} <code>{t.t}</code> <RecordLink href={recordUrl.table(t.t)} what={`table definition for ${t.t}`} />
                                 </th>
                                 {sorter.shows('diffs') && <td {...on('diffs', t)}>{t.diffs ? t.diffs : <span className="lens-muted">identical</span>}</td>}
-                                {t.ops.map((ops, si) => !sorter.shows(cmp.subjects[si].key) ? null : (
+                                {t.ops.map((ops, si) => !sorter.shows(cmp.subjects[si].key) || !vis(cmp.subjects[si].key) ? null : (
                                     <td key={si} {...on(cmp.subjects[si].key, t)}>
                                         <span className="lens-crud" aria-label={`${cmp.subjects[si].label}`}>
                                             {ops.map((st, oi) => (

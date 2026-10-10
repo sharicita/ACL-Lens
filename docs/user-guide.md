@@ -47,6 +47,11 @@ Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a
 
 ## 2. Read the results
 
+### Account types
+
+- **Account icon:** wherever users are compared (matrix, report, roles, list pages, details panel, summaries), a small icon beside a user's name shows the **account type**: human, machine / service, AI agent, or unclassified. Hover over it (or tab to it) to read it, for example *Account type: Machine / service account · API only*. Roles have no icon. Runs saved before account types were recorded show no icon.
+- **Account types filter:** next to the result tabs, and on list pages, toggles for each type in the run (and **Role**) hide or show those subjects in every table on the page. Hidden subjects' cards are dimmed. At least one type stays shown; **All** shows everything again.
+
 ### Subject cards
 
 One card per user or role:

@@ -10,6 +10,8 @@ import Icon from './Icon'
 import ListActions from './ListActions'
 import { aclsFor, byNames } from '../utils/snList'
 import { download, safeName, toCsv } from '../utils/download'
+import SubjectName from './SubjectName'
+import { useSubjectVisible } from './SubjectName'
 
 interface Props {
     runId: string
@@ -38,6 +40,7 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
     const [q, setQ] = useState('')
     const [limit, setLimit] = useState(PAGE)
     const [showShared, setShowShared] = useState(true)
+    const subjectVisible = useSubjectVisible()
     const [shownDiffs, setShownDiffs] = useState<DiffRow[] | null>(null)
     const [shownRoles, setShownRoles] = useState<RoleRow[] | null>(null)
     const label = (key: string) => cmp.subjects.filter((s) => s.key === key)[0]?.label || key
@@ -180,9 +183,11 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                         </tr>
                     </thead>
                     <tbody>
-                        {perSubject.rows.map((p) => (
+                        {perSubject.rows.filter((p) => subjectVisible(p.key)).map((p) => (
                             <tr key={p.key}>
-                                <th scope="row">{label(p.key)}</th>
+                                <th scope="row">
+                                    <SubjectName subjectKey={p.key} label={label(p.key)} focusable />
+                                </th>
                                 <td>{p.granted}</td>
                                 <td>{p.conditional}</td>
                                 <td>{p.denied}</td>
@@ -194,9 +199,14 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
 
                 <h3>Head to head</h3>
                 <ul className="lens-pairs">
-                    {cmp.pairs.map((p) => (
+                    {cmp.pairs.filter((p) => subjectVisible(p.a) && subjectVisible(p.b)).map((p) => (
                         <li key={`${p.a}-${p.b}`}>
-                            <strong>{label(p.a)}</strong> has more access on <b>{p.aMore}</b> cells · <strong>{label(p.b)}</strong> has more on <b>{p.bMore}</b> · equal on {p.same}
+                            <strong>
+                                <SubjectName subjectKey={p.a} label={label(p.a)} focusable />
+                            </strong>{' '}
+                            has more access on <b>{p.aMore}</b> cells · <strong>
+                                <SubjectName subjectKey={p.b} label={label(p.b)} focusable />
+                            </strong> has more on <b>{p.bMore}</b> · equal on {p.same}
                         </li>
                     ))}
                 </ul>
@@ -287,6 +297,7 @@ export function RolesTable({ rows, cmp, listId, onVisible }: { rows: RoleRow[]; 
     const groupLabel: { [key: string]: (r: RoleRow) => string } = { held: (r) => `${r.held.filter(Boolean).length} of ${cmp.subjects.length}` }
     cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (r) => r.held[i] || 'not held'))
     const sorter = useSort(rows, columns, { groupLabel, id: listId, required: ['role'], onVisible })
+    const vis = useSubjectVisible()
     const on = (col: string, r: RoleRow) => ({ onContextMenu: sorter.cellMenu(col, r) })
     const show = sorter.shows
     return (
@@ -298,9 +309,9 @@ export function RolesTable({ rows, cmp, listId, onVisible }: { rows: RoleRow[]; 
                     <SortTh sorter={sorter} col="role">
                         Role
                     </SortTh>
-                    {cmp.subjects.map((x) => (
+                    {cmp.subjects.map((x) => !vis(x.key) ? null : (
                         <SortTh key={x.key} sorter={sorter} col={x.key} tip={`Sort by how ${x.label} holds the role`}>
-                            {x.label}
+                            <SubjectName subjectKey={x.key} label={x.label} />
                         </SortTh>
                     ))}
                     <SortTh sorter={sorter} col="held" tip="How many subjects hold the role">
@@ -315,7 +326,7 @@ export function RolesTable({ rows, cmp, listId, onVisible }: { rows: RoleRow[]; 
                             <code>{r.role}</code> <RecordLink href={recordUrl.roleByName(r.role)} what={`role record for ${r.role}`} />
                         </th>
                         {r.held.map((h, i) =>
-                            show(cmp.subjects[i].key) ? (
+                            show(cmp.subjects[i].key) && vis(cmp.subjects[i].key) ? (
                                 <td key={cmp.subjects[i].key} {...on(cmp.subjects[i].key, r)}>
                                     {h ? (
                                         <span className="lens-yes-cell">

@@ -13,6 +13,8 @@ import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
 import ListActions from './ListActions'
 import { fieldsOf } from '../utils/snList'
+import SubjectName from './SubjectName'
+import { useSubjectVisible } from './SubjectName'
 
 interface Props {
     results: AnalysisResult
@@ -22,6 +24,8 @@ interface Props {
 
 export default function TableDetail({ results, index, onClose }: Props) {
     const subs = results.subjects
+    const subjectVisible = useSubjectVisible()
+    const shownSubs = subs.filter((s) => subjectVisible(s.subject.key))
     const table = subs[0].tables[index]
     const dd = results.defaultDeny
     const [tab, setTab] = useState<'table' | 'fields'>('table')
@@ -165,8 +169,8 @@ export default function TableDetail({ results, index, onClose }: Props) {
                             Each operation shows the ACL level that matched and every rule checked there. Deny-unless rules must all pass; any one allow-if rule is enough. For a
                             Conditional result, use "Show the condition" to see what decides it. <DocLink doc="strategy" label="ServiceNow: Allow-If vs Deny-Unless and ACL best practices" />
                         </Tip>
-                        <div className="lens-detail-grid" style={{ gridTemplateColumns: `repeat(${subs.length}, minmax(260px, 1fr))` }}>
-                            {subs.map((s) => (
+                        <div className="lens-detail-grid" style={{ gridTemplateColumns: `repeat(${shownSubs.length}, minmax(260px, 1fr))` }}>
+                            {shownSubs.map((s) => (
                                 <section key={s.subject.key} className="lens-detail-col">
                                     <h3>
                                         <span className={`lens-kind lens-kind--${s.subject.type}`}>{s.subject.type}</span> {s.subject.label}
@@ -192,9 +196,9 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                 <thead>
                                     <tr>
                                         <th>Field rule</th>
-                                        {subs.map((s) => (
+                                        {shownSubs.map((s) => (
                                             <th key={s.subject.key} colSpan={FIELD_OPS.length}>
-                                                {s.subject.label}
+                                                <SubjectName subjectKey={s.subject.key} focusable />
                                             </th>
                                         ))}
                                     </tr>
@@ -203,7 +207,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                     {table.fields.map((f, fi) => (
                                         <tr key={f.f}>
                                             <th scope="row">{f.f === '*' ? <em>all other fields (*)</em> : <code>{f.f}</code>}</th>
-                                            {subs.map((s) =>
+                                            {shownSubs.map((s) =>
                                                 FIELD_OPS.map((op) => {
                                                     const c = s.tables[index].fields[fi]?.ops[op]
                                                     return <td key={`${s.subject.key}-${op}`}>{c && <StatusCell s={c.s} op={`${OP_SHORT[op]} ${f.f}`} defaultDeny={dd} differs={c.s !== subs[0].tables[index].fields[fi]?.ops[op].s} />}</td>
@@ -213,7 +217,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                     ))}
                                     {!table.fields.length && (
                                         <tr>
-                                            <td colSpan={1 + subs.length * FIELD_OPS.length} className="lens-muted">
+                                            <td colSpan={1 + shownSubs.length * FIELD_OPS.length} className="lens-muted">
                                                 Field rules were not included in this run.
                                             </td>
                                         </tr>
@@ -251,9 +255,9 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                             <SortTh sorter={liveSort} col="field">
                                                 Field
                                             </SortTh>
-                                            {live.subjects.map((s) => (
+                                            {live.subjects.filter((s) => subjectVisible(s.key)).map((s) => (
                                                 <th key={s.key} colSpan={FIELD_OPS.length}>
-                                                    {s.label}
+                                                    <SubjectName subjectKey={s.key} label={s.label} focusable />
                                                 </th>
                                             ))}
                                         </tr>
@@ -261,7 +265,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                             <th scope="col">
                                                 <span className="lens-sr">Sort by result</span>
                                             </th>
-                                            {live.subjects.map((s) =>
+                                            {live.subjects.filter((s) => subjectVisible(s.key)).map((s) =>
                                                 FIELD_OPS.map((op) => (
                                                     <SortTh key={`${s.key}-${op}`} sorter={liveSort} col={`${s.key}:${op}`} label={`${s.label} ${op}`} tip={`Sort by ${s.label}'s ${op} access (most first)`}>
                                                         {OP_SHORT[op]}
@@ -277,7 +281,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                                     {r.field.label} <code>{r.field.name}</code>{' '}
                                                     <RecordLink href={recordUrl.field(r.field.definedOn, r.field.name)} what={`dictionary entry for ${r.field.name}`} />
                                                 </th>
-                                                {live.subjects.map((s) =>
+                                                {live.subjects.filter((s) => subjectVisible(s.key)).map((s) =>
                                                     FIELD_OPS.map((op) => {
                                                         const c = r.cells[s.key][op]
                                                         const lvl = c.lvl ? `matched ${c.lvl}` : 'no rule'

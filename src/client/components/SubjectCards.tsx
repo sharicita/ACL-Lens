@@ -6,6 +6,7 @@ import RecordLink, { recordUrl } from './RecordLink'
 import AddSubjectCard from './AddSubjectCard'
 import { SubjectOption } from '../types'
 import Icon from './Icon'
+import { useSubjectVisible } from './SubjectName'
 
 interface Props {
     subjects: SubjectResult[]
@@ -65,12 +66,13 @@ function assignmentSummary(sr: SubjectResult): string {
 
 export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, onToggle, onBaseline, onShowRoles, onAdd, addBusy }: Props) {
     const multi = subjects.length > 1
+    const subjectVisible = useSubjectVisible()
     return (
         <div className="lens-subjects">
             {subjects.map((sr) => {
                 const s = sr.subject
                 const total = sr.tables.length
-                const isHidden = hidden.has(s.key)
+                const isHidden = hidden.has(s.key) || !subjectVisible(s.key)
                 const isBase = baseline === s.key
                 const others = subjects.filter((o) => o.subject.key !== s.key)
                 const onlyHere = s.roles.filter((r) => others.every((o) => o.subject.roles.indexOf(r) < 0)).length

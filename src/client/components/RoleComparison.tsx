@@ -8,6 +8,8 @@ import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import ListActions from './ListActions'
 import { byNames } from '../utils/snList'
 import { download, toCsv } from '../utils/download'
+import SubjectName from './SubjectName'
+import { useSubjectVisible } from './SubjectName'
 
 interface Props {
     subjects: SubjectResult[]
@@ -182,7 +184,9 @@ interface TableProps {
     showHow: boolean
 }
 
-function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
+function RoleTable({ title, roles, subjects: allSubjects, sourcesBy, showHow }: TableProps) {
+    const vis = useSubjectVisible()
+    const subjects = allSubjects.filter((s) => vis(s.subject.key))
     const columns: { [key: string]: (role: string) => string | number } = { role: (r) => r }
     for (const s of subjects) columns[s.subject.key] = (r) => (sourcesBy[s.subject.key][r] ? 1 : 0)
     const groupLabel: { [key: string]: (role: string) => string } = {}
@@ -200,7 +204,7 @@ function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
                     </SortTh>
                     {subjects.map((s) => (
                         <SortTh key={s.subject.key} sorter={sorter} col={s.subject.key} tip={`Sort by whether ${s.subject.label} has the role`}>
-                            {s.subject.label}
+                            <SubjectName subjectKey={s.subject.key} />
                         </SortTh>
                     ))}
                 </tr>

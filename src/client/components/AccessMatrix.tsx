@@ -6,6 +6,8 @@ import { StatusCell } from './StatusCell'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import ListActions from './ListActions'
 import { byNames } from '../utils/snList'
+import SubjectName from './SubjectName'
+import { useSubjectVisible } from './SubjectName'
 
 interface Props {
     results: AnalysisResult
@@ -28,7 +30,8 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     const [expanded, setExpanded] = useState<Set<number>>(new Set())
     const [collapsing, setCollapsing] = useState<Set<number>>(new Set())
     const dd = results.defaultDeny
-    const visible = results.subjects.filter((s) => !hidden.has(s.subject.key))
+    const subjectVisible = useSubjectVisible()
+    const visible = results.subjects.filter((s) => !hidden.has(s.subject.key) && subjectVisible(s.subject.key))
     const baseIdx = Math.max(0, visible.findIndex((s) => s.subject.key === baseline))
     const ops = TABLE_OPS.filter((op) => opSel.has(op))
     const allOps = ops.length === TABLE_OPS.length
@@ -161,7 +164,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                             </SortTh>
                             {visible.map((s) => (
                                 <th key={s.subject.key} scope="colgroup" colSpan={ops.length} className={`lens-mx__subj${s.subject.key === baseline ? ' lens-mx__subj--base' : ''}`} title={s.subject.label}>
-                                    {s.subject.label}
+                                    <SubjectName subjectKey={s.subject.key} focusable />
                                 </th>
                             ))}
                         </tr>

@@ -40,3 +40,31 @@ export default function AccountBadge({ account }: { account?: AccountInfo }) {
         </span>
     )
 }
+
+/** "Machine / service account · API only", for icon hovers and screen readers. */
+export function accountText(account?: AccountInfo): string {
+    if (!account) return ''
+    const kind = account.identity || 'unclassified'
+    const name =
+        kind === 'human' ? 'Human' : kind === 'machine' ? 'Machine / service account' : kind === 'ai_agent' ? 'AI agent' : kind === 'unclassified' ? 'Unclassified (identity type not set)' : account.identityLabel || kind
+    const flags = [account.webServiceOnly ? 'web service access only (API only)' : '', account.integrationUser ? 'internal integration user' : ''].filter(Boolean)
+    return `Account type: ${name}${flags.length ? ' · ' + flags.join(' · ') : ''}`
+}
+
+/**
+ * A small icon marking a user's account type next to their name. The hover (and the accessible
+ * name) says the account type. `focusable` lets keyboard users reach the hover when the icon is not
+ * inside another control.
+ */
+export function AccountIcon({ account, focusable = false }: { account?: AccountInfo; focusable?: boolean }) {
+    if (!account) return null
+    const kind = account.identity || 'unclassified'
+    const text = accountText(account)
+    return (
+        <span className={`lens-acct-icon lens-acct-icon--${kind}`} role="img" aria-label={text} data-tip={text} tabIndex={focusable ? 0 : undefined}>
+            <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d={ICONS[kind] || ICONS.unclassified} />
+            </svg>
+        </span>
+    )
+}

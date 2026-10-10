@@ -448,3 +448,19 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - The install failed there ("application was null"), and its rollback context recorded **zero changes**.
   - **Safeguards:** with more than one profile, deploy, package and dev refuse to run without `--profile`; the setup page no longer replaces an existing default; the default was restored.
 
+---
+
+## 1.18 Account-type markers and filter
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- **`SubjectName` + `AccountIcon`:** an icon-only account-type marker beside compared users in every table's subject headings and in the per-subject and head-to-head summaries. Its hover and accessible name give the type plus flags. No icon for roles, or for older runs without account data.
+- **`AccountTypeFilter`:** toggles for each account type present plus Role, on the run page (by the tabs) and on list pages. Applied through `SubjectsProvider` to the matrix, every difference, the report's roles, list pages, Roles tab, details panel and summaries; filtered subjects' cards are dimmed.
+- **Verified in the preview (ALR0001014):**
+  - 2 user icons ("Account type: Unclassified (identity type not set)"), none for the role;
+  - toggles "Unclassified 2 / Role 1";
+  - hiding Role removed the itil columns and dimmed its card; showing it restored them.
+- Deployed to the original PDI only (`--profile pdi1`).
+

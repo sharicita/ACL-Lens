@@ -4,6 +4,8 @@ import { rank, statusText } from '../utils/status'
 import { StatusCell } from './StatusCell'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
+import SubjectName from './SubjectName'
+import { useSubjectVisible } from './SubjectName'
 
 const OP_ORDER: { [op: string]: number } = { create: 0, read: 1, write: 2, delete: 3 }
 
@@ -34,6 +36,7 @@ export default function DiffTable({ cmp, rows, limit, emptyText, listId, onVisib
     }
     cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (d) => statusText(d.statuses[i], cmp.defaultDeny)))
     const sorter = useSort(rows, columns, { groupLabel, id: listId, required: ['table'], onVisible })
+    const vis = useSubjectVisible()
     const on = (col: string, d: DiffRow) => ({ onContextMenu: sorter.cellMenu(col, d) })
     const show = sorter.shows
     return (
@@ -54,9 +57,9 @@ export default function DiffTable({ cmp, rows, limit, emptyText, listId, onVisib
                         <SortTh sorter={sorter} col="op">
                             Operation
                         </SortTh>
-                        {cmp.subjects.map((x) => (
+                        {cmp.subjects.map((x) => !vis(x.key) ? null : (
                             <SortTh key={x.key} sorter={sorter} col={x.key} tip={`Sort by ${x.label}'s access (most access first)`}>
-                                {x.label}
+                                <SubjectName subjectKey={x.key} label={x.label} />
                             </SortTh>
                         ))}
                     </tr>
@@ -87,7 +90,7 @@ export default function DiffTable({ cmp, rows, limit, emptyText, listId, onVisib
                             )}
                             {show('op') && <td {...on('op', d)}>{d.op}</td>}
                             {d.statuses.map((st, si) =>
-                                show(cmp.subjects[si].key) ? (
+                                show(cmp.subjects[si].key) && vis(cmp.subjects[si].key) ? (
                                     <td key={si} {...on(cmp.subjects[si].key, d)}>
                                         <StatusCell s={st} op={d.op} defaultDeny={cmp.defaultDeny} differs={st !== d.statuses[0]} subjectLabel={cmp.subjects[si].label} />
                                     </td>
