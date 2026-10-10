@@ -25,6 +25,7 @@ ACL Lens shows clearly what a **user or role can create, read, write and delete*
 | — | [User Guide](user-guide.md) | How to use the Workspace, matrix, details, comparison, history, assistant and settings |
 | — | [Install & Deployment](install-and-deploy.md) | Every install route (guided setup, ServiceNow IDE, update sets, multiple instances), how scopes and profiles work, keeping the repo publishable. End-user steps: [INSTALL.md](../INSTALL.md) |
 | — | [Developer Setup](dev-setup.md) | Prerequisites, build/deploy, conventions, tests, troubleshooting |
+| — | [New App Standards](new-app-standards.md) | The reusable baseline for every new ServiceNow app: setup, install, security, navigation, UI/UX, lists, accessibility, docs and process (checklist) |
 | — | [Lessons Learned](lessons-learned.md) | What this build taught us, and the UX baseline for future builds |
 | — | [Build Log](build-log.md) | What was built in each iteration, issues found on the PDI and how they were fixed |
 | — | [ADRs](adr/) | Architecture decision records |
