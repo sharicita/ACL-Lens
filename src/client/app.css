@@ -2369,23 +2369,26 @@ button.lens-subject--add:focus-visible {
     }
 }
 
-/* breathing room between page sections (easier to scan) */
+/*
+ * Spacing standard (use these everywhere):
+ *   --lx-section-gap  between sections of a page (cards, report blocks, settings groups)
+ *   --lx-block-gap    between blocks inside a card, drawer or panel
+ */
 :root {
-    --lx-section-gap: 1.75rem;
+    --lx-section-gap: 2.25rem;
+    --lx-block-gap: 1.25rem;
 }
 .lens__main,
 .lens-run-view,
-.lens-settings {
-    gap: var(--lx-section-gap);
-}
+.lens-settings,
 .lens-workspace {
-    gap: 1.25rem;
+    gap: var(--lx-section-gap);
 }
 .lens-card__body {
     padding: 1.25rem 1.35rem;
 }
 .lens-card__body h3 {
-    margin: 2rem 0 0.65rem;
+    margin: var(--lx-section-gap) 0 0.65rem;
 }
 .lens-card__body > h3:first-child,
 .lens-card__body > :first-child h3:first-child {
@@ -2393,13 +2396,13 @@ button.lens-subject--add:focus-visible {
 }
 .lens-tiles + h3,
 .lens-report__roles-head {
-    margin-top: 2rem;
+    margin-top: var(--lx-section-gap);
 }
 .lens-report__roles-head h3 {
     margin: 0;
 }
 .lens-run-view > .lens-tip {
-    margin-block: -0.75rem;
+    margin-block: calc(var(--lx-section-gap) * -0.5);
 }
 .lens-run-view__bar {
     margin-top: 0.5rem;
@@ -3222,4 +3225,12 @@ tr.lens-group > th {
     min-height: 1.9rem;
     padding: 0.15rem 0.6rem;
     font-size: 0.85rem;
+}
+
+/* blocks inside cards, drawers and panels follow the spacing standard */
+.lens-drawer__body,
+.lens-list .lens-card__body,
+.lens-live,
+.lens-filter {
+    gap: var(--lx-block-gap);
 }

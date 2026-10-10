@@ -95,7 +95,7 @@ Each item says **what**, and where useful **why**, in one line. ACL Lens is the 
 - [ ] **Light, quiet, modern**: soft neutrals, subtle borders, colour reserved for meaning.
 - [ ] **Theme option** (admin property, off by default): follow each user's ServiceNow theme (accent, surfaces, text, borders, dark appearance). Off = the app's own fixed colours. Show "Your theme:" with a live preview.
 - [ ] **Card headers** have a faint accent-tinted gradient; cards are padded and fill the available width (`repeat(auto-fit, minmax(min(100%, Npx), 1fr))`, never `auto-fill`).
-- [ ] **Generous spacing** between page sections (~1.75rem) and inside cards.
+- [ ] **One spacing standard**, as two CSS tokens used everywhere: `--lx-section-gap` (2.25rem) between page sections and `--lx-block-gap` (1.25rem) between blocks inside cards, drawers and panels. No one-off gaps.
 - [ ] **Subtle single-colour icons** on navigation, section headings, primary actions, tabs and exports (`aria-hidden`).
 - [ ] **No decorative arrows or triangles**: arrows only on controls that do what the arrow suggests (expand, go, play, download).
 - [ ] **Cursors:** pointer for actions, the default arrow for the already-selected option, `help` for info icons.

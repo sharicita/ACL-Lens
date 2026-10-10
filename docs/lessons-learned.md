@@ -24,7 +24,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | U-12 | The selected tab still showed a hand cursor. | Selected/current options use the default arrow; only actions get the pointer. |
 | U-13 | Admins wanted the app to match the instance. | Offer an admin property to follow the instance theme (Next Experience tokens), off by default. |
 | U-14 | Adding someone to a comparison meant going back to the Workspace. | Put an "add" affordance where the items are: a subtle dashed card, same size as the others, with + and a label; open the picker in place and focus the search box. |
-| U-15 | Pages felt dense. | Use generous spacing between page sections (≈1.75rem) and inside cards. |
+| U-15 | Pages felt dense, and spacing drifted page by page. | Use the two spacing tokens everywhere: `--lx-section-gap` (2.25rem) between sections, `--lx-block-gap` (1.25rem) inside cards and panels. |
 | U-17 | Field help text sat on the page under fields. | Keep help out of the way like ServiceNow field hints: an ⓘ next to the label shows it on hover or keyboard focus (announced as the description). Show only state (e.g. On/Off) inline. |
 | U-18 | Plain screens were harder to scan. | Add subtle single-colour icons to navigation, section headings, primary actions, tabs and exports (decorative, `aria-hidden`), and give card headers a faint accent gradient. **Never use an arrow or triangle as a decorative icon**: arrows imply an action (expand, go, play), so use them only on controls that do that. |
 | U-19 | A one-or-all dropdown limited the operation filter; lists couldn't be grouped. | Use toggle buttons for multi-choice filters (keep one selected). Give data lists ServiceNow list-view behaviour: column menu (sort a–z / z–a, group by, ungroup), collapsible group rows with counts, a removable breadcrumb, expand / collapse all. |
@@ -137,6 +137,6 @@ These came up repeatedly as feedback. Build them in from the start.
 - Floating UI stays on screen; overlays have a z-index scale; focus is managed in drawers and popovers.
 - Selected options show the arrow cursor; actions show the pointer.
 - Closable tips: × hides for the login session (all tabs), plus a separate "Don't show again".
-- Generous spacing between sections; add-new affordances (dashed + card) next to the items they extend.
+- Spacing from the two tokens only (`--lx-section-gap` between sections, `--lx-block-gap` inside cards); add-new affordances (dashed + card) next to the items they extend.
 - Admin-only actions are hidden from others **and** refused by the API.
 - Optional: follow the instance theme via an admin property.
