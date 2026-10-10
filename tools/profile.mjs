@@ -5,7 +5,7 @@
 //   npm run profile -- add <name> --alias <sdk login alias> --scope x_<code>_acllens [--scope-id <sys_id>] [--instance https://…]
 //   npm run profile -- default <name>
 import fs from 'node:fs'
-import { PROFILE_FILE, newSysId, readProfiles, saveProfile } from './lib/profiles.mjs'
+import { PROFILE_FILE, readProfiles, saveProfile } from './lib/profiles.mjs'
 
 const [cmd, name, ...rest] = process.argv.slice(2)
 const opt = (f) => {
@@ -17,7 +17,7 @@ try {
     if (cmd === 'add') {
         const data = saveProfile(
             name,
-            { alias: opt('--alias'), scope: opt('--scope'), scopeId: opt('--scope-id') || newSysId(), instance: opt('--instance') },
+            { alias: opt('--alias'), scope: opt('--scope'), scopeId: opt('--scope-id'), instance: opt('--instance') },
             rest.includes('--default') || !readProfiles().default
         )
         console.log(`Saved profile "${name}" (default: ${data.default}).`)

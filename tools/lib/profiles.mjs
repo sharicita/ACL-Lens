@@ -50,6 +50,11 @@ export function readProfiles() {
 
 export function saveProfile(name, profile, makeDefault = true) {
     if (!validName(name)) throw new Error('Profile name may use lowercase letters, numbers, dash and underscore.')
+    // an existing profile for the same scope keeps its scope ID: a new one would no longer match the
+    // app already installed on that instance
+    const existing = readProfiles().profiles[name]
+    if (!profile.scopeId && existing && existing.scope === profile.scope) profile = { ...profile, scopeId: existing.scopeId }
+    if (!profile.scopeId) profile = { ...profile, scopeId: newSysId() }
     const errors = validateProfile(profile)
     if (errors.length) throw new Error(errors.join(' '))
     const data = readProfiles()

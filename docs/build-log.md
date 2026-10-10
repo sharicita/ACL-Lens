@@ -527,3 +527,15 @@ The platform's Access Analyzer showed data points ACL Lens didn't have. ACL Lens
   - A live check of the group on `incident` matched ACL Lens on all 12 operations.
   - With a record, the `incident query` business rule hid it and the notice explained why.
 
+## 1.23 Second PDI updated; scope ID guard
+
+| | |
+|---|---|
+| **Date** | 2026-10-10 |
+
+- The second PDI is updated with everything since its first install: the 12 operations, data filters, groups, Check live, the header Assistant, list counts and spacing. The user removed the read-only role from the install account first.
+- **Root cause of the earlier failed updates** ("application was null"): the local profile had been saved again with a newly generated scope ID that didn't match the installed app. The profile was corrected and the install succeeded.
+- **Guards:**
+  - Saving a profile keeps its scope ID unless a new one is given (CLI and guided setup).
+  - `deploy` checks, read-only, that the installed app for the scope has the profile's scope ID. If it doesn't, nothing is installed and the fix command is printed. Verified against the second PDI with a wrong and the right ID.
+

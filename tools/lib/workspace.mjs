@@ -144,6 +144,27 @@ export async function waitForTracker(id, alias, cwd, log, timeoutMs = 20 * 60 * 
 }
 
 /**
+ * Read-only check before an install: if the instance already has an app with this scope, the
+ * profile's scope ID must be that app's sys_id. Otherwise the platform answers "Unable to install
+ * application as application was null" (the package names an app that doesn't exist there).
+ */
+export async function checkInstalledApp(profile, cwd) {
+    let out
+    try {
+        out = await sdkOutput(['query', 'sys_app', '-q', `scope=${profile.scope}`, '-f', 'sys_id', '-o', 'json', '--auth', profile.alias], cwd)
+    } catch (e) {
+        return // can't check (for example no read access); the install reports its own errors
+    }
+    const rec = (JSON.parse(out.slice(out.indexOf('{'))).records || [])[0]
+    if (rec && rec.sys_id && rec.sys_id !== profile.scopeId)
+        throw new Error(
+            `The instance already has ${profile.scope} installed with scope ID ${rec.sys_id}, but profile "${profile.name}" uses ${profile.scopeId}. ` +
+                `Nothing was installed. Point the profile at the installed app, then deploy again:\n` +
+                `  npm run profile -- add ${profile.name} --alias ${profile.alias} --scope ${profile.scope} --scope-id ${rec.sys_id}${profile.instance ? ` --instance ${profile.instance}` : ''}`
+        )
+}
+
+/**
  * Builds the profile, then installs and/or packs it.
  * @param {{name:string, alias:string, scope:string, scopeId:string}} profile
  * @param {{install?: boolean, pack?: boolean, log?: (line:string, isError?:boolean) => void}} opts
@@ -155,6 +176,7 @@ export async function buildProfile(profile, opts = {}) {
     await runSdk(['build'], ws, log)
     if (syncKeysBack(profile)) log('Copied new record keys back to src/fluent/generated/keys.ts (commit this file).')
     if (opts.install) {
+        await checkInstalledApp(profile, ws)
         log(`Installing on the instance saved as "${profile.alias}"…`)
         const seen = []
         try {

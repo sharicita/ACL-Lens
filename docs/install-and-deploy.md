@@ -65,6 +65,14 @@ To keep the repository free of any one company's code:
 | `npm run build` | Build the neutral source (`x_acllens`) for type checks only; **never install this from the project root on an instance that has a profile install** (it would create a second app) |
 | `npm test` | Offline tests |
 
+**"Unable to install application as application was null".** The instance already has the app, but under a different scope ID than your profile. Deploy now checks this before installing (read-only) and prints the exact command to point the profile at the installed app:
+
+```bash
+npm run profile -- add <profile> --alias <login alias> --scope <scope> --scope-id <installed app sys_id>
+```
+
+Saving a profile again keeps its scope ID unless you pass `--scope-id`.
+
 ## 4. The guided setup
 
 `npm run setup` starts `tools/setup/server.mjs`, a small web server that uses only Node's built-in modules. It works before `npm ci` and adds no dependencies.

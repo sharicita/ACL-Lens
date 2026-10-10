@@ -91,6 +91,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | D-11 | A second PDI refused the app's API ("External User Not Authorized") for an admin account. | When the Explicit Roles plugin is active, users need `snc_internal`. Detect the plugin during setup, say so only when it applies, and have the app explain the refusal instead of loading half-empty. Role changes apply after the user signs in again. |
 | D-12 | Adding a second instance silently changed the default target, and a routine deploy went to the wrong instance. | With more than one target configured, require the target to be named on every command that changes an instance; never let setup flows replace an existing default; print the target before acting and check it. |
 | D-08 | The SDK dev-server proxy timed out (504) on a 40-second analysis that the instance completed. | Long requests may time out through proxies: tell the user the work may still finish and where to look; consider async jobs for long runs. |
+| D-10 | Updates to the second PDI failed with "Unable to install application as application was null": the profile had been saved again with a new scope ID, so the package named an app that didn't exist there. | Never generate a new scope ID for an instance that already has the app. Saving a profile keeps its ID, and every install first checks (read-only) that the ID matches the app installed for that scope. |
 
 ## 6. Accessibility and layout
 
