@@ -1,4 +1,4 @@
-# ServiceNow App Standards: New App Template
+# New App Build Standards
 
 The baseline every new ServiceNow app (ServiceNow SDK / Fluent) should meet from day one. It collects every usability, functionality, UX/UI, security, accessibility, documentation and process requirement that came up while building ACL Lens. Use it in three ways:
 

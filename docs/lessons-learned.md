@@ -1,6 +1,6 @@
 # Lessons Learned
 
-What this build taught us, so the next ServiceNow / Fluent app is faster and better. The reusable rules are compiled into the checklist [new-app-standards.md](new-app-standards.md). Each entry is **what happened → what to do next time**. Newest additions go at the end of each section; the [build log](build-log.md) has the full history.
+What this build taught us, so the next ServiceNow / Fluent app is faster and better. The reusable rules are compiled into the checklist [new-app-build-standards.md](new-app-build-standards.md). Each entry is **what happened → what to do next time**. Newest additions go at the end of each section; the [build log](build-log.md) has the full history.
 
 ---
 
