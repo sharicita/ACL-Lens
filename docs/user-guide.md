@@ -127,8 +127,8 @@ Everything that configures the app sits under **ACL Lens → Configuration** in 
 
 | Module | What it's for |
 |---|---|
-| **MCP Server** | Turn the MCP endpoint on or off, copy the endpoint, follow the steps to connect an AI tool, test it, and see the tools it offers |
 | **Properties** | The settings below |
+| **MCP Server** | Turn the MCP endpoint on or off, copy the endpoint, follow the steps to connect an AI tool, test it, and see the tools it offers |
 | **AI Providers** | The Security Assistant's AI connection |
 
 ### Properties

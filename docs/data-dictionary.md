@@ -98,6 +98,6 @@ Seed record (first install only): **Now Assist** (`type=now_assist`, order 10).
 | Scheduled job | `ACL Lens - history retention` (daily 02:30) | No-op unless retention is on |
 | UI policy | "Show only the fields used by the selected provider type" | Provider form |
 | UI action | `Test connection` (provider form, admin) | Saves and tests the provider |
-| Application menu | `ACL Lens`: Access Workspace, Run History, Run Records, and a **Configuration** separator (admins only) with MCP Server, Properties and AI Providers | [01 §5](architecture/01-overview-and-scope.md#5-navigator) |
+| Application menu | `ACL Lens`: Access Workspace, Run History, Run Records, and a **Configuration** separator (admins only) with Properties, MCP Server and AI Providers | [01 §5](architecture/01-overview-and-scope.md#5-navigator) |
 | Cross-scope privileges | 13 read + 1 execute | [04 §4](architecture/04-security-architecture.md#4-cross-scope-privileges-all-allowed) |
 | Server modules | every file in `src/server` | `sys_module` records |

@@ -85,7 +85,7 @@ Record({
         hint: 'Instructions and setup for connecting AI tools (MCP clients) to ACL Lens',
         roles: CONFIG_ROLES,
         active: true,
-        order: 1100,
+        order: 1200,
     },
 })
 
@@ -100,7 +100,7 @@ Record({
         hint: 'History, retention, appearance and MCP settings',
         roles: CONFIG_ROLES,
         active: true,
-        order: 1200,
+        order: 1100,
     },
 })
 
