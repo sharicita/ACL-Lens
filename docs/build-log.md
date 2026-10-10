@@ -332,3 +332,20 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - Only state (On/Off) stays visible inline.
 - Verified in the preview: nothing is expanded by default; hover and Shift+Tab both show the text with `aria-describedby`.
 - The app name **ACL Lens** in the header now links to the Workspace (landing page). Same text, underlined on hover or focus, and Ctrl/Cmd-click opens a new tab. Verified in the preview.
+
+---
+
+## 1.13 Theme follows each user's preference; system tables excluded by default
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- **Why the theme setting was hard to see working:** the accent colour always followed the theme, even with the setting off, and with it on only the near-white backgrounds and grey borders changed.
+- **Now:**
+  - **Off** = fixed ACL Lens colours, accent included.
+  - **On** = the signed-in user's own Next Experience theme. The instance loads it per user (`$uxappimmutables.do?…ux_theme`); the app maps the accent, focus ring, backgrounds, text and borders, and detects dark appearance (sets `color-scheme: dark`, shadows and the hover tint).
+  - Renamed to **Follow each user's ServiceNow theme**.
+- **Properties shows "Your theme:"** with the name and appearance from the user preferences `glide.ui.polaris.theme` → `sys_ux_theme` and `glide.ui.polaris.theme.variant` (new `theme` in `GET /me`), live accent and surface swatches, and the current state.
+- **"Exclude system tables" is ticked by default** in a new analysis.
+- **Verified in the preview (admin, Polaris):** off = teal `rgb(3,117,160)`, on = Polaris `rgb(79,82,189)` with Polaris backgrounds; the page reports "Polaris"; the new Workspace has the box ticked.

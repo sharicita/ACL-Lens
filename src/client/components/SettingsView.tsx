@@ -19,6 +19,12 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
     const [error, setError] = useState('')
     const [clear, setClear] = useState<ClearRequest>({ mode: 'older_than', days: 90, from: today(), to: today(), include_archived: false })
     const [preview, setPreview] = useState<number | null>(null)
+    const [theme, setTheme] = useState<{ name: string; appearance: string } | null>(null)
+    useEffect(() => {
+        LensApi.me()
+            .then((m) => setTheme(m.theme || null))
+            .catch(() => undefined)
+    }, [])
 
     useEffect(() => {
         LensApi.getSettings()
@@ -116,14 +122,28 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                     <label className="lens-switch">
                         <input type="checkbox" checked={!!form.instance_theme} onChange={(e) => setForm({ ...form, instance_theme: e.target.checked })} />
                         <span>
-                            <strong>Use the instance theme</strong>
+                            <strong>Follow each user's ServiceNow theme</strong>
                         </span>
                     </label>
                     <FieldInfo
-                        label="Use the instance theme"
-                        text="Match the colours of your instance's Next Experience theme (backgrounds, text and borders). Granted / Conditional / Denied colours stay the same. Applies to everyone after saving."
+                        label="Follow each user's ServiceNow theme"
+                        text="Off: ACL Lens uses its own fixed colours. On: everyone sees ACL Lens in the theme they picked in ServiceNow (Preferences > Theme), including dark appearance. Granted / Conditional / Denied colours stay the same. Applies after saving."
                     />
                     </div>
+                    <p className="lens-theme-now" aria-live="polite">
+                        <span>
+                            Your theme: <strong>{theme ? theme.name : '…'}</strong>
+                            {theme && theme.appearance !== 'default' ? ` (${theme.appearance})` : ''}
+                        </span>
+                        <span className="lens-theme-swatch" data-tip="The accent colour ACL Lens is using right now">
+                            <i style={{ background: 'var(--lx-accent)' }} aria-hidden="true" /> accent
+                        </span>
+                        <span className="lens-theme-swatch" data-tip="The page and card colours ACL Lens is using right now">
+                            <i style={{ background: 'var(--lx-surface)' }} aria-hidden="true" />
+                            <i style={{ background: 'var(--lx-bg)' }} aria-hidden="true" /> surfaces
+                        </span>
+                        <span className="lens-muted">{form.instance_theme === saved.instance_theme ? (saved.instance_theme ? 'Following your theme.' : 'Using ACL Lens colours.') : 'Save to apply.'}</span>
+                    </p>
                 </div>
             </section>
 

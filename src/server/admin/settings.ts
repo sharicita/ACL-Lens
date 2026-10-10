@@ -28,6 +28,32 @@ export function instanceTheme(): boolean {
     return gs.getProperty(PROPS.instanceTheme, 'false') === 'true'
 }
 
+/**
+ * The signed-in user's own Next Experience theme preference (name and light/dark appearance),
+ * shown on the Properties page so admins can see what "follow each user's theme" will use.
+ */
+export function userTheme(): { name: string; appearance: string } {
+    let id = ''
+    let variant = ''
+    try {
+        const u = gs.getUser() as any
+        id = u.getPreference('glide.ui.polaris.theme') || ''
+        variant = u.getPreference('glide.ui.polaris.theme.variant') || ''
+    } catch (e) {
+        /* preferences unavailable: report the defaults */
+    }
+    let name = ''
+    if (id) {
+        try {
+            const t = gr('sys_ux_theme')
+            if (t.get(id)) name = t.getValue('name')
+        } catch (e) {
+            /* theme table not readable from this scope */
+        }
+    }
+    return { name: name || 'Instance default', appearance: variant || 'default' }
+}
+
 export function mcpEnabled(): boolean {
     return gs.getProperty(PROPS.mcpEnabled, 'false') === 'true'
 }

@@ -50,7 +50,7 @@ Property({
     name: 'x_acllens.ui.instance_theme',
     type: 'boolean',
     value: 'false',
-    description: "Use the instance's Next Experience theme colours (backgrounds, text, borders) instead of the ACL Lens light theme. Access colours stay the same.",
+    description: "Follow each user's own ServiceNow (Next Experience) theme, including dark appearance, instead of the fixed ACL Lens colours. Granted / Conditional / Denied colours stay the same.",
     roles: { read: READERS, write: ADMIN },
 })
 

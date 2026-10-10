@@ -127,7 +127,7 @@ export const LensApi = {
         return request<RunPayload>(`/runs/${id}/rerun`, { method: 'POST', body: '{}' })
     },
     me() {
-        return request<{ user: string; is_admin: boolean; history_enabled: boolean; instance_theme?: boolean }>('/me')
+        return request<{ user: string; is_admin: boolean; history_enabled: boolean; instance_theme?: boolean; theme?: { name: string; appearance: string } }>('/me')
     },
     getSettings() {
         return request<Settings>('/admin/settings')

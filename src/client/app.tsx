@@ -22,8 +22,15 @@ export interface WorkspaceDraft {
 
 const EMPTY_DRAFT: WorkspaceDraft = {
     subjects: [],
-    filter: { mode: 'secured_by_roles', value: '', includeFields: true, excludeSystem: false },
+    filter: { mode: 'secured_by_roles', value: '', includeFields: true, excludeSystem: true },
     name: '',
+}
+
+/** True when the user's ServiceNow theme has a dark page background. */
+export function themeIsDark(): boolean {
+    const rgb = getComputedStyle(document.documentElement).getPropertyValue('--now-color_background--primary').split(',').map((x) => parseInt(x, 10))
+    if (rgb.length < 3 || rgb.some((x) => isNaN(x))) return false
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2] < 110
 }
 
 export default function App() {
@@ -60,9 +67,11 @@ function Shell() {
             .catch(() => undefined)
     }, [])
 
-    // admin setting: follow the instance's Next Experience theme colours
+    // admin setting: follow each user's own ServiceNow theme (and its dark appearance)
     useEffect(() => {
-        document.documentElement.classList.toggle('lens-theme-instance', !!me.instance_theme)
+        const root = document.documentElement
+        root.classList.toggle('lens-theme-instance', !!me.instance_theme)
+        root.classList.toggle('lens-theme-dark', !!me.instance_theme && themeIsDark())
     }, [me.instance_theme])
 
     useEffect(() => {

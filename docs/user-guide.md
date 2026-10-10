@@ -14,7 +14,7 @@ Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a
    - *Tables secured by these roles* (best start): tables whose ACLs name one of the subjects' roles.
    - *Specific tables* / *Table name starts with*: type and pick from the list, or press Enter to use what you typed.
    - *Application scope*: custom `x_` apps appear first, and only scopes you can read are listed.
-   - *All tables*: tick *Exclude system tables* to keep it focused.
+   - *All tables*: *Exclude system tables* (ticked by default) keeps it focused.
    - Options: *Include field-level rules*, *Max tables* (default 1,500).
 3. **Run.** *Analyze* shows the subjects side by side. *Analyze + run comparison script* also produces the comparison report. Give it a name to find it later in History.
 
@@ -138,7 +138,7 @@ Everything that configures the app sits under **ACL Lens → Configuration** in 
 | Save runs to History | Off: runs aren't stored |
 | Clean up old runs automatically | Daily at 02:30; keep N days (default 90); then delete or archive |
 | Clear history now | Older than N days / date range / all; optionally include archived. **Preview** shows the count first; deleting can't be undone |
-| Use the instance theme | Off (default): ACL Lens's own light theme. On: backgrounds, text and borders follow the instance's Next Experience theme. Access colours never change |
+| Follow each user's ServiceNow theme | Off (default): ACL Lens's own fixed colours. On: everyone sees ACL Lens in the theme they chose in ServiceNow (*Preferences → Theme*), including dark appearance: accent, backgrounds, text and borders. The page shows **Your theme** with a live preview. Access colours never change |
 
 ### MCP server
 

@@ -6,7 +6,7 @@ import { executeRun, loadRun, rerun } from '../engine/runs.ts'
 import { rankedSearch } from '../engine/search.ts'
 import { aclDetail } from '../engine/acl-detail.ts'
 import { mcpInfo } from '../ai/mcp.ts'
-import { clearHistory, deleteRun, getSettings, historyEnabled, instanceTheme, previewClear, saveSettings, setArchived } from '../admin/settings.ts'
+import { clearHistory, deleteRun, getSettings, historyEnabled, instanceTheme, previewClear, saveSettings, setArchived, userTheme } from '../admin/settings.ts'
 import { SubjectRef } from '../engine/types.ts'
 
 const USER_ROLE = 'x_acllens.user'
@@ -145,6 +145,7 @@ export function getMe(request: any, response: any) {
         is_admin: gs.hasRole(ADMIN_ROLE),
         history_enabled: historyEnabled(),
         instance_theme: instanceTheme(),
+        theme: userTheme(),
     }))
 }
 
