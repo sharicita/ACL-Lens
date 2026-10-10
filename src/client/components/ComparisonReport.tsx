@@ -4,7 +4,7 @@ import { rankFilter } from '../utils/rank'
 import { exportFilteredDiffsCsv } from '../utils/exports'
 import { ListKind, listUrl, roleRows, RoleRow } from '../utils/reportLists'
 import RecordLink, { recordUrl } from './RecordLink'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import DiffTable from './DiffTable'
 import Icon from './Icon'
 
@@ -149,19 +149,19 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                 <table className="lens-mx lens-mx--compact lens-mx--report">
                     <thead>
                         <tr>
-                            <SortTh sorter={perSubject} col="subject">
+                            <SortTh sorter={perSubject} col="subject" groupable={false}>
                                 Subject
                             </SortTh>
-                            <SortTh sorter={perSubject} col="granted">
+                            <SortTh sorter={perSubject} col="granted" groupable={false}>
                                 Granted
                             </SortTh>
-                            <SortTh sorter={perSubject} col="conditional">
+                            <SortTh sorter={perSubject} col="conditional" groupable={false}>
                                 Conditional
                             </SortTh>
-                            <SortTh sorter={perSubject} col="denied">
+                            <SortTh sorter={perSubject} col="denied" groupable={false}>
                                 Denied
                             </SortTh>
-                            <SortTh sorter={perSubject} col="exclusive" tip="Table × operation cells where only this subject has access">
+                            <SortTh sorter={perSubject} col="exclusive" groupable={false} tip="Table × operation cells where only this subject has access">
                                 Exclusive access
                             </SortTh>
                         </tr>
@@ -263,8 +263,12 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
 export function RolesTable({ rows, cmp }: { rows: RoleRow[]; cmp: Comparison }) {
     const columns: { [key: string]: (r: RoleRow) => string | number } = { role: (r) => r.role, held: (r) => r.held.filter(Boolean).length }
     cmp.subjects.forEach((s, i) => (columns[s.key] = (r) => (r.held[i] === 'explicit' ? 2 : r.held[i] === 'inherited' ? 1 : 0)))
-    const sorter = useSort(rows, columns)
+    const groupLabel: { [key: string]: (r: RoleRow) => string } = { held: (r) => `${r.held.filter(Boolean).length} of ${cmp.subjects.length}` }
+    cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (r) => r.held[i] || 'not held'))
+    const sorter = useSort(rows, columns, { groupLabel })
     return (
+        <>
+        <ListBreadcrumb sorter={sorter} />
         <table className="lens-mx lens-mx--compact">
             <thead>
                 <tr>
@@ -282,7 +286,7 @@ export function RolesTable({ rows, cmp }: { rows: RoleRow[]; cmp: Comparison }) 
                 </tr>
             </thead>
             <tbody>
-                {sorter.rows.map((r) => (
+                <GroupedRows sorter={sorter} colSpan={2 + cmp.subjects.length} render={(r) => (
                     <tr key={r.role} className={r.shared ? '' : 'lens-row--diff'}>
                         <th scope="row">
                             <code>{r.role}</code> <RecordLink href={recordUrl.roleByName(r.role)} what={`role record for ${r.role}`} />
@@ -307,8 +311,9 @@ export function RolesTable({ rows, cmp }: { rows: RoleRow[]; cmp: Comparison }) 
                             {r.held.filter(Boolean).length} of {cmp.subjects.length}
                         </td>
                     </tr>
-                ))}
+                )} />
             </tbody>
         </table>
+        </>
     )
 }

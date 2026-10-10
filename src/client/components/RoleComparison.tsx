@@ -4,7 +4,7 @@ import { rankFilter } from '../utils/rank'
 import HelpTip from './HelpTip'
 import FieldInfo from './FieldInfo'
 import RecordLink, { recordUrl } from './RecordLink'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 
 interface Props {
     subjects: SubjectResult[]
@@ -170,8 +170,12 @@ interface TableProps {
 function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
     const columns: { [key: string]: (role: string) => string | number } = { role: (r) => r }
     for (const s of subjects) columns[s.subject.key] = (r) => (sourcesBy[s.subject.key][r] ? 1 : 0)
-    const sorter = useSort(roles, columns)
+    const groupLabel: { [key: string]: (role: string) => string } = {}
+    for (const s of subjects) groupLabel[s.subject.key] = (r) => (sourcesBy[s.subject.key][r] ? 'has the role' : 'does not have it')
+    const sorter = useSort(roles, columns, { groupLabel })
     return (
+        <>
+        <ListBreadcrumb sorter={sorter} />
         <table className="lens-mx lens-mx--compact">
             <caption className="lens-sr">{title}</caption>
             <thead>
@@ -187,7 +191,7 @@ function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
                 </tr>
             </thead>
             <tbody>
-                {sorter.rows.map((role) => (
+                <GroupedRows sorter={sorter} colSpan={1 + subjects.length} render={(role) => (
                     <tr key={role}>
                         <th scope="row">
                             <code>{role}</code> <RecordLink href={recordUrl.roleByName(role)} what={`role record for ${role}`} />
@@ -212,8 +216,9 @@ function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
                             )
                         })}
                     </tr>
-                ))}
+                )} />
             </tbody>
         </table>
+        </>
     )
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { rankFilter } from '../utils/rank'
 import DocLink from './DocLink'
 import RecordLink, { recordUrl } from './RecordLink'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import { LensApi } from '../services/LensApi'
 import { AnalysisResult, FIELD_OPS, FieldDetail, TABLE_OPS } from '../types'
 import { download, safeName, toCsv } from '../utils/download'
@@ -95,7 +95,9 @@ export default function TableDetail({ results, index, onClose }: Props) {
 
     const liveColumns: { [key: string]: (r: (typeof liveRows)[number]) => string | number } = { field: (r) => r.field.label || r.field.name }
     if (live) for (const sub of live.subjects) for (const op of FIELD_OPS) liveColumns[`${sub.key}:${op}`] = (r) => rank(r.cells[sub.key][op].s, dd)
-    const liveSort = useSort(liveRows, liveColumns)
+    const liveGroupLabel: { [key: string]: (r: (typeof liveRows)[number]) => string } = {}
+    if (live) for (const sub of live.subjects) for (const op of FIELD_OPS) liveGroupLabel[`${sub.key}:${op}`] = (r) => statusText(r.cells[sub.key][op].s, dd)
+    const liveSort = useSort(liveRows, liveColumns, { groupLabel: liveGroupLabel })
 
     const exportLive = () => {
         if (!live) return
@@ -236,6 +238,8 @@ export default function TableDetail({ results, index, onClose }: Props) {
                             </div>
                             {error && <div className="lens-alert lens-alert--critical">{error}</div>}
                             {live && (
+                                <>
+                                <ListBreadcrumb sorter={liveSort} />
                                 <table className="lens-mx lens-mx--compact">
                                     <thead>
                                         <tr>
@@ -254,7 +258,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                             </th>
                                             {live.subjects.map((s) =>
                                                 FIELD_OPS.map((op) => (
-                                                    <SortTh key={`${s.key}-${op}`} sorter={liveSort} col={`${s.key}:${op}`} tip={`Sort by ${s.label}'s ${op} access (most first)`}>
+                                                    <SortTh key={`${s.key}-${op}`} sorter={liveSort} col={`${s.key}:${op}`} label={`${s.label} ${op}`} tip={`Sort by ${s.label}'s ${op} access (most first)`}>
                                                         {OP_SHORT[op]}
                                                     </SortTh>
                                                 ))
@@ -262,7 +266,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {liveSort.rows.map((r) => (
+                                        <GroupedRows sorter={liveSort} colSpan={live.subjects.length * FIELD_OPS.length + 1} render={(r) => (
                                             <tr key={r.field.name}>
                                                 <th scope="row" title={`${r.field.type} · defined on ${r.field.definedOn}`}>
                                                     {r.field.label} <code>{r.field.name}</code>{' '}
@@ -280,9 +284,10 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                                     })
                                                 )}
                                             </tr>
-                                        ))}
+                                        )} />
                                     </tbody>
                                 </table>
+                                </>
                             )}
                         </>
                     )}

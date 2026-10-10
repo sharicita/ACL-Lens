@@ -3,7 +3,12 @@
 Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a tooltip. Field help works like ServiceNow field hints: hover or tab to the small **ⓘ** next to a field to read it; nothing is expanded on the page by default.
 
 - **Tips (💡)** suggest what to try next. **×** closes a tip for the rest of your ServiceNow session, in every tab (it can come back after you next sign in); **Don't show again** hides it for good in this browser.
-- **Sorting:** every list of results can be sorted. Select a column heading: text sorts A–Z first, numbers and access levels largest / most access first; select again to reverse.
+- **Lists work like ServiceNow list views:**
+  - Select a column heading to sort: text A–Z first, numbers and access levels largest first. Select again to reverse.
+  - Each heading has a **column menu** (⋮, shown on hover or focus) with *Sort (a to z)*, *Sort (z to a)*, *Remove sort*, **Group by** that column, and *Ungroup*.
+  - Grouped rows sit under collapsible headings with counts, for example *Type: Comparison (10)*.
+  - A bar above the list shows what is applied ("Grouped by …", "Sorted by …"); select **×** to remove one. **Expand all / Collapse all** work on the groups.
+  - Status columns group by result (Granted, Conditional, Denied…); History's *Created* groups by day.
 
 ## 1. Run an analysis
 
@@ -61,7 +66,7 @@ The **baseline** is the user or role that everyone else is compared to **on this
 
 ### Matrix
 - **G** Granted · **C** Conditional (decided per record or session) · **D** Denied · **–** No rule (instance default applies).
-- Filters: *Differences only*, *Hide tables nobody can access*, operation focus, text filter.
+- Filters: **Operations** toggles (C, R, W, D: show any combination; at least one stays on; *All* restores them), *Differences only*, *Hide tables nobody can access*, and a text filter.
 - The **▸** arrow expands field rules: *all other fields (\*)* plus fields with their own rules.
 
 ### Roles tab

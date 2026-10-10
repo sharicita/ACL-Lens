@@ -27,6 +27,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | U-15 | Pages felt dense. | Use generous spacing between page sections (≈1.75rem) and inside cards. |
 | U-17 | Field help text sat on the page under fields. | Keep help out of the way like ServiceNow field hints: an ⓘ next to the label shows it on hover or keyboard focus (announced as the description). Show only state (e.g. On/Off) inline. |
 | U-18 | Plain screens were harder to scan. | Add subtle single-colour icons to navigation, section headings, primary actions, tabs and exports (decorative, `aria-hidden`), and give card headers a faint accent gradient. **Never use an arrow or triangle as a decorative icon**: arrows imply an action (expand, go, play), so use them only on controls that do that. |
+| U-19 | A one-or-all dropdown limited the operation filter; lists couldn't be grouped. | Use toggle buttons for multi-choice filters (keep one selected). Give data lists ServiceNow list-view behaviour: column menu (sort a–z / z–a, group by, ungroup), collapsible group rows with counts, a removable breadcrumb, expand / collapse all. |
 | U-16 | An action error wiped the whole page. | Show action errors inline next to the action; keep the page usable. |
 
 ## 2. ServiceNow SDK / Fluent

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { LensApi } from '../services/LensApi'
 import { RunPayload, RunRecord } from '../types'
 import Tip from './Tip'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import Icon from './Icon'
 
 interface Props {
@@ -27,6 +27,12 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
         tables: (r) => r.table_count,
         diffs: (r) => (r.run_type === 'compare' ? r.diff_count : null),
         created: (r) => r.created,
+    }, {
+        groupLabel: {
+            type: (r) => (r.run_type === 'compare' ? 'Comparison' : 'Analysis'),
+            created: (r) => (r.created || '').substring(0, 10),
+            diffs: (r) => (r.run_type === 'compare' ? String(r.diff_count) : '—'),
+        },
     })
     const [error, setError] = useState('')
 
@@ -94,6 +100,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                 </Tip>
             </div>
             <div className="lens-mx__scroll">
+                <ListBreadcrumb sorter={sorter} />
                 <table className="lens-mx lens-mx--compact lens-history">
                     <thead>
                         <tr>
@@ -122,7 +129,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                         </tr>
                     </thead>
                     <tbody>
-                        {sorter.rows.map((r) => (
+                        <GroupedRows sorter={sorter} colSpan={8} render={(r) => (
                             <tr key={r.sys_id}>
                                 <th scope="row">
                                     <button type="button" className="lens-link" onClick={() => onOpen(r.sys_id)}>
@@ -187,7 +194,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                                     )}
                                 </td>
                             </tr>
-                        ))}
+                        )} />
                     </tbody>
                 </table>
                 {!loading && !runs.length && <p className="lens-empty">No runs yet. Analyze something in the Workspace and it will appear here.</p>}

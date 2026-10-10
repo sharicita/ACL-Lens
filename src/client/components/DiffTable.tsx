@@ -1,9 +1,9 @@
 import React from 'react'
 import { Comparison, DiffRow } from '../types'
-import { rank } from '../utils/status'
+import { rank, statusText } from '../utils/status'
 import { StatusCell } from './StatusCell'
 import RecordLink, { recordUrl } from './RecordLink'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 
 const OP_ORDER: { [op: string]: number } = { create: 0, read: 1, write: 2, delete: 3 }
 
@@ -23,10 +23,15 @@ export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
         op: (d) => OP_ORDER[d.op] ?? 9,
     }
     cmp.subjects.forEach((s, i) => (columns[s.key] = (d) => rank(d.statuses[i], cmp.defaultDeny)))
-    const sorter = useSort(rows, columns)
-    const shown = limit ? sorter.rows.slice(0, limit) : sorter.rows
+    const groupLabel: { [key: string]: (d: DiffRow) => string } = {
+        level: (d) => (d.kind === 'table' ? 'Table' : 'Field'),
+        field: (d) => (d.kind === 'table' ? '— (table rule)' : d.f === '*' ? 'all other fields' : d.f),
+    }
+    cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (d) => statusText(d.statuses[i], cmp.defaultDeny)))
+    const sorter = useSort(rows, columns, { groupLabel })
     return (
         <>
+            <ListBreadcrumb sorter={sorter} />
             <table className="lens-mx lens-mx--compact">
                 <thead>
                     <tr>
@@ -50,7 +55,7 @@ export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {shown.map((d, i) => (
+                    <GroupedRows sorter={sorter} colSpan={4 + cmp.subjects.length} limit={limit} render={(d, i) => (
                         <tr key={`${d.t}-${d.f}-${d.op}-${i}`}>
                             <td>
                                 <span className={`lens-level lens-level--${d.kind}`}>{d.kind === 'table' ? 'Table' : 'Field'}</span>
@@ -76,7 +81,7 @@ export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
                                 </td>
                             ))}
                         </tr>
-                    ))}
+                    )} />
                 </tbody>
             </table>
             {!rows.length && <p className="lens-empty">{emptyText}</p>}

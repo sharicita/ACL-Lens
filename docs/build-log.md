@@ -372,3 +372,27 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - Arrows and triangles appear only where they mean an action (Analyze, Rerun, Restore, Download). The "3. Run" heading uses a bolt instead of a play triangle.
 - Card headers have a faint accent-tinted gradient (follows the user's theme accent when that setting is on; none in print). The option-row info icons are vertically centred.
 - Header tabs (Workspace, History, Settings) and the matching segmented switches show a subtle button on hover: soft surface fill, thin outline and a 0.15 s fade (no fade with reduced motion). The selected tab is unchanged.
+
+---
+
+## 1.15 List-view behaviour and operation toggles
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- **Access matrix:** the "All operations / one operation" dropdown is replaced by **C / R / W / D toggles**, so any combination can be shown. At least one stays on, and *All* restores them. The column headings, sorting, filters and field rows follow the selection.
+- **ServiceNow-style lists** (`SortTh` / `useSort`):
+  - every sortable heading has a column menu: Sort (a to z), Sort (z to a), Remove sort, Group by, Ungroup;
+  - the menu is keyboard-operable (focus moves into it, arrows move between items, Esc closes and returns focus) and positioned against the window;
+  - grouped rows sit under collapsible headings with counts (`GroupedRows`);
+  - a breadcrumb shows "Grouped by…" and "Sorted by…" with ×, plus Expand all / Collapse all (`ListBreadcrumb`);
+  - status columns group by result name; History *Created* groups by day.
+  - Applied to the matrix, every difference, report roles, list views, History, changes since original, the Roles tab and live fields. The 3-row per-subject summary stays sort-only.
+- **Verified in the preview:**
+  - toggling Read off left C/W/D columns;
+  - grouping the matrix by "Alva Pennigton delete" gave Denied (2) and Conditional (1);
+  - Collapse all, single-group toggling and × all worked;
+  - History grouped by Type (Analysis 8 / Comparison 10) and by Created per day;
+  - keyboard menu focus, arrows and Esc worked.
+

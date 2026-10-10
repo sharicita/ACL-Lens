@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import { AnalysisResult, FIELD_OPS, Op, TABLE_OPS } from '../types'
-import { OP_SHORT, rank } from '../utils/status'
+import { OP_SHORT, rank, statusText } from '../utils/status'
 import { rankFilter } from '../utils/rank'
 import { StatusCell } from './StatusCell'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 
 interface Props {
     results: AnalysisResult
@@ -19,14 +19,21 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     const [q, setQ] = useState('')
     const [diffsOnly, setDiffsOnly] = useState(false)
     const [hideNone, setHideNone] = useState(false)
-    const [opFocus, setOpFocus] = useState<'' | Op>('')
+    const [opSel, setOpSel] = useState<Set<Op>>(new Set(TABLE_OPS))
     const [limit, setLimit] = useState(PAGE)
     const [expanded, setExpanded] = useState<Set<number>>(new Set())
     const [collapsing, setCollapsing] = useState<Set<number>>(new Set())
     const dd = results.defaultDeny
     const visible = results.subjects.filter((s) => !hidden.has(s.subject.key))
     const baseIdx = Math.max(0, visible.findIndex((s) => s.subject.key === baseline))
-    const ops = opFocus ? [opFocus] : TABLE_OPS
+    const ops = TABLE_OPS.filter((op) => opSel.has(op))
+    const allOps = ops.length === TABLE_OPS.length
+    const toggleOp = (op: Op) => {
+        const n = new Set(opSel)
+        n.has(op) ? n.delete(op) : n.add(op)
+        if (n.size) setOpSel(n)
+        setLimit(PAGE)
+    }
 
     const rows = useMemo(() => {
         const first = results.subjects[0]
@@ -46,7 +53,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
             if (!differs)
                 t.fields.forEach((_f, fi) => {
                     for (const op of FIELD_OPS) {
-                        if (opFocus && op !== opFocus) continue
+                        if (!opSel.has(op)) continue
                         if (new Set(visible.map((s) => s.tables[ti].fields[fi]?.ops[op].s)).size > 1) differs = true
                     }
                 })
@@ -55,12 +62,14 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
             out.push({ ti, differs })
         })
         return out
-    }, [results, q, diffsOnly, hideNone, opFocus, hidden])
+    }, [results, q, diffsOnly, hideNone, opSel, hidden])
 
     // optional column sort; with none chosen, rows keep the search ranking
     const sortCols: { [key: string]: (r: { ti: number; differs: boolean }) => string | number } = { table: (r) => results.subjects[0].tables[r.ti].l || results.subjects[0].tables[r.ti].t }
     for (const s of visible) for (const op of ops) sortCols[`${s.subject.key}:${op}`] = (r) => rank(s.tables[r.ti].ops[op].s, dd)
-    const sorter = useSort(rows, sortCols)
+    const groupLabel: { [key: string]: (r: { ti: number; differs: boolean }) => string } = {}
+    for (const s of visible) for (const op of ops) groupLabel[`${s.subject.key}:${op}`] = (r) => statusText(s.tables[r.ti].ops[op].s, dd)
+    const sorter = useSort(rows, sortCols, { groupLabel })
 
     React.useEffect(() => {
         if (onFilteredChange) onFilteredChange(new Set(rows.map((r) => results.subjects[0].tables[r.ti].t)))
@@ -93,20 +102,28 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
             <div className="lens-card__header lens-mx__toolbar">
                 <h2 id="mx-title">Access matrix</h2>
                 <input className="lens-input lens-mx__search" placeholder="Filter tables…" value={q} aria-label="Filter tables" onChange={(e) => { setQ(e.target.value); setLimit(PAGE) }} />
-                <select
-                    className="lens-input lens-input--narrow"
-                    value={opFocus}
-                    aria-label="Operation focus"
-                    data-tip="Focus on one operation (create, read, write or delete) to simplify the matrix."
-                    onChange={(e) => setOpFocus(e.target.value as Op | '')}
-                >
-                    <option value="">All operations</option>
+                <div className="lens-opsel" role="group" aria-label="Operations to show">
+                    <span className="lens-opsel__label">Operations</span>
                     {TABLE_OPS.map((op) => (
-                        <option key={op} value={op}>
-                            {op}
-                        </option>
+                        <button
+                            key={op}
+                            type="button"
+                            className={`lens-opsel__op${opSel.has(op) ? ' lens-opsel__op--on' : ''}`}
+                            aria-pressed={opSel.has(op)}
+                            disabled={opSel.has(op) && opSel.size === 1}
+                            onClick={() => toggleOp(op)}
+                            data-tip={opSel.has(op) && opSel.size === 1 ? 'At least one operation stays selected.' : `${opSel.has(op) ? 'Hide' : 'Show'} ${op}`}
+                        >
+                            {OP_SHORT[op]}
+                            <span className="lens-sr"> ({op})</span>
+                        </button>
                     ))}
-                </select>
+                    {!allOps && (
+                        <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(TABLE_OPS))}>
+                            All
+                        </button>
+                    )}
+                </div>
                 {visible.length > 1 && (
                     <label className="lens-check">
                         <input type="checkbox" checked={diffsOnly} onChange={(e) => { setDiffsOnly(e.target.checked); setLimit(PAGE) }} />{' '}
@@ -121,6 +138,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                     {rows.length} tables{visible.length > 1 ? ` · ${diffCount} with differences` : ''}
                 </span>
             </div>
+            <ListBreadcrumb sorter={sorter} />
             <div className="lens-mx__scroll">
                 <table className="lens-mx">
                     <caption className="lens-sr">Access by table: one column per operation for each user or role</caption>
@@ -143,6 +161,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                         sorter={sorter}
                                         col={`${s.subject.key}:${op}`}
                                         abbr={op}
+                                        label={`${s.subject.label} ${op}`}
                                         className={`lens-mx__op${op === ops[0] ? ' lens-mx__cell--first' : ''}`}
                                         tip={`Sort by ${s.subject.label}'s ${op} access (most first)`}
                                     >
@@ -153,7 +172,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                         </tr>
                     </thead>
                     <tbody>
-                        {sorter.rows.slice(0, limit).map(({ ti, differs }) => {
+                        <GroupedRows sorter={sorter} colSpan={1 + visible.length * ops.length} limit={limit} render={({ ti, differs }) => {
                             const t = results.subjects[0].tables[ti]
                             const isOpen = expanded.has(ti) && !collapsing.has(ti)
                             const showFields = expanded.has(ti)
@@ -210,7 +229,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                         ))}
                                 </React.Fragment>
                             )
-                        })}
+                        }} />
                     </tbody>
                 </table>
                 {!rows.length && <p className="lens-empty">No tables match the current filters.</p>}

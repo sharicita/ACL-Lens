@@ -10,7 +10,7 @@ import { RolesTable } from './ComparisonReport'
 import DiffTable, { diffCsvRows } from './DiffTable'
 import { Legend, StatusCell } from './StatusCell'
 import RecordLink, { recordUrl } from './RecordLink'
-import SortTh, { useSort } from './SortTh'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
 import Icon from './Icon'
 
 interface Props {
@@ -149,7 +149,9 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
     const rows = useMemo(() => rankFilter(all, q, (t) => [t.t, t.l]), [all, q])
     const columns: { [key: string]: (t: TableRow) => string | number } = { table: (t) => t.l || t.t, name: (t) => t.t, diffs: (t) => t.diffs }
     cmp.subjects.forEach((s, i) => (columns[s.key] = (t) => t.ops[i].reduce((n, st: Status) => n + rank(st, dd), 0)))
-    const sorter = useSort(rows, columns)
+    const groupLabel: { [key: string]: (t: TableRow) => string } = { diffs: (t) => (t.diffs ? `${t.diffs} differences` : 'identical') }
+    cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (t) => t.ops[i].map((st, oi) => `${OP_SHORT[TABLE_OPS[oi]]}:${st === 'N' ? '–' : st}`).join(' ')))
+    const sorter = useSort(rows, columns, { groupLabel })
     const exportCsv = () => {
         const head: unknown[] = ['Table', 'Table label', 'Differences']
         cmp.subjects.forEach((s) => TABLE_OPS.forEach((op) => head.push(`${s.label} – ${op}`)))
@@ -166,6 +168,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
             <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="tables" onExport={exportCsv} />
             <Legend defaultDeny={dd} baseline={false} />
             <div className="lens-mx__scroll lens-list__scroll">
+                <ListBreadcrumb sorter={sorter} />
                 <table className="lens-mx lens-mx--compact">
                     <thead>
                         <tr>
@@ -183,7 +186,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
                         </tr>
                     </thead>
                     <tbody>
-                        {sorter.rows.map((t) => (
+                        <GroupedRows sorter={sorter} colSpan={2 + cmp.subjects.length} render={(t) => (
                             <tr key={t.t}>
                                 <th scope="row">
                                     {t.l} <code>{t.t}</code> <RecordLink href={recordUrl.table(t.t)} what={`table definition for ${t.t}`} />
@@ -204,7 +207,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
                                     </td>
                                 ))}
                             </tr>
-                        ))}
+                        )} />
                     </tbody>
                 </table>
                 {!rows.length && <p className="lens-empty">{all.length ? 'No tables match the filter.' : 'No tables in this list.'}</p>}

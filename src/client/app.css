@@ -2587,3 +2587,185 @@ a.lens-link.lens-confignav__ext {
         transition: none;
     }
 }
+
+/* access matrix: any combination of operations */
+.lens-opsel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.lens-opsel__label {
+    color: var(--lx-muted);
+    margin-right: 0.2rem;
+}
+.lens-opsel__op {
+    font: inherit;
+    font-weight: 600;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    border-radius: var(--lx-radius-sm);
+    border: 1px solid var(--lx-border-strong);
+    background: var(--lx-surface);
+    color: var(--lx-muted);
+    cursor: pointer;
+}
+.lens-opsel__op--on {
+    background: var(--lx-accent-soft-2);
+    border-color: var(--lx-accent);
+    color: var(--lx-accent);
+}
+.lens-opsel__op:disabled {
+    cursor: not-allowed;
+}
+.lens-opsel__op:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--lx-focus);
+}
+
+/* ServiceNow-style list: column menu, breadcrumb, group headings */
+.lens-th__inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+.lens-th__menu {
+    border: 0;
+    background: transparent;
+    color: var(--lx-faint);
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+.lens-th:hover .lens-th__menu,
+.lens-th__menu:focus-visible,
+.lens-th__menu[aria-expanded='true'] {
+    opacity: 1;
+}
+.lens-th__menu:hover {
+    background: var(--lx-hover);
+    color: var(--lx-text);
+}
+.lens-th__menu:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--lx-focus);
+}
+@media (hover: none) {
+    .lens-th__menu {
+        opacity: 1;
+    }
+}
+.lens-colmenu {
+    position: fixed;
+    z-index: 90;
+    min-width: 12rem;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background: var(--lx-surface);
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius-sm);
+    box-shadow: var(--lx-shadow-pop);
+    font-weight: 400;
+    text-align: left;
+}
+.lens-colmenu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    font-size: 0.84rem;
+    padding: 0.4rem 0.6rem;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--lx-text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.lens-colmenu button:hover:not(:disabled),
+.lens-colmenu button:focus-visible {
+    background: var(--lx-hover);
+    outline: none;
+}
+.lens-colmenu button:disabled {
+    color: var(--lx-faint);
+    cursor: default;
+}
+.lens-colmenu button[aria-current='true'] {
+    font-weight: 600;
+}
+.lens-colmenu__sep {
+    border-top: 1px solid var(--lx-border);
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
+}
+.lens-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.82rem;
+    color: var(--lx-muted);
+}
+.lens-card > .lens-crumbs {
+    margin: 0.6rem 1.35rem 0;
+}
+.lens-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.2rem 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--lx-accent-soft);
+    color: var(--lx-text);
+}
+.lens-crumb__x {
+    border: 0;
+    background: transparent;
+    color: var(--lx-muted);
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.lens-crumb__x:hover {
+    background: var(--lx-hover);
+    color: var(--lx-text);
+}
+.lens-crumbs__actions {
+    display: inline-flex;
+    gap: 0.8rem;
+    margin-left: auto;
+}
+tr.lens-group > th {
+    text-align: left;
+    background: var(--lx-subtle);
+    font-weight: 400;
+    padding: 0.3rem 0.6rem;
+}
+.lens-group__toggle {
+    font: inherit;
+    border: 0;
+    background: transparent;
+    color: var(--lx-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0;
+}
+.lens-group__toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--lx-focus);
+    border-radius: 4px;
+}

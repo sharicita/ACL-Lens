@@ -1,8 +1,8 @@
 import React from 'react'
 import { DriftResult } from '../types'
 import { StatusCell } from './StatusCell'
-import SortTh, { useSort } from './SortTh'
-import { rank } from '../utils/status'
+import SortTh, { GroupedRows, ListBreadcrumb, useSort } from './SortTh'
+import { rank, statusText } from '../utils/status'
 
 interface Props {
     drift: DriftResult
@@ -19,7 +19,7 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
         op: (r) => r.op,
         from: (r) => rank(r.from, true),
         to: (r) => rank(r.to, true),
-    })
+    }, { groupLabel: { from: (r) => statusText(r.from, true), to: (r) => statusText(r.to, true), field: (r) => r.f || '— (table rule)' } })
     return (
         <section className="lens-card" aria-labelledby="drift-title">
             <div className="lens-card__header">
@@ -50,6 +50,7 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                         )}
                         {drift.rows.length > 0 && (
                             <div className="lens-mx__scroll lens-mx__scroll--short">
+                                <ListBreadcrumb sorter={sorter} />
                                 <table className="lens-mx lens-mx--compact">
                                     <thead>
                                         <tr>
@@ -74,7 +75,7 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {sorter.rows.map((r, i) => (
+                                        <GroupedRows sorter={sorter} colSpan={6} render={(r, i) => (
                                             <tr key={i}>
                                                 <td>{r.subject}</td>
                                                 <td>
@@ -89,7 +90,7 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                                                     <StatusCell s={r.to} op={r.op} defaultDeny differs />
                                                 </td>
                                             </tr>
-                                        ))}
+                                        )} />
                                     </tbody>
                                 </table>
                             </div>
