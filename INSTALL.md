@@ -42,7 +42,7 @@ A step-by-step page that runs on your computer. It checks your computer and save
    Your browser opens the setup page. If it doesn't, copy the address the terminal prints. Keep the terminal open until you finish.
 5. **Follow the five steps on the page:**
    1. **Get ready:** installs the ServiceNow SDK into this folder, if needed (1–3 minutes).
-   2. **Connect:** enter your instance address, user name and password. The password goes to the ServiceNow SDK, which keeps it in your computer's secure credential store (Windows Credential Manager or macOS Keychain). It's never saved in the project.
+   2. **Connect:** sign in as any **existing** account on the instance that has the **admin** role. It can be your own user, `admin`, or a dedicated install account; the setup never creates accounts. Enter its password once. It goes to the ServiceNow SDK, which keeps it in your computer's secure credential store (Windows Credential Manager or macOS Keychain), and it is never saved in the project.
    3. **Scope:** the setup suggests the right one. If ACL Lens is already installed, choose **Update**.
    4. **Install:** takes 2–5 minutes.
    5. **Next steps:** links to open the app and set it up.
@@ -164,6 +164,7 @@ What carries over and what doesn't:
 | The setup page says it has expired | Use the full address printed in the terminal (it contains a one-time key). Run `npm run setup` again if you closed it. |
 | "The login could not be saved" | Check the address (`https://…service-now.com`), user name and password. Sign in once in a browser to confirm. Wake a sleeping PDI at [developer.servicenow.com](https://developer.servicenow.com/dev.do). |
 | "does not start with your instance's vendor prefix" | Use the scope the setup suggests (`x_<company code>_acllens`). |
+| "Unable to track app install status … Forbidden" | The install was sent, but the account couldn't read its progress. The tools now follow the install tracker on the instance and report the result; you can also open the tracker link shown. |
 | Install fails partway | Open **Show technical details** in the setup (or read the terminal output). Fix the cause and install again; it's safe to repeat. |
 | The app loads but says you need a role | Assign `<your scope>.user` and sign out and in again. |
 

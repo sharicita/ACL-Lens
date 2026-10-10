@@ -67,15 +67,23 @@
                 <!-- Step 2 -->
                 <section data-panel="2" aria-labelledby="h2" hidden>
                     <h1 id="h2" tabindex="-1">Step 2 of 5 · Connect to ServiceNow</h1>
-                    <p>Save a login so the setup can install the app for you. Your password goes straight to the ServiceNow SDK, which keeps it in your computer's secure credential store. It is never written to this project.</p>
+                    <p>
+                        Choose which <strong>existing</strong> ServiceNow account the setup signs in as to install the app. Any account that already exists on the instance
+                        and has the <strong>admin</strong> role works (your own user, an admin user, or a dedicated install account). The setup never creates or changes
+                        accounts.
+                    </p>
+                    <p class="muted">
+                        The ServiceNow SDK needs that account's password once to sign in by itself. It goes straight to the SDK, which keeps it in your computer's secure
+                        credential store; it is never written to this project. A login you saved earlier can be reused without typing it again.
+                    </p>
 
                     <fieldset id="saved-logins" hidden>
-                        <legend>Use a saved login</legend>
+                        <legend>Use an account you saved earlier</legend>
                         <div id="login-list" class="radios"></div>
                     </fieldset>
 
                     <details class="add-login" id="add-login" open>
-                        <summary>Add a new login</summary>
+                        <summary>Sign in with an existing account</summary>
                         <form id="form-login" novalidate>
                             <div class="field">
                                 <label for="f-instance">Instance address</label>
@@ -85,25 +93,25 @@
                             <div class="field">
                                 <label for="f-user">User name</label>
                                 <input id="f-user" name="username" autocomplete="username" required aria-describedby="f-user-hint" />
-                                <p class="hint" id="f-user-hint">An administrator account, for example <code>admin</code> on a developer instance.</p>
+                                <p class="hint" id="f-user-hint">The user name of an account that already exists on the instance and has the admin role. It does not have to be <code>admin</code>.</p>
                             </div>
                             <div class="field">
                                 <label for="f-pass">Password</label>
                                 <input id="f-pass" name="password" type="password" autocomplete="current-password" required />
                             </div>
                             <div class="field">
-                                <label for="f-alias">Name for this login</label>
+                                <label for="f-alias">Nickname for this saved login</label>
                                 <input id="f-alias" name="alias" autocomplete="off" aria-describedby="f-alias-hint" required />
                                 <p class="hint" id="f-alias-hint">A short nickname, such as <code>pdi</code> or <code>dev12345</code>. You will use it later to update the app.</p>
                             </div>
                             <div class="actions">
-                                <button type="submit" class="btn" id="btn-login">Save login</button>
+                                <button type="submit" class="btn" id="btn-login">Save and use this account</button>
                             </div>
                         </form>
                         <details class="help">
                             <summary>My company uses single sign-on (SSO) or multi-factor authentication</summary>
                             <p>
-                                Password login may not work. Ask your ServiceNow administrator for an OAuth client, then run this in a terminal from this folder and
+                                Password sign-in may not work. Ask your ServiceNow administrator for an OAuth client, then run this in a terminal from this folder and
                                 choose the login it creates above (refresh this page afterwards):
                             </p>
                             <pre><code>npx now-sdk auth --add https://your-instance.service-now.com --type oauth --alias mylogin</code></pre>

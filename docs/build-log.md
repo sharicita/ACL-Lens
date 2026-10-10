@@ -425,3 +425,19 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - hiding Level and Field kept headings and cells aligned and survived a reload; Show all columns restored them;
   - matrix Filter out took 3 rows to 1.
 
+---
+
+## 1.17 Second PDI install; install-progress fallback
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- **Installed on a second PDI** with the guided setup, signed in as an existing admin-role account (not `admin`). Scope `x_<company code>_acllens` came from that instance's company code; it was a new install with no existing app. Nothing outside the install was changed.
+- **Issue:** after the upload, the SDK's progress poll answered "Forbidden" and the install was reported as failed, although it finished on the instance ("Application installed successfully").
+  - The account has `admin` and, through it, `sn_cicd.sys_ci_automation`, the same as `admin`.
+  - The cause wasn't found without reinstalling.
+- **Fix:** when the SDK can't track progress, `workspace.mjs` follows the install's `sys_execution_tracker` record with a read-only query until it succeeds or fails (tested against the finished tracker).
+- **Setup page wording:** step 2 now says "Sign in with an existing account": any existing account with the admin role, never a new account.
+- **Local only:** saving a login with the SDK made it the default; restored with `now-sdk auth --use`.
+

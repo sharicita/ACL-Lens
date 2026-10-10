@@ -81,6 +81,8 @@ These came up repeatedly as feedback. Build them in from the start.
 | D-05 | Deploy and the dev server shared one build folder and broke each other. | Give each long-running process its own working copy. |
 | D-06 | The instance listed hundreds of npm packages because source upload was on. | Set `packageSourceCodeOnInstance: false`; patch build-tool advisories with same-major `overrides`; never `npm audit fix --force`. |
 | D-07 | Running `now-sdk install` from the root (placeholder scope) would create a second app. | Make `npm run deploy` always go through a profile. |
+| D-09 | An install succeeded on the instance, but the SDK couldn't read its progress ("Forbidden") and reported a failure. | Never treat a lost progress poll as failure: follow the install's `sys_execution_tracker` record (read-only) and report its real result. Don't re-run an install that may still be running. |
+| D-10 | Users read "Add a new login" as creating an account and assumed only `admin` worked. | Word sign-in steps as "Sign in with an existing account" and say any existing account with the needed role works. Saving an SDK login can change the default login, so restore it afterwards. |
 | D-08 | The SDK dev-server proxy timed out (504) on a 40-second analysis that the instance completed. | Long requests may time out through proxies: tell the user the work may still finish and where to look; consider async jobs for long runs. |
 
 ## 6. Accessibility and layout

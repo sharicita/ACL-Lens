@@ -111,6 +111,38 @@ export function runSdk(args, cwd, log) {
     })
 }
 
+/** Runs now-sdk and returns its stdout (for queries). */
+function sdkOutput(args, cwd) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(process.execPath, [sdkBin(), ...args], { cwd, env: process.env })
+        let out = ''
+        child.stdout.on('data', (d) => (out += d))
+        child.on('error', reject)
+        child.on('close', (code) => (code === 0 ? resolve(out) : reject(new Error(`now-sdk ${args[0]} failed (exit code ${code}).`))))
+    })
+}
+
+/**
+ * Polls an install's execution tracker (read-only) until it finishes. States: 0 pending,
+ * 1 running, 2 successful, 3 failed, 4 cancelled.
+ */
+export async function waitForTracker(id, alias, cwd, log, timeoutMs = 20 * 60 * 1000) {
+    const started = Date.now()
+    let last = ''
+    while (Date.now() - started < timeoutMs) {
+        const out = await sdkOutput(['query', 'sys_execution_tracker', '-q', `sys_id=${id}`, '-f', 'state,percent_complete,message', '-o', 'json', '--auth', alias], cwd)
+        const rec = (JSON.parse(out.slice(out.indexOf('{'))).records || [])[0]
+        if (!rec) throw new Error('The install tracker record was not found on the instance.')
+        const note = `Install ${rec.percent_complete || 0}%${rec.message ? `: ${rec.message}` : ''}`
+        if (note !== last) log(note)
+        last = note
+        if (rec.state === '2') return
+        if (rec.state === '3' || rec.state === '4') throw new Error(`The install did not succeed on the instance: ${rec.message || 'see the install tracker'}.`)
+        await new Promise((r) => setTimeout(r, 10000))
+    }
+    throw new Error('Still installing after 20 minutes. Check the install tracker on the instance.')
+}
+
 /**
  * Builds the profile, then installs and/or packs it.
  * @param {{name:string, alias:string, scope:string, scopeId:string}} profile
@@ -124,7 +156,20 @@ export async function buildProfile(profile, opts = {}) {
     if (syncKeysBack(profile)) log('Copied new record keys back to src/fluent/generated/keys.ts (commit this file).')
     if (opts.install) {
         log(`Installing on the instance saved as "${profile.alias}"…`)
-        await runSdk(['install', '--auth', profile.alias], ws, log)
+        const seen = []
+        try {
+            await runSdk(['install', '--auth', profile.alias], ws, (line, isError) => {
+                seen.push(line)
+                log(line, isError)
+            })
+        } catch (e) {
+            // Some accounts may send the install but not read its progress ("Forbidden"). The install
+            // keeps running on the instance, so follow its tracker record instead of failing.
+            const m = seen.join('\n').match(/Unable to track app install status[\s\S]*?sys_execution_tracker\.do\?sys_id=([0-9a-f]{32})/)
+            if (!m) throw e
+            log('The SDK could not read the install progress, so following the install tracker on the instance instead…')
+            await waitForTracker(m[1], profile.alias, ws, log)
+        }
     }
     if (opts.pack) {
         await runSdk(['pack'], ws, log)
