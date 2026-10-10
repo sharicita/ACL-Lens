@@ -371,3 +371,4 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - the Configuration bar (Properties, MCP server, AI providers).
 - Arrows and triangles appear only where they mean an action (Analyze, Rerun, Restore, Download). The "3. Run" heading uses a bolt instead of a play triangle.
 - Card headers have a faint accent-tinted gradient (follows the user's theme accent when that setting is on; none in print). The option-row info icons are vertically centred.
+- Header tabs (Workspace, History, Settings) and the matching segmented switches show a subtle button on hover: soft surface fill, thin outline and a 0.15 s fade (no fade with reduced motion). The selected tab is unchanged.

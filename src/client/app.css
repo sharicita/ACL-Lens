@@ -2569,3 +2569,21 @@ a.lens-link.lens-confignav__ext {
 .lens-filter__opts {
     align-items: center;
 }
+
+/* subtle button on hover for the header tabs (and the matching segmented switches) */
+.lens-tab,
+.lens-segment__item {
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.lens-tab:not(.lens-tab--active):hover,
+.lens-segment__item:not(.lens-segment__item--on):hover {
+    background: color-mix(in srgb, var(--lx-surface) 70%, transparent);
+    box-shadow: inset 0 0 0 1px var(--lx-border);
+    color: var(--lx-text);
+}
+@media (prefers-reduced-motion: reduce) {
+    .lens-tab,
+    .lens-segment__item {
+        transition: none;
+    }
+}
