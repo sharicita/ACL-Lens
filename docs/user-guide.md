@@ -32,7 +32,7 @@ Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a
    - *Specific tables* / *Table name starts with*: type and pick from the list, or press Enter to use what you typed.
    - *Application scope*: custom `x_` apps appear first, and only scopes you can read are listed.
    - *All tables*: *Exclude system tables* (ticked by default) keeps it focused.
-   - Options: *Include field-level rules*, *Max tables* (default 1,500).
+   - Options: *Include extended tables* (also analyze every table that extends the selected ones, at any depth; e.g. `task` adds `incident`, `problem`, `change_request`…), *Include field-level rules*, *Max tables* (default 1,500).
 3. **Run.** *Analyze* shows the subjects side by side. *Analyze + run comparison script* also produces the comparison report. Give it a name to find it later in History.
 
 > Comparing against `admin` or other broad roles touches thousands of tables. Use a table list or prefix.

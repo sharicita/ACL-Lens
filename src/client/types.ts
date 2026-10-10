@@ -96,6 +96,8 @@ export interface AnalysisFilter {
     includeFields?: boolean
     excludeSystem?: boolean
     maxTables?: number
+    /** also analyze every table that extends a selected table */
+    includeChildren?: boolean
 }
 
 export interface AnalysisResult {

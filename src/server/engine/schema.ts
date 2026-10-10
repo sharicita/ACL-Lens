@@ -51,6 +51,33 @@ export class Schema {
         return out
     }
 
+    /** Every table that extends any of these tables, at any depth (not including the tables themselves). */
+    descendants(names: string[]): string[] {
+        const children: { [parent: string]: string[] } = {}
+        for (const n in this.tables) {
+            const p = this.tables[n].parent
+            if (p) (children[p] = children[p] || []).push(n)
+        }
+        const start: { [n: string]: boolean } = {}
+        for (const n of names) start[n] = true
+        const seen: { [n: string]: boolean } = {}
+        const out: string[] = []
+        let frontier = names.slice()
+        let guard = 0
+        while (frontier.length && guard++ < 30) {
+            const next: string[] = []
+            for (const p of frontier)
+                for (const c of children[p] || []) {
+                    if (seen[c] || start[c]) continue
+                    seen[c] = true
+                    out.push(c)
+                    next.push(c)
+                }
+            frontier = next
+        }
+        return out.sort()
+    }
+
     isSystem(name: string): boolean {
         for (const p of SYSTEM_PREFIXES) if (name.indexOf(p) === 0) return true
         return false

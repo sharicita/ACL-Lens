@@ -19,6 +19,7 @@ function normalizeFilter(f: AnalysisFilter | undefined): AnalysisFilter {
         value: filter.value || '',
         includeFields: filter.includeFields !== false,
         excludeSystem: !!filter.excludeSystem,
+        includeChildren: !!filter.includeChildren,
         maxTables: filter.maxTables ? Math.max(1, Math.floor(filter.maxTables)) : undefined,
     }
 }

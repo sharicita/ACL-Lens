@@ -121,13 +121,23 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
     const schema = new Schema().load()
     lap('schema')
     let tables = candidateTables(filter, schema, warnings)
+    // "Include extended tables": add every table that extends a selected one (targeted ACL load still applies)
+    const addChildren = (list: string[]) => {
+        if (!filter.includeChildren || filter.mode === 'all') return list
+        const have: { [n: string]: boolean } = {}
+        for (const n of list) have[n] = true
+        const extra = schema.descendants(list).filter((n) => !have[n])
+        if (extra.length) warnings.push(`Extended tables included: ${extra.length} table${extra.length === 1 ? '' : 's'} that extend the selected ones were added.`)
+        return list.concat(extra)
+    }
+    if (tables) tables = addChildren(tables)
     const ctx = buildContext(schema, tables)
     lap('acls')
 
     if (tables === null) {
         const roleSet: { [r: string]: boolean } = {}
         for (const s of subjects) for (const r of s.roles) roleSet[r] = true
-        tables = ctx.index.tablesSecuredBy(roleSet).filter((t) => ctx.schema.exists(t))
+        tables = addChildren(ctx.index.tablesSecuredBy(roleSet).filter((t) => ctx.schema.exists(t)))
         if (subjects.some((s) => s.isAdmin)) {
             warnings.push('An admin subject is included: "Secured by roles" lists only tables whose ACLs name the subjects\' roles; admin can typically access far more.')
         }

@@ -74,6 +74,18 @@ export default function FilterPanel({ filter, onChange }: Props) {
                     <Tip id="filter-all">Tick "Exclude system tables" to keep "All tables" fast and focused on business data.</Tip>
                 )}
                 <div className="lens-filter__opts">
+                    {filter.mode !== 'all' && (
+                        <>
+                            <label className="lens-check">
+                                <input type="checkbox" checked={!!filter.includeChildren} onChange={(e) => set({ includeChildren: e.target.checked })} />
+                                Include extended tables
+                            </label>
+                            <FieldInfo
+                                label="Include extended tables"
+                                text="Also analyze every table that extends the selected ones, at any depth (for example task also brings in incident, problem and change_request). Max tables still applies."
+                            />
+                        </>
+                    )}
                     <label className="lens-check">
                         <input type="checkbox" checked={filter.includeFields !== false} onChange={(e) => set({ includeFields: e.target.checked })} />
                         Include field-level rules

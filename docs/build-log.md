@@ -480,3 +480,17 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - The cell hover now says "click to see the condition".
 - **Verified in the preview:** Alva / create / incident showed the allow-if rule, its script and description; Esc returned focus to the cell.
 
+---
+
+## 1.20 Include extended tables
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- New filter option `includeChildren` ("Include extended tables"), for every mode except All tables. `Schema.descendants()` walks `super_class` children at any depth.
+  - The extra tables are added before the targeted ACL load (and after "secured by roles" resolution).
+  - A run note reports how many were added; Max tables still caps the total.
+  - The run header shows "extended tables included".
+- **Verified on the original PDI:** itil on `task` analyzed 1 table without the option and 127 with it (incident, problem, change_request, asset_task…). The test runs were deleted.
+

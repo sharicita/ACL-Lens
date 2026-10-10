@@ -66,6 +66,7 @@ export default function RunHeader(p: Props) {
                         {FILTER_TEXT[filter.mode] || filter.mode}
                         {filter.value ? `: ${filter.value}` : ''}
                         {filter.includeFields === false ? ' · record rules only' : ' · record + field rules'}
+                        {filter.includeChildren ? ' · extended tables included' : ''}
                         {filter.excludeSystem ? ' · system tables excluded' : ''}
                     </p>
                     {(run.original_run || p.reruns.length > 0) && (

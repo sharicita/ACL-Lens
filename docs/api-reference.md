@@ -27,7 +27,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 `filter`:
 - `mode`: `secured_by_roles` · `tables` · `prefix` · `scope` · `all`
 - `value`: comma-separated tables or prefixes, or a scope
-- `includeFields` (default true), `excludeSystem`, `maxTables` (default 1,500; max 5,000)
+- `includeFields` (default true), `excludeSystem`, `includeChildren` (also analyze tables that extend the selected ones; not used with `all`), `maxTables` (default 1,500; max 5,000)
 
 ## Settings (admin)
 
