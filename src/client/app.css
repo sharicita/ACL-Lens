@@ -3216,3 +3216,10 @@ tr.lens-group > th {
     color: var(--lx-text);
     margin-right: 0.25rem;
 }
+
+/* operations: reset to the default C/R/W/D */
+.lens-opsel__reset {
+    min-height: 1.9rem;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.85rem;
+}

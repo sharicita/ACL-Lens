@@ -133,14 +133,23 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                             <span className="lens-sr"> ({op})</span>
                         </button>
                     ))}
-                    {!coreOnly && (
-                        <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(TABLE_OPS))} data-tip="Show create, read, write and delete only">
-                            CRUD
-                        </button>
-                    )}
                     {!allOps && (
                         <button type="button" className="lens-link lens-opsel__all" onClick={() => setOpSel(new Set(available))} data-tip="Show every operation">
                             All
+                        </button>
+                    )}
+                    {!coreOnly && (
+                        <button
+                            type="button"
+                            className="lens-btn lens-btn--tertiary lens-opsel__reset"
+                            onClick={() => {
+                                setOpSel(new Set(TABLE_OPS))
+                                setLimit(PAGE)
+                            }}
+                            data-tip="Back to the default: create, read, write and delete"
+                        >
+                            <Icon name="restore" size={13} />
+                            Reset
                         </button>
                     )}
                 </div>
