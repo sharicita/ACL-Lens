@@ -120,7 +120,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                 </Tip>
             </div>
             <div className="lens-mx__scroll">
-                <ListBreadcrumb sorter={sorter} />
+                <ListBreadcrumb sorter={sorter} noun="runs" />
                 <table className="lens-mx lens-mx--compact lens-history">
                     <thead>
                         <tr>

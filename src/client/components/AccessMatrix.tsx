@@ -178,7 +178,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                     onClose={() => setCond(null)}
                 />
             )}
-            <ListBreadcrumb sorter={sorter} />
+            <ListBreadcrumb sorter={sorter} noun="tables" limit={limit} />
             <div className="lens-mx__scroll">
                 <table className="lens-mx">
                     <caption className="lens-sr">Access by table: one column per operation for each user or role</caption>

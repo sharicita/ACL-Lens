@@ -282,7 +282,7 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
                             {error && <div className="lens-alert lens-alert--critical">{error}</div>}
                             {live && (
                                 <>
-                                <ListBreadcrumb sorter={liveSort} />
+                                <ListBreadcrumb sorter={liveSort} noun="fields" />
                                 <table className="lens-mx lens-mx--compact">
                                     <thead>
                                         <tr>

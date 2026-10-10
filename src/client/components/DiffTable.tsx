@@ -41,7 +41,7 @@ export default function DiffTable({ cmp, rows, limit, emptyText, listId, onVisib
     const show = sorter.shows
     return (
         <>
-            <ListBreadcrumb sorter={sorter} />
+            <ListBreadcrumb sorter={sorter} noun="differences" limit={limit} />
             <table className="lens-mx lens-mx--compact">
                 <thead>
                     <tr>

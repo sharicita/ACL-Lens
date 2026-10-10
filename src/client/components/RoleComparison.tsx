@@ -194,7 +194,7 @@ function RoleTable({ title, roles, subjects: allSubjects, sourcesBy, showHow }: 
     const sorter = useSort(roles, columns, { groupLabel })
     return (
         <>
-        <ListBreadcrumb sorter={sorter} />
+        <ListBreadcrumb sorter={sorter} noun="roles" />
         <table className="lens-mx lens-mx--compact">
             <caption className="lens-sr">{title}</caption>
             <thead>

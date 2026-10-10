@@ -3209,3 +3209,10 @@ tr.lens-group > th {
     margin-left: -0.35rem;
     margin-right: auto;
 }
+
+/* list record count (like a ServiceNow list's "1 to 20 of 23") */
+.lens-crumbs__count {
+    font-weight: 600;
+    color: var(--lx-text);
+    margin-right: 0.25rem;
+}

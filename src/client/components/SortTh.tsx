@@ -21,6 +21,8 @@ export interface Group<T> {
 
 export interface Sorter<T> {
     rows: T[]
+    /** rows given to the list, before cell filters */
+    total: number
     key: string
     dir: SortDir
     toggle: (key: string) => void
@@ -182,6 +184,7 @@ export function useSort<T>(rows: T[], columns: { [key: string]: (row: T) => Sort
     }
     return {
         rows: sorted,
+        total: rows.length,
         key,
         dir,
         toggle,
@@ -492,7 +495,27 @@ function ColumnsPicker<T>({ sorter }: { sorter: Sorter<T> }) {
  * The bar above a list: active grouping, cell filters and sort (each removable), Expand / Collapse
  * all, Personalize columns, and the right-click cell menu (Show matching / Filter out / Group by).
  */
-export function ListBreadcrumb<T>({ sorter }: { sorter: Sorter<T> }) {
+/**
+ * The record count, worded like a ServiceNow list: "23 tables", or "1 to 100 of 340 tables" when
+ * only the first rows are shown, plus "filtered from 400" when cell filters narrow the list.
+ */
+function ListCount<T>({ sorter, noun, limit }: { sorter: Sorter<T>; noun: string; limit?: number }) {
+    const n = sorter.rows.length
+    const shown = limit ? Math.min(limit, n) : n
+    const text = shown < n ? `1 to ${shown} of ${n} ${noun}` : `${n} ${noun}`
+    return (
+        <span className="lens-crumbs__count" role="status" aria-live="polite">
+            {text}
+            {sorter.filters.length > 0 && sorter.total !== n && <span className="lens-muted"> (filtered from {sorter.total})</span>}
+        </span>
+    )
+}
+
+/**
+ * The bar above a list: record count, cell filters, grouping and sort (each removable), and
+ * column options. `noun` names what is counted; `limit` is how many rows are rendered.
+ */
+export function ListBreadcrumb<T>({ sorter, noun = 'records', limit }: { sorter: Sorter<T>; noun?: string; limit?: number }) {
     const name = (k: string) => sorter.labels[k] || k
     const m = sorter.menu
     const cellMenu = m && (
@@ -537,9 +560,9 @@ export function ListBreadcrumb<T>({ sorter }: { sorter: Sorter<T> }) {
         </PopupMenu>
     )
     const active = sorter.key || sorter.groupBy || sorter.filters.length
-    if (!active && !sorter.personalizable) return cellMenu || null
     return (
         <div className="lens-crumbs" aria-label="List settings">
+            <ListCount sorter={sorter} noun={noun} limit={limit} />
             {sorter.filters.map((f, i) => (
                 <span className="lens-crumb lens-crumb--filter" key={`${f.col}:${f.id}:${f.out}`}>
                     <Icon name="filter" size={12} />
@@ -565,7 +588,7 @@ export function ListBreadcrumb<T>({ sorter }: { sorter: Sorter<T> }) {
                     </button>
                 </span>
             )}
-            {!active && <span className="lens-crumbs__hint">Right-click a cell to show matching or filter out.</span>}
+            {!active && sorter.personalizable && <span className="lens-crumbs__hint">Right-click a cell to show matching or filter out.</span>}
             <span className="lens-crumbs__actions">
                 {sorter.groups && (
                     <>

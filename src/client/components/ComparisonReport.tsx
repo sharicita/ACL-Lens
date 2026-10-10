@@ -302,7 +302,7 @@ export function RolesTable({ rows, cmp, listId, onVisible }: { rows: RoleRow[]; 
     const show = sorter.shows
     return (
         <>
-        <ListBreadcrumb sorter={sorter} />
+        <ListBreadcrumb sorter={sorter} noun="roles" />
         <table className="lens-mx lens-mx--compact">
             <thead>
                 <tr>

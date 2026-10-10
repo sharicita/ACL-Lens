@@ -54,7 +54,7 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                         )}
                         {drift.rows.length > 0 && (
                             <div className="lens-mx__scroll lens-mx__scroll--short">
-                                <ListBreadcrumb sorter={sorter} />
+                                <ListBreadcrumb sorter={sorter} noun="changes" />
                                 <table className="lens-mx lens-mx--compact">
                                     <thead>
                                         <tr>

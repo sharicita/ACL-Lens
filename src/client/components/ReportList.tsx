@@ -185,7 +185,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
             <Legend defaultDeny={dd} baseline={false} />
             <AccountTypeFilter />
             <div className="lens-mx__scroll lens-list__scroll">
-                <ListBreadcrumb sorter={sorter} />
+                <ListBreadcrumb sorter={sorter} noun="tables" />
                 <table className="lens-mx lens-mx--compact">
                     <thead>
                         <tr>
