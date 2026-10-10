@@ -59,12 +59,14 @@ function Shell() {
     const [draft, setDraft] = useState<WorkspaceDraft>(EMPTY_DRAFT)
     // results already in memory (just executed) so opening them doesn't refetch
     const cache = useRef<{ [id: string]: RunPayload }>({})
+    // e.g. "External User Not Authorized" when the Explicit Roles plugin is active and the user lacks snc_internal
+    const [accessProblem, setAccessProblem] = useState('')
     const [me, setMe] = useState<{ is_admin: boolean; history_enabled: boolean; instance_theme?: boolean }>({ is_admin: false, history_enabled: true })
 
     useEffect(() => {
         LensApi.me()
             .then(setMe)
-            .catch(() => undefined)
+            .catch((e) => setAccessProblem(String(e.message || '')))
     }, [])
 
     // admin setting: follow each user's own ServiceNow theme (and its dark appearance)
@@ -118,6 +120,21 @@ function Shell() {
         <div className="lens">
             <Header view={view.view} isAdmin={me.is_admin} onNavigate={(v) => navigate(v)} />
             <main className="lens__main">
+                {accessProblem && (
+                    <div className="lens-alert lens-alert--critical" role="alert">
+                        {/external user/i.test(accessProblem) ? (
+                            <>
+                                <strong>ServiceNow treats your account as an external user, so ACL Lens can't load your data.</strong> This instance uses the Explicit Roles
+                                plugin: ask an administrator to give you the <code>snc_internal</code> role (and the ACL Lens user role), then sign out and back in.
+                            </>
+                        ) : (
+                            <>
+                                <strong>ACL Lens couldn't check your access:</strong> {accessProblem}. You may need the ACL Lens user role (<code>x_acllens.user</code>);
+                                ask an administrator.
+                            </>
+                        )}
+                    </div>
+                )}
                 {view.view === 'workspace' && <Workspace draft={draft} historyEnabled={me.history_enabled} onDraftChange={setDraft} onRunComplete={openRun} />}
                 {view.view === 'history' && <HistoryView isAdmin={me.is_admin} historyEnabled={me.history_enabled} onOpen={(id) => navigate('run', id)} onRunComplete={openRun} />}
                 {view.view === 'settings' &&

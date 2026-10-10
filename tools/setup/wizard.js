@@ -426,6 +426,7 @@
         $('link-ai').href = base + '/' + state.scope + '_ai_provider_list.do'
         $('role-user').textContent = state.scope + '.user'
         $('role-admin').textContent = state.scope + '.admin'
+        $('explicit-roles').hidden = !(state.inspect && state.inspect.explicitRoles)
         go(5)
         say('ACL Lens is installed.')
     }

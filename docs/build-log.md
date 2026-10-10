@@ -440,4 +440,8 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - **Fix:** when the SDK can't track progress, `workspace.mjs` follows the install's `sys_execution_tracker` record with a read-only query until it succeeds or fails (tested against the finished tracker).
 - **Setup page wording:** step 2 now says "Sign in with an existing account": any existing account with the admin role, never a new account.
 - **Local only:** saving a login with the SDK made it the default; restored with `now-sdk auth --use`.
+- **Explicit Roles:** on the second PDI the app's API answered 403 "External User Not Authorized" for the install account. That instance has the **Explicit Roles** plugin (`com.glide.explicit_roles`) active, so users need `snc_internal`; the original PDI doesn't have the plugin.
+  - The setup page now checks for the plugin (read-only) and mentions `snc_internal` in its next steps only when the plugin is active.
+  - `INSTALL.md` states the condition.
+  - The app shows a clear notice instead of loading half-empty.
 

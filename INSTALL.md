@@ -137,6 +137,7 @@ What carries over and what doesn't:
 
 1. **Open the app:** **All → ACL Lens → Access Workspace**, or go to `/<your scope>_lens.do`.
 2. **Give people access.** Assign the role `<your scope>.user` to people who analyze access, and `<your scope>.admin` to people who manage settings and AI providers, ideally through a group. System administrators can already use everything.
+   - **Only if the Explicit Roles plugin (`com.glide.explicit_roles`) is active**, people also need `snc_internal`; without it ServiceNow treats them as external users and the app shows "External User Not Authorized". Most internal users already have it. The guided setup tells you when the plugin is active.
 3. **Optional AI assistant:** add a provider under **ACL Lens → Configuration → AI Providers**. Other app settings (history, appearance, the MCP server for outside AI tools) are in the same **Configuration** section, visible to admins only. The [assistant guide](docs/architecture/05-ai-assistant-and-mcp.md) explains the options.
 
 > [!IMPORTANT]
@@ -166,6 +167,7 @@ What carries over and what doesn't:
 | "does not start with your instance's vendor prefix" | Use the scope the setup suggests (`x_<company code>_acllens`). |
 | "Unable to track app install status … Forbidden" | The install was sent, but the account couldn't read its progress. The tools now follow the install tracker on the instance and report the result; you can also open the tracker link shown. |
 | Install fails partway | Open **Show technical details** in the setup (or read the terminal output). Fix the cause and install again; it's safe to repeat. |
+| "External User Not Authorized" | The Explicit Roles plugin is active and the account lacks `snc_internal`. Add the role, then sign out and back in. |
 | The app loads but says you need a role | Assign `<your scope>.user` and sign out and in again. |
 
 More: [full install and deployment reference](docs/install-and-deploy.md) · [developer setup](docs/dev-setup.md) · [all documentation](docs/README.md)

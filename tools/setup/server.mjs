@@ -164,7 +164,9 @@ const api = {
         let suggested = `${prefix}acllens`
         if (suggested.length > 18) suggested = `${prefix}acl`.slice(0, 18)
         const existing = await query(alias, 'sys_app', 'nameSTARTSWITHACL Lens^ORscopeLIKEacllens', 'name,scope,sys_id,version')
-        return { instance: login.host, prefix, companyCode: code, suggested, existing }
+        // with the Explicit Roles plugin active, users also need snc_internal to use the app's API
+        const plugin = await query(alias, 'sys_plugins', 'source=com.glide.explicit_roles^active=true', 'source').catch(() => [])
+        return { instance: login.host, prefix, companyCode: code, suggested, existing, explicitRoles: plugin.length > 0 }
     },
     async 'POST /api/check-scope'(b) {
         const scope = String(b.scope || '')

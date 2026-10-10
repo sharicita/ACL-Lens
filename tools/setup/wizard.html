@@ -203,6 +203,10 @@
                             <strong>Give people access.</strong> Assign the role <code id="role-user"></code> to people who analyze access, and
                             <code id="role-admin"></code> to people who manage settings and AI providers. Administrators can already use everything.
                             <a id="link-roles" class="ext" target="_blank" rel="noopener">Open the roles list<span class="sr-only"> (opens in a new window)</span></a>
+                            <span id="explicit-roles" hidden>
+                                <br />This instance has the <strong>Explicit Roles</strong> plugin active, so people also need the <code>snc_internal</code> role. Without it
+                                ServiceNow treats them as external users and refuses the app ("External User Not Authorized"). Most internal users already have it.
+                            </span>
                         </li>
                         <li>
                             <strong>Optional: turn on the AI assistant.</strong> Add a provider under <em>ACL Lens › AI Providers</em>. Note that Now Assist is not available
