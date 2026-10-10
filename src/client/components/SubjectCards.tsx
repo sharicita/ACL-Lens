@@ -5,6 +5,7 @@ import AccountBadge from './AccountBadge'
 import RecordLink, { recordUrl } from './RecordLink'
 import AddSubjectCard from './AddSubjectCard'
 import { SubjectOption } from '../types'
+import Icon from './Icon'
 
 interface Props {
     subjects: SubjectResult[]
@@ -179,6 +180,7 @@ export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, 
 
                         <div className="lens-subject__actions">
                             <button type="button" className="lens-link" onClick={onShowRoles} data-tip="Compare roles side by side and see how each was assigned.">
+                                <Icon name="users" size={14} />
                                 Compare roles
                             </button>
                             {multi && (
@@ -191,6 +193,7 @@ export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, 
                                         aria-pressed={isBase}
                                         data-tip="Compare everyone against this subject on this screen."
                                     >
+                                        <Icon name="target" size={14} />
                                         {isBase ? 'Is the baseline' : 'Use as baseline'}
                                     </button>
                                     <BaselineHelp />
@@ -198,6 +201,7 @@ export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, 
                             )}
                             {multi && (
                                 <button type="button" className="lens-link" onClick={() => onToggle(s.key)} aria-pressed={isHidden} data-tip="Hide or show this subject's columns in the matrix.">
+                                    <Icon name={isHidden ? 'eye' : 'eyeOff'} size={14} />
                                     {isHidden ? 'Show column' : 'Hide column'}
                                 </button>
                             )}

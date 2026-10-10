@@ -3,6 +3,7 @@ import { LensApi } from '../services/LensApi'
 import { SubjectOption, SubjectType } from '../types'
 import SearchCombo from './SearchCombo'
 import HelpTip from './HelpTip'
+import Icon from './Icon'
 
 interface Props {
     selected: SubjectOption[]
@@ -19,7 +20,10 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
     return (
         <section className="lens-card" aria-labelledby="pick-title">
             <div className="lens-card__header">
-                <h2 id="pick-title">1. Users and roles</h2>
+                <h2 id="pick-title">
+                    <Icon name="users" />
+                    1. Users and roles
+                </h2>
                 <HelpTip label="Users or roles?">
                     <span>
                         A <strong>user</strong> is analyzed with every role they hold: assigned directly, through their groups, and roles contained in those roles.

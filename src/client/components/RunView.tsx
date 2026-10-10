@@ -13,6 +13,7 @@ import TableDetail from './TableDetail'
 import RoleComparison from './RoleComparison'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
+import Icon from './Icon'
 
 interface Props {
     runId: string
@@ -254,6 +255,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                                     onClick={() => setTab(t.id)}
                                     data-tip={t.tip}
                                 >
+                                    <Icon name={t.id === 'comparison' ? 'report' : t.id === 'matrix' ? 'grid' : 'users'} />
                                     {t.label}
                                 </button>
                             ))}

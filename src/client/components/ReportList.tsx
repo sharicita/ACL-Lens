@@ -11,6 +11,7 @@ import DiffTable, { diffCsvRows } from './DiffTable'
 import { Legend, StatusCell } from './StatusCell'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { useSort } from './SortTh'
+import Icon from './Icon'
 
 interface Props {
     runId: string
@@ -96,6 +97,7 @@ function Toolbar({ q, setQ, shown, total, noun, onExport }: { q: string; setQ: (
                 </button>
             )}
             <button type="button" className="lens-btn lens-btn--secondary lens-list__export" onClick={onExport} disabled={!shown}>
+                <Icon name="download" />
                 Export CSV{q.trim() ? ' (filtered)' : ''}
             </button>
         </div>

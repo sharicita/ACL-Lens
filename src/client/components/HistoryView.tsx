@@ -3,6 +3,7 @@ import { LensApi } from '../services/LensApi'
 import { RunPayload, RunRecord } from '../types'
 import Tip from './Tip'
 import SortTh, { useSort } from './SortTh'
+import Icon from './Icon'
 
 interface Props {
     isAdmin: boolean
@@ -169,6 +170,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                                         onClick={() => rerun(r.sys_id)}
                                         data-tip="Re-evaluate with live data. Saves a new run linked to this one and shows what changed."
                                     >
+                                        <Icon name="rerun" size={14} />
                                         {busy === r.sys_id ? 'Working…' : 'Rerun'}
                                     </button>
                                     {isAdmin && (
@@ -179,6 +181,7 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                                             onClick={() => toggleArchive(r)}
                                             data-tip={archived ? 'Restore this run to History.' : 'Hide this run from History without deleting it. Show archived runs to restore it.'}
                                         >
+                                            <Icon name={archived ? 'restore' : 'archive'} size={14} />
                                             {archived ? 'Restore' : 'Archive'}
                                         </button>
                                     )}

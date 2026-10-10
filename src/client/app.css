@@ -2526,3 +2526,46 @@ button.lens-subject--add:focus-visible {
 .lens-header__home:focus-visible {
     text-decoration: underline;
 }
+
+/* subtle icons */
+.lens-icon {
+    flex: none;
+    opacity: 0.8;
+}
+.lens-icon--accent {
+    color: var(--lx-accent);
+    opacity: 1;
+}
+.lens-card__header h2,
+.lens-ai__head h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.lens-card__header h2 > .lens-icon {
+    color: var(--lx-muted);
+}
+.lens-tab,
+.lens-segment__item,
+button.lens-link,
+a.lens-link.lens-confignav__ext {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* card headers: a faint accent-tinted gradient so each card's title area stands out a little */
+.lens-card__header {
+    background: linear-gradient(100deg, rgba(var(--lx-accent-rgb), 0.07) 0%, rgba(var(--lx-accent-rgb), 0.02) 45%, transparent 85%), var(--lx-surface);
+    border-radius: var(--lx-radius) var(--lx-radius) 0 0;
+}
+@media print {
+    .lens-card__header {
+        background: none;
+    }
+}
+
+/* keep the option row's info icons level with their labels */
+.lens-filter__opts {
+    align-items: center;
+}

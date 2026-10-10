@@ -5,6 +5,7 @@ import { RunPayload } from '../types'
 import SubjectPicker from './SubjectPicker'
 import FilterPanel from './FilterPanel'
 import Tip from './Tip'
+import Icon from './Icon'
 
 interface Props {
     draft: WorkspaceDraft
@@ -49,7 +50,10 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
             <FilterPanel filter={draft.filter} onChange={(filter) => onDraftChange({ ...draft, filter })} />
             <section className="lens-card" aria-labelledby="run-title">
                 <div className="lens-card__header">
-                    <h2 id="run-title">3. Run</h2>
+                    <h2 id="run-title">
+                        <Icon name="bolt" />
+                        3. Run
+                    </h2>
                 </div>
                 <div className="lens-card__body lens-run">
                     <label className="lens-field lens-run__name">
@@ -69,6 +73,7 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                             onClick={() => run('analyze')}
                             data-tip="Evaluate CRUD and field access for the selected users and roles and show them side by side."
                         >
+                            <Icon name="play" />
                             {busy === 'analyze' ? 'Analyzing…' : `Analyze ${n > 1 ? 'side by side' : 'access'}`}
                         </button>
                         <button
@@ -78,6 +83,7 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                             data-tip={n < 2 ? 'Select at least two users or roles to compare.' : 'Analyze, then run the comparison script: totals, head-to-head counts, role differences and an exportable list of every difference.'}
                             onClick={() => run('compare')}
                         >
+                            <Icon name="compare" />
                             {busy === 'compare' ? 'Comparing…' : 'Analyze + run comparison script'}
                         </button>
                     </div>

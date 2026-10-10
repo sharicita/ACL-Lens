@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { RunRecord } from '../types'
+import Icon from './Icon'
 
 interface Props {
     run: RunRecord
@@ -114,6 +115,7 @@ export default function RunHeader(p: Props) {
                             onClick={p.onCompare}
                             data-tip="Runs the server-side comparison script on these users and roles and saves it as a new comparison run you can export."
                         >
+                            <Icon name="compare" />
                             {p.busy === 'compare' ? 'Comparing…' : 'Run comparison script'}
                         </button>
                     )}
@@ -125,10 +127,12 @@ export default function RunHeader(p: Props) {
                             onClick={p.onRerun}
                             data-tip="Re-evaluates the same users, roles and tables with current ACLs and roles. Saves a new run linked to this one and shows what changed."
                         >
+                            <Icon name="rerun" />
                             {p.busy === 'rerun' ? 'Rerunning…' : 'Rerun'}
                         </button>
                     )}
                     <button type="button" className="lens-btn lens-btn--tertiary" onClick={p.onEdit} data-tip="Loads these users, roles and filters into the Workspace so you can adjust and run again.">
+                        <Icon name="edit" />
                         Edit in workspace
                     </button>
                     {manage && p.onArchive && (
@@ -139,6 +143,7 @@ export default function RunHeader(p: Props) {
                             onClick={() => p.onArchive && p.onArchive(!run.archived)}
                             data-tip={run.archived ? 'Show this run in History again.' : 'Hide this run from History without deleting it. "Show archived" in History brings it back.'}
                         >
+                            <Icon name={run.archived ? 'restore' : 'archive'} />
                             {p.busy === 'archive' ? 'Saving…' : run.archived ? 'Restore' : 'Archive'}
                         </button>
                     )}
@@ -150,6 +155,7 @@ export default function RunHeader(p: Props) {
                             onClick={() => setConfirmDelete(true)}
                             data-tip="Permanently delete this run, its results and attachments. You will be asked to confirm."
                         >
+                            <Icon name="trash" />
                             Delete
                         </button>
                     )}
@@ -162,6 +168,7 @@ export default function RunHeader(p: Props) {
                             onClick={() => setExportOpen(!exportOpen)}
                             data-tip="Download as Excel-friendly CSV or JSON, or print / save as PDF."
                         >
+                            <Icon name="download" />
                             Export ▾
                         </button>
                         {exportOpen && (

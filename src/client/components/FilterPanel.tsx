@@ -6,6 +6,7 @@ import HelpTip from './HelpTip'
 import DocLink from './DocLink'
 import Tip from './Tip'
 import FieldInfo from './FieldInfo'
+import Icon from './Icon'
 
 interface Props {
     filter: AnalysisFilter
@@ -30,7 +31,10 @@ export default function FilterPanel({ filter, onChange }: Props) {
     return (
         <section className="lens-card" aria-labelledby="filter-title">
             <div className="lens-card__header">
-                <h2 id="filter-title">2. Which tables?</h2>
+                <h2 id="filter-title">
+                    <Icon name="table" />
+                    2. Which tables?
+                </h2>
                 <HelpTip label="How are tables checked?">
                     <span>
                         For each table, ACL Lens checks the create, read, write and delete rules exactly as ServiceNow matches them: the table first, then its parent tables, then the

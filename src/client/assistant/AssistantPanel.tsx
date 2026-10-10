@@ -4,6 +4,7 @@ import { useAssistant } from './AssistantContext'
 import Markdown from './Markdown'
 import Tip from '../components/Tip'
 import { useClosing } from '../utils/useClosing'
+import Icon from '../components/Icon'
 
 const TOOL_LABEL: { [t: string]: string } = {
     best_practices: 'best practices',
@@ -104,7 +105,10 @@ export default function AssistantPanel() {
         <div className={`lens-ai${closing ? ' lens-ai--closing' : ''}`} role="dialog" aria-modal="false" aria-labelledby="ai-title">
             <header className="lens-ai__head">
                 <div>
-                    <h2 id="ai-title">Security Assistant</h2>
+                    <h2 id="ai-title">
+                        <Icon name="shield" size={18} className="lens-icon--accent" />
+                        Security Assistant
+                    </h2>
                     <p className="lens-muted lens-ai__status">
                         {statusError
                             ? statusError
@@ -117,6 +121,7 @@ export default function AssistantPanel() {
                 </div>
                 <div className="lens-actions">
                     <button type="button" className="lens-btn lens-btn--ghost" onClick={openHistory} aria-expanded={showHistory}>
+                        <Icon name="history" />
                         History
                     </button>
                     <button
@@ -128,6 +133,7 @@ export default function AssistantPanel() {
                             setError('')
                         }}
                     >
+                        <Icon name="chat" />
                         New chat
                     </button>
                     <button type="button" className="lens-icon-btn" aria-label="Close assistant" onClick={a.close}>

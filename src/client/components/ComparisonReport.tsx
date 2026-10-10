@@ -6,6 +6,7 @@ import { ListKind, listUrl, roleRows, RoleRow } from '../utils/reportLists'
 import RecordLink, { recordUrl } from './RecordLink'
 import SortTh, { useSort } from './SortTh'
 import DiffTable from './DiffTable'
+import Icon from './Icon'
 
 interface Props {
     runId: string
@@ -117,6 +118,7 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
             <div className="lens-card__header">
                 <h2 id="cmp-title">Comparison script results</h2>
                 <button type="button" className="lens-btn lens-btn--secondary" onClick={onExport}>
+                    <Icon name="download" />
                     Export comparison CSV
                 </button>
             </div>
@@ -229,9 +231,11 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                                 onClick={() => exportFilteredDiffsCsv(cmp, diffs, fileBase, filterText)}
                                 data-tip={`Download the ${diffs.length} differences shown (${filterText}) as CSV`}
                             >
+                                <Icon name="download" />
                                 Download filtered list
                             </button>
                             <button type="button" className="lens-btn lens-btn--ghost lens-btn--small" onClick={clearFilter}>
+                                <Icon name="close" size={13} />
                                 Clear filter
                             </button>
                         </>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { ViewName } from '../utils/nav'
+import Icon from './Icon'
 
 interface Props {
     view: ViewName
@@ -10,6 +11,7 @@ interface Props {
 export default function Header({ view, isAdmin, onNavigate }: Props) {
     // the Configuration pages (properties, MCP server) all sit under the Settings tab
     const active = (name: ViewName) => view === name || (name === 'settings' && view === 'mcp')
+    const ICON: { [v: string]: string } = { workspace: 'workspace', history: 'history', settings: 'settings' }
     const tab = (name: ViewName, label: string, tipText: string) => (
         <button
             data-tip={tipText}
@@ -18,6 +20,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
             aria-current={active(name) ? 'page' : undefined}
             onClick={() => onNavigate(name)}
         >
+            <Icon name={ICON[name]} />
             {label}
         </button>
     )

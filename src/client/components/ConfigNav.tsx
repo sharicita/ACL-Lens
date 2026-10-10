@@ -1,4 +1,5 @@
 import React from 'react'
+import Icon from './Icon'
 
 interface Props {
     current: 'settings' | 'mcp'
@@ -14,6 +15,7 @@ export default function ConfigNav({ current, onNavigate }: Props) {
             aria-current={current === view ? 'page' : undefined}
             onClick={() => onNavigate(view)}
         >
+            <Icon name={view === 'settings' ? 'sliders' : 'plug'} />
             {label}
         </button>
     )
@@ -25,6 +27,7 @@ export default function ConfigNav({ current, onNavigate }: Props) {
                 {item('mcp', 'MCP server')}
             </div>
             <a className="lens-link lens-confignav__ext" href="/x_acllens_ai_provider_list.do" target="_blank" rel="noopener noreferrer" aria-label="AI providers (opens in a new window)">
+                <Icon name="sparkle" />
                 AI providers ↗
             </a>
             <span className="lens-muted lens-confignav__note">Visible to ACL Lens admins only.</span>

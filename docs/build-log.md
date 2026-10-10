@@ -349,3 +349,25 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - **Properties shows "Your theme:"** with the name and appearance from the user preferences `glide.ui.polaris.theme` → `sys_ux_theme` and `glide.ui.polaris.theme.variant` (new `theme` in `GET /me`), live accent and surface swatches, and the current state.
 - **"Exclude system tables" is ticked by default** in a new analysis.
 - **Verified in the preview (admin, Polaris):** off = teal `rgb(3,117,160)`, on = Polaris `rgb(79,82,189)` with Polaris backgrounds; the page reports "Polaris"; the new Workspace has the box ticked.
+
+---
+
+## 1.14 Icons and card headers
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- New `Icon` component: a small inline set of single-colour line icons (no dependency), always `aria-hidden` because the text says what each control does.
+- Used on:
+  - the Security Assistant title (shield, accent colour) and its History / New chat buttons;
+  - the header tabs (Workspace, History, Settings);
+  - the Workspace section headings (users, table, bolt);
+  - Analyze / Compare;
+  - run actions (Rerun, Edit, Archive/Restore, Delete, Export) and run tabs (report, matrix, roles);
+  - card actions (Compare roles, Use as baseline, Hide/Show column);
+  - exports, Download filtered list, Clear filter;
+  - History row actions;
+  - the Configuration bar (Properties, MCP server, AI providers).
+- Arrows and triangles appear only where they mean an action (Analyze, Rerun, Restore, Download). The "3. Run" heading uses a bolt instead of a play triangle.
+- Card headers have a faint accent-tinted gradient (follows the user's theme accent when that setting is on; none in print). The option-row info icons are vertically centred.
