@@ -13,7 +13,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
     const assistant = useAssistant()
     // the Configuration pages (properties, MCP server) all sit under the Settings tab
     const active = (name: ViewName) => view === name || (name === 'settings' && view === 'mcp')
-    const ICON: { [v: string]: string } = { workspace: 'workspace', history: 'history', settings: 'settings' }
+    const ICON: { [v: string]: string } = { workspace: 'workspace', dashboard: 'report', history: 'history', settings: 'settings' }
     const tab = (name: ViewName, label: string, tipText: string) => (
         <button
             data-tip={tipText}
@@ -55,6 +55,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
             </div>
             <nav className="lens-header__tabs" aria-label="ACL Lens views">
                 {tab('workspace', 'Workspace', 'Choose users and roles and run an analysis or comparison.')}
+                {tab('dashboard', 'Dashboard', 'Reporting dashboard: high-risk access, vulnerabilities and comparisons from saved runs.')}
                 {tab('history', 'History', 'Saved runs: open, export or rerun them.')}
                 {isAdmin && tab('settings', 'Settings', 'Admin configuration: properties, MCP server and AI providers.')}
                 <span className="lens-header__divider" aria-hidden="true" />

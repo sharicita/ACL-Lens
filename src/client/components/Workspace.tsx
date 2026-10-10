@@ -12,11 +12,12 @@ interface Props {
     historyEnabled: boolean
     onDraftChange: (d: WorkspaceDraft) => void
     onRunComplete: (p: RunPayload) => void
+    onOpenDashboard: () => void
 }
 
 const MAX_SUBJECTS = 8
 
-export default function Workspace({ draft, historyEnabled, onDraftChange, onRunComplete }: Props) {
+export default function Workspace({ draft, historyEnabled, onDraftChange, onRunComplete, onOpenDashboard }: Props) {
     const [busy, setBusy] = useState<'' | 'analyze' | 'compare'>('')
     const [error, setError] = useState('')
 
@@ -41,6 +42,22 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
     const n = draft.subjects.length
     return (
         <div className="lens-workspace">
+            <a
+                className="lens-dashlink"
+                href="?view=dashboard"
+                onClick={(e) => {
+                    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return
+                    e.preventDefault()
+                    onOpenDashboard()
+                }}
+            >
+                <Icon name="report" />
+                <span>
+                    <strong>Reporting dashboard</strong>
+                    <span className="lens-muted">High-risk access, vulnerabilities and comparisons from your saved runs, with reports you can customize.</span>
+                </span>
+                <span className="lens-dashlink__go">Open dashboard</span>
+            </a>
             <SubjectPicker
                 selected={draft.subjects}
                 max={MAX_SUBJECTS}

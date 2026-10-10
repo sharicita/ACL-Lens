@@ -539,3 +539,29 @@ The platform's Access Analyzer showed data points ACL Lens didn't have. ACL Lens
   - Saving a profile keeps its scope ID unless a new one is given (CLI and guided setup).
   - `deploy` checks, read-only, that the installed app for the scope has the profile's scope ID. If it doesn't, nothing is installed and the fix command is printed. Verified against the second PDI with a wrong and the right ID.
 
+## 1.24 Reporting dashboard
+
+| | |
+|---|---|
+| **Date** | 2026-10-10 |
+
+The run storage is unchanged: reports are definitions, and their numbers are calculated from saved runs on request.
+
+- **Measures** (`src/server/engine/report-measures.ts`, pure and offline-tested): each turns a run into facts (subject, account type, table, operation, result, role, ACL, data filter, change). A report filters, groups and counts them, so any report can be regrouped and filtered. There are 12 measures:
+  - High risk: privileged roles, changes on high-risk tables, machine accounts that can change data, inactive accounts with access, access gained since the original run.
+  - Vulnerabilities: open ACLs that allow changes, allowed with no rule, access decided by scripts.
+  - Overview and comparison: access results, data filters, differences, roles held by only some subjects.
+- **Tables:** `x_acllens_report` (13 shipped reports, read-only) and `x_acllens_dashboard` (one layout per user). Ownership is enforced in ACLs and in the server code.
+- **API:** `/reports`, `/reports/preview`, `/dashboard`, `/dashboard/data`. One request calculates every tile from one run loaded once, and only aggregates are returned, with up to 2,000 rows for drill-down.
+- **UI:**
+  - A Dashboard header tab, a link at the top of the Workspace, and a "Reporting Dashboard" module in the ServiceNow navigator.
+  - Run picker; tiles to move, widen and remove; Add report; Reset.
+  - Lightweight accessible SVG/CSS charts (bar, stacked bar, donut, number, list), where a click opens the rows behind it, with Open list, Copy query and Export.
+  - Report editor with a live preview: Customize saves a personal copy in the same spot.
+  - A shared slide-out panel component (`Drawer`).
+- **Also:** cross-scope read privileges for `sys_security_data_filter` and `sys_group_has_role`, used since 1.22.
+- **Verified on the original PDI:**
+  - The default dashboard on ALR0001027 shows 5,280 results; machine accounts have 236 change operations, with drill-down.
+  - Customize saved a copy in place; delete and reset work.
+  - A run on high-risk tables (ALR0001028: itil vs admin) shows admin 27 and itil 6 changes allowed on them.
+

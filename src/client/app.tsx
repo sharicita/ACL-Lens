@@ -6,6 +6,7 @@ import Workspace from './components/Workspace'
 import HistoryView from './components/HistoryView'
 import RunView from './components/RunView'
 import { AssistantProvider } from './assistant/AssistantContext'
+import DashboardView from './dashboard/DashboardView'
 import AssistantPanel from './assistant/AssistantPanel'
 import SettingsView from './components/SettingsView'
 import McpSetupView from './components/McpSetupView'
@@ -72,6 +73,7 @@ function Shell() {
 
     useEffect(() => {
         if (view.view === 'history') setTitle('ACL Lens – History')
+        else if (view.view === 'dashboard') setTitle('ACL Lens – Reporting dashboard')
         else if (view.view === 'settings') setTitle('ACL Lens – Properties')
         else if (view.view === 'mcp') setTitle('ACL Lens – MCP Server')
         else if (view.view === 'workspace') setTitle('ACL Lens – Workspace')
@@ -123,7 +125,8 @@ function Shell() {
                         )}
                     </div>
                 )}
-                {view.view === 'workspace' && <Workspace draft={draft} historyEnabled={me.history_enabled} onDraftChange={setDraft} onRunComplete={openRun} />}
+                {view.view === 'workspace' && <Workspace draft={draft} historyEnabled={me.history_enabled} onDraftChange={setDraft} onRunComplete={openRun} onOpenDashboard={() => navigate('dashboard')} />}
+                {view.view === 'dashboard' && <DashboardView isAdmin={me.is_admin} onOpenRun={(id) => navigate('run', id)} onNavigate={(v) => navigate(v)} />}
                 {view.view === 'history' && <HistoryView isAdmin={me.is_admin} historyEnabled={me.history_enabled} onOpen={(id) => navigate('run', id)} onRunComplete={openRun} />}
                 {view.view === 'settings' &&
                     (me.is_admin ? (

@@ -18,6 +18,14 @@ import {
     deleteRunRoute,
     getMcpInfo,
     putSettingsRoute,
+    getReportsRoute,
+    postReportRoute,
+    deleteReportRoute,
+    getDashboardRoute,
+    putDashboardRoute,
+    deleteDashboardRoute,
+    postDashboardData,
+    postReportPreview,
 } from '../../server/rest/handlers'
 import { getAiConversation, getAiConversations, getAiStatus, postAiChat, postMcp } from '../../server/rest/ai-handlers'
 
@@ -137,5 +145,13 @@ RestApi({
         { $id: Now.ID['lens-api-run-archive'], name: 'Archive or restore a run (admin)', method: 'POST', path: '/runs/{id}/archive', script: postRunArchive },
         { $id: Now.ID['lens-api-mcp-info'], name: 'MCP setup information (admin)', method: 'GET', path: '/admin/mcp', script: getMcpInfo },
         { $id: Now.ID['lens-api-run-delete'], name: 'Delete a run (admin)', method: 'DELETE', path: '/runs/{id}', script: deleteRunRoute },
+        { $id: Now.ID['lens-api-reports'], name: 'Reports and measures', method: 'GET', path: '/reports', script: getReportsRoute },
+        { $id: Now.ID['lens-api-report-save'], name: 'Save a report (own)', method: 'POST', path: '/reports', script: postReportRoute },
+        { $id: Now.ID['lens-api-report-delete'], name: 'Delete a report (own)', method: 'DELETE', path: '/reports/{id}', script: deleteReportRoute },
+        { $id: Now.ID['lens-api-report-preview'], name: 'Preview a report', method: 'POST', path: '/reports/preview', script: postReportPreview },
+        { $id: Now.ID['lens-api-dashboard'], name: 'My dashboard', method: 'GET', path: '/dashboard', script: getDashboardRoute },
+        { $id: Now.ID['lens-api-dashboard-save'], name: 'Save my dashboard', method: 'PUT', path: '/dashboard', script: putDashboardRoute },
+        { $id: Now.ID['lens-api-dashboard-reset'], name: 'Reset my dashboard', method: 'DELETE', path: '/dashboard', script: deleteDashboardRoute },
+        { $id: Now.ID['lens-api-dashboard-data'], name: 'Dashboard data (aggregates)', method: 'POST', path: '/dashboard/data', script: postDashboardData },
     ],
 })

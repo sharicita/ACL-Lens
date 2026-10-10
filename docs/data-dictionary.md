@@ -50,6 +50,39 @@ Index: `run_kind_seq` (`run`, `kind`, `seq`).
 - `comparison` — `{subjects, defaultDeny, summary, roles[], pairs[], diffs[]}`.
 - `drift` — `{total, truncated, notes[], rows[]}`.
 
+### `x_acllens_report` — ACL Lens Report
+
+Report definitions for the reporting dashboard. No access data is stored: results are calculated from saved runs when the dashboard asks.
+
+| Column | Type | Notes |
+|---|---|---|
+| `name` | string(100), mandatory | |
+| `description` | string(1000) | |
+| `category` | string choice | `overview` · `high_risk` · `vulnerability` · `comparison` |
+| `measure` | string(40), mandatory | `access` · `differences` · `privileged` · `high_risk_tables` · `machine_changes` · `inactive_access` · `open_acls` · `no_rule_allowed` · `scripted` · `data_filters` · `unshared_roles` · `access_gained` (`src/server/engine/report-measures.ts`) |
+| `chart` | string choice | `tile` (number) · `bar` · `donut` · `list` |
+| `options` | string(4000) | JSON: `ops`, `statuses`, `kinds`, `tables`, `tableText`, `roles`, `groupBy`, `limit` |
+| `owner` | reference → `sys_user` | Empty on shipped reports |
+| `shared` | boolean | Shown to all ACL Lens users (set by ACL Lens admins) |
+| `system` | boolean, read-only | Shipped with the app; never edited (Customize makes a copy) |
+| `on_default` | boolean | Part of the default dashboard |
+| `copied_from` | reference → report, cascade clear | |
+| `order` | integer | Default dashboard order |
+
+ACLs: read shipped, shared and your own reports; create, write and delete your own (ACL Lens admins: any non-shipped report, and sharing).
+
+### `x_acllens_dashboard` — ACL Lens Dashboard
+
+One per user who changed their dashboard (without one, the default applies).
+
+| Column | Type | Notes |
+|---|---|---|
+| `owner` | reference → `sys_user`, mandatory | |
+| `layout` | string(4000) | JSON `[{report, size: 1\|2}]` |
+| `run` | reference → run, cascade clear | Run the reports use; empty = latest complete, non-archived run |
+
+ACLs: each user reads and changes only their own.
+
 ### `x_acllens_ai_provider` — ACL Lens AI Provider
 
 | Column | Type | Notes |

@@ -1,4 +1,5 @@
 import { AnalysisFilter, FieldDetail, RunPayload, RunRecord, SubjectOption, SubjectType } from '../types'
+import { Catalog, Dashboard, Report, ReportData, Tile } from '../dashboard/types'
 
 declare global {
     interface Window {
@@ -177,6 +178,30 @@ export const LensApi = {
     },
     aiConversation(id: string) {
         return request<{ sys_id: string; title: string; messages: AiMessage[] }>(`/ai/conversations/${id}`)
+    },
+    reports() {
+        return request<{ reports: Report[]; catalog: Catalog & { latestRun: RunRecord | null } }>('/reports')
+    },
+    saveReport(r: Partial<Report> & { copied_from?: string }) {
+        return request<Report>('/reports', { method: 'POST', body: JSON.stringify(r) })
+    },
+    deleteReport(id: string) {
+        return request<{ deleted: boolean }>(`/reports/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    },
+    previewReport(run: string, report: Partial<Report>) {
+        return request<{ run: RunRecord | null; data: ReportData | null }>('/reports/preview', { method: 'POST', body: JSON.stringify({ run, report }) })
+    },
+    dashboard() {
+        return request<Dashboard>('/dashboard')
+    },
+    saveDashboard(d: { layout: Tile[]; run?: string }) {
+        return request<Dashboard>('/dashboard', { method: 'PUT', body: JSON.stringify(d) })
+    },
+    resetDashboard() {
+        return request<Dashboard>('/dashboard', { method: 'DELETE' })
+    },
+    dashboardData(run: string, reports: string[]) {
+        return request<{ run: RunRecord | null; reports: { [id: string]: ReportData } }>('/dashboard/data', { method: 'POST', body: JSON.stringify({ run, reports }) })
     },
     fields(table: string, subjects: SubjectRef[]) {
         const p = new URLSearchParams({ table, subjects: subjects.map((s) => `${s.type}:${s.id}`).join(',') })

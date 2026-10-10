@@ -110,3 +110,21 @@ CrossScopePrivilege({
     targetScope: 'global',
     targetType: 'sys_db_object',
 })
+
+CrossScopePrivilege({
+    $id: Now.ID['xscope-read-sys_security_data_filter'],
+    status: 'allowed',
+    operation: 'read',
+    targetName: 'sys_security_data_filter',
+    targetScope: 'global',
+    targetType: 'sys_db_object',
+})
+
+CrossScopePrivilege({
+    $id: Now.ID['xscope-read-sys_group_has_role'],
+    status: 'allowed',
+    operation: 'read',
+    targetName: 'sys_group_has_role',
+    targetScope: 'global',
+    targetType: 'sys_db_object',
+})

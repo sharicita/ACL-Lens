@@ -29,6 +29,19 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 - `value`: comma-separated tables or prefixes, or a scope
 - `includeFields` (default true), `excludeSystem`, `includeChildren` (also analyze tables that extend the selected ones; not used with `all`), `maxTables` (default 1,500; max 5,000)
 
+## Reporting dashboard
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | `/reports` | — | `{reports[], catalog: {measures[], highRiskTables[], privilegedRoles[], operations[], latestRun}}`. Reports the caller can see: shipped, shared and their own |
+| POST | `/reports` | `{sys_id?, name, description, measure, chart, options, copied_from?, shared? (admin)}` | The saved report. Without `sys_id` it creates the caller's own report; shipped reports are never changed |
+| DELETE | `/reports/{id}` | — | `{deleted: true}` (own reports; admins: any non-shipped) |
+| POST | `/reports/preview` | `{run?, report}` | `{run, data}` for an unsaved definition (the editor's live preview) |
+| GET | `/dashboard` | — | `{layout: [{report, size}], custom, run}`. Without a saved layout: the default reports |
+| PUT | `/dashboard` | `{layout, run?}` | Saves the caller's layout and chosen run |
+| DELETE | `/dashboard` | — | Back to the default (the caller's reports are kept) |
+| POST | `/dashboard/data` | `{run?, reports: [id]}` | `{run, reports: {id: data}}`: every tile from one run, loaded once. `data` = `{total, unit, groupBy, groups[], columns[], rows[] (max 2,000), rowsTruncated, tables[], note?}` |
+
 ## Settings (admin)
 
 | Method | Path | Body | Returns |

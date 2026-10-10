@@ -131,7 +131,26 @@ Compares the subjects' roles in collapsible groups:
   - Once a filter is set, a green **Download filtered list** button exports just those rows as CSV, and **Clear filter** resets it.
   - **Export comparison CSV** (top) always exports everything. The same CSV is attached to the run record.
 
-## 4. History and reruns
+## 4. Reporting dashboard
+
+Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top of the Workspace, or **ACL Lens → Reporting Dashboard** in the ServiceNow navigator.
+
+- **Data from:** reports are calculated from one saved run, the latest by default. Pick another run in the list; your choice is remembered.
+- **Pre-built reports** ship with the app, in four categories:
+
+| Category | Reports |
+|---|---|
+| **High risk** | *Privileged roles* (admin, security_admin, user_admin, impersonator…) · *Changes allowed on high-risk tables* (users, roles, groups, ACLs, properties, scripts, credentials…) · *Machine accounts that can change data* · *Inactive accounts with access* · *Access gained since the original run* (reruns) |
+| **Vulnerability** | *Open ACLs that allow changes* (no role, condition or script) · *Allowed with no rule* · *Access decided by scripts* (need a review or a live check) |
+| **Overview** | *Access at a glance* · *Access by subject* · *Security data filters* |
+| **Comparison** | *Tables where subjects differ* · *Roles held by only some subjects* |
+
+- **Drill in:** click a bar, a donut slice or a number to see the rows behind it, with sort, group, filter, **Open list** (the tables in ServiceNow), **Copy query** and **Export**. The list icon on a tile shows every row.
+- **Arrange:** each tile has buttons to move it earlier or later, switch between half and full width, or remove it. **Add report** lists every report you can use (shipped, shared and your own) and **+ New report…**. **Reset** brings back the default reports and layout. Your layout is yours only.
+- **Customize:** the pencil on a shipped report opens it as *Customize*. Change the name, what it measures, the chart (bar, donut, number, list), the grouping, how many groups to show, and filters (operations, results, account types, table text, the high-risk table list or the privileged roles). A live preview shows the result. **Save my copy** creates your own report and puts it in the same place on your dashboard. Your own reports can be edited or deleted. ACL Lens admins can share a report with everyone.
+- High-risk tables are often system tables. If *Changes allowed on high-risk tables* says none were part of the run, analyze those tables with *Exclude system tables* unticked.
+
+## 5. History and reruns
 
 - **History** lists saved runs. Search by number, name or subject.
 - **Rerun** re-evaluates the same users, roles and tables with today's data. It saves a new run linked to the original and shows **Changes since original run** (status changes and roles added or removed). This is useful as before/after evidence in a change record.
@@ -140,7 +159,7 @@ Compares the subjects' roles in collapsible groups:
 - **Admins, on a run page:** **Archive** / **Restore**, and **Delete**. Delete asks for confirmation first and permanently removes the run, its results and attachments (its reruns are kept but lose the link back).
 - If an admin has turned History off, runs still display but aren't saved and can't be rerun.
 
-## 5. Security Assistant
+## 6. Security Assistant
 
 - Click **Assistant** in the header (top right, after Settings). It knows the run and table you have open.
 - Ask, for example:
@@ -150,7 +169,7 @@ Compares the subjects' roles in collapsible groups:
 - It only looks up what **you** can access and never changes anything. If you lack access to something, it says so.
 - Answers include steps, testing and rollback. Tools used are listed under each answer. **History** reopens earlier chats.
 
-## 6. Configuration (ACL Lens admins)
+## 7. Configuration (ACL Lens admins)
 
 Everything that configures the app sits under **ACL Lens → Configuration** in the navigator, and under the **Settings** tab in the app. Only `admin` and `x_acllens.admin` can see or change it.
 

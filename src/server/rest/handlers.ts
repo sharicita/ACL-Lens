@@ -6,6 +6,7 @@ import { executeRun, loadRun, rerun } from '../engine/runs.ts'
 import { rankedSearch } from '../engine/search.ts'
 import { aclDetail } from '../engine/acl-detail.ts'
 import { mcpInfo } from '../ai/mcp.ts'
+import { dashboardData, deleteReport, getDashboard, listReports, previewReport, reportCatalog, resetDashboard, saveDashboard, saveReport } from '../reports/reports.ts'
 import { clearHistory, deleteRun, getSettings, historyEnabled, instanceTheme, previewClear, saveSettings, setArchived, userTheme } from '../admin/settings.ts'
 import { SubjectRef } from '../engine/types.ts'
 
@@ -199,3 +200,38 @@ export function postRunArchive(request: any, response: any) {
         return setArchived(req.pathParams.id, body(req).archived !== false)
     })
 }
+
+// ---- Reporting dashboard ----------------------------------------------------
+
+export function getReportsRoute(request: any, response: any) {
+    handle(request, response, () => ({ reports: listReports(), catalog: reportCatalog() }))
+}
+
+export function postReportRoute(request: any, response: any) {
+    handle(request, response, (req) => saveReport(body(req)))
+}
+
+export function deleteReportRoute(request: any, response: any) {
+    handle(request, response, (req) => deleteReport(req.pathParams.id))
+}
+
+export function getDashboardRoute(request: any, response: any) {
+    handle(request, response, () => getDashboard())
+}
+
+export function putDashboardRoute(request: any, response: any) {
+    handle(request, response, (req) => saveDashboard(body(req)))
+}
+
+export function deleteDashboardRoute(request: any, response: any) {
+    handle(request, response, () => resetDashboard())
+}
+
+export function postDashboardData(request: any, response: any) {
+    handle(request, response, (req) => dashboardData(body(req)))
+}
+
+export function postReportPreview(request: any, response: any) {
+    handle(request, response, (req) => previewReport(body(req)))
+}
+

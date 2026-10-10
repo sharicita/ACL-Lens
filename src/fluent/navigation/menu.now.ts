@@ -27,6 +27,21 @@ Record({
 })
 
 Record({
+    $id: Now.ID['acl-lens-module-dashboard'],
+    table: 'sys_app_module',
+    data: {
+        title: 'Reporting Dashboard',
+        application: lensMenu,
+        link_type: 'DIRECT',
+        query: 'x_acllens_lens.do?view=dashboard',
+        hint: 'High-risk access, vulnerabilities and comparisons from saved runs, with reports you can customize',
+        roles: ['x_acllens.user'],
+        active: true,
+        order: 150,
+    },
+})
+
+Record({
     $id: Now.ID['acl-lens-module-history'],
     table: 'sys_app_module',
     data: {

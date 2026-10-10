@@ -154,4 +154,60 @@ assert.equal(evalDataFilter(Object.assign({}, unless, { securityAttribute: 'Unkn
 const withExtra = (ev) => ({ subject: ev.subject, counts: { create: { G: 0, C: 0, D: 0, N: 0 }, read: { G: 0, C: 0, D: 0, N: 0 }, write: { G: 0, C: 0, D: 0, N: 0 }, delete: { G: 0, C: 0, D: 0, N: 0 } }, tables: [{ t: 'cat', l: 'Cat', ops: Object.fromEntries(['create', 'read', 'write', 'delete', 'report_on'].map((op) => [op, ev.evalLevels(['cat', '*'], op)])), fields: [] }] })
 const c2 = compare({ defaultDeny: true, subjects: [withExtra(maintEv), withExtra(itilEv)] })
 assert.deepEqual(c2.diffs.map((x) => x.op).sort(), ['read', 'report_on'])
+
+// ---- reporting dashboard measures
+const { runReport, MEASURES } = require(path.join(BUILD, 'engine', 'report-measures.js'))
+const cellOf = (st, a = []) => ({ s: st, lvl: '', a })
+const acls = [
+    { id: 'a0', name: 'sys_user', op: 'write', decision: 'allow', roles: [], adminOverrides: false, condition: '', hasScript: false, securityAttribute: '', appliesTo: '', description: '', scope: 'global' },
+    { id: 'a1', name: 'incident', op: 'read', decision: 'allow', roles: ['itil'], adminOverrides: false, condition: '', hasScript: true, securityAttribute: '', appliesTo: '', description: '', scope: 'global' },
+]
+const emptyCounts = () => Object.fromEntries(['create', 'read', 'write', 'delete'].map((op) => [op, { G: 0, C: 0, D: 0, N: 0 }]))
+const subjectRow = (subject, perTable) => ({ subject, counts: emptyCounts(), tables: perTable.map(([t, ops, sdf]) => ({ t, l: t, ops, fields: [], sdf })) })
+const human = { type: 'user', id: 'h', key: 'user:h', label: 'Hana', sub: '', active: true, isAdmin: true, roles: ['admin', 'itil'], roleSources: [], account: { identity: 'human', identityLabel: 'Human', webServiceOnly: false, integrationUser: false } }
+const bot = { type: 'user', id: 'b', key: 'user:b', label: 'Bot', sub: '', active: false, isAdmin: false, roles: ['itil'], roleSources: [], account: { identity: '', identityLabel: '', webServiceOnly: true, integrationUser: false } }
+const resultR = {
+    defaultDeny: false,
+    ops: ['create', 'read', 'write', 'delete', 'query_match'],
+    acls,
+    dataFilters: [{ id: 'f', table: 'incident', mode: 'unless', filter: 'active=true', securityAttribute: 'HasAdminRole', description: '' }],
+    subjects: [
+        subjectRow(human, [
+            ['sys_user', { create: cellOf('G'), read: cellOf('G'), write: cellOf('G', [{ i: 0, r: 'P', c: 'open' }]), delete: cellOf('D'), query_match: cellOf('N') }],
+            ['incident', { create: cellOf('N'), read: cellOf('C', [{ i: 1, r: 'C', c: 'script' }]), write: cellOf('G'), delete: cellOf('D'), query_match: cellOf('N') }, [{ i: 0, r: 'N' }]],
+        ]),
+        subjectRow(bot, [
+            ['sys_user', { create: cellOf('D'), read: cellOf('G'), write: cellOf('D'), delete: cellOf('D'), query_match: cellOf('N') }],
+            ['incident', { create: cellOf('N'), read: cellOf('C', [{ i: 1, r: 'C', c: 'script' }]), write: cellOf('G'), delete: cellOf('D'), query_match: cellOf('N') }, [{ i: 0, r: 'A' }]],
+        ]),
+    ],
+}
+const rep = (measure, options = {}, chart = 'bar') => runReport({ measure, chart, options }, { results: resultR, comparison: null, drift: null })
+// every shipped measure runs without errors on the same run
+for (const m of MEASURES) rep(m.id)
+const acc = rep('access', { ops: ['create', 'read', 'write', 'delete'], groupBy: 'status' })
+assert.equal(acc.total, 16)
+assert.deepEqual(Object.fromEntries(acc.groups.map((g) => [g.key, g.value])), { Granted: 6, Denied: 6, Conditional: 2, 'No rule': 2 })
+const priv = rep('privileged')
+assert.deepEqual(priv.rows.map((f) => f.subject + ':' + f.role), ['Hana:admin'])
+const hr = rep('high_risk_tables', { groupBy: 'subject' })
+assert.deepEqual(hr.groups.map((g) => g.key + ':' + g.value), ['Hana:2'], 'create + write on sys_user')
+const machine = rep('machine_changes')
+assert.deepEqual(machine.rows.map((f) => f.table + '.' + f.operation).sort(), ['incident.create', 'incident.write'], 'no rule with default allow counts as allowed')
+assert.equal(rep('inactive_access').total, 3, 'Bot is inactive: sys_user read, incident read (C) and write')
+assert.deepEqual(rep('open_acls').rows.map((f) => f.acl + ':' + f.subject), ['sys_user:Hana'])
+assert.equal(rep('scripted', { groupBy: 'subject' }).total, 2)
+const nr = rep('no_rule_allowed', { groupBy: 'operation' })
+assert.deepEqual(nr.groups.map((g) => g.key + ':' + g.value), ['create:2'], 'query_match no-rule is allowed but not counted by default (read/create/write/delete only)')
+assert.equal(rep('no_rule_allowed', { ops: ['query_match'] }).total, 4)
+assert.deepEqual(rep('data_filters', { groupBy: 'status' }).groups.map((g) => g.key + ':' + g.value).sort(), ['Applied:1', 'Not applied:1'])
+assert.equal(rep('unshared_roles').total, 1, 'admin is held by Hana only')
+assert.equal(rep('differences', { groupBy: 'table' }).groups[0].key, 'sys_user')
+assert.ok(rep('access_gained').note, 'a run that is not a rerun explains why it is empty')
+// filters and "Other"
+assert.equal(rep('access', { kinds: ['Machine / service'], ops: ['write'] }).total, 2)
+assert.equal(rep('access', { tableText: 'inc', ops: ['read'] }).total, 2)
+const capped = rep('access', { groupBy: 'table', limit: 1 })
+assert.equal(capped.groups.length, 2)
+assert.equal(capped.groups[1].key, '__other')
 console.log('engine: all tests passed')

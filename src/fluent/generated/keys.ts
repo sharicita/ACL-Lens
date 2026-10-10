@@ -17,6 +17,10 @@ declare global {
                         table: 'sys_app_module'
                         id: 'e260c4b2848c4915afba5c60123a4316'
                     }
+                    'acl-lens-module-dashboard': {
+                        table: 'sys_app_module'
+                        id: 'e0ce61f30d474ad2af070e2b20d70e5e'
+                    }
                     'acl-lens-module-history': {
                         table: 'sys_app_module'
                         id: 'cd347776d3ff45fc9de729df17b03a28'
@@ -98,6 +102,30 @@ declare global {
                         table: 'sys_module'
                         id: '7b4d9c6718864c6b9e532581da9b805d'
                     }
+                    'dashboard-create': {
+                        table: 'sys_security_acl'
+                        id: '4e51fbb28faa405eb2c379111fa3e197'
+                    }
+                    'dashboard-delete': {
+                        table: 'sys_security_acl'
+                        id: '94dcf0b2b9ac4ce18e8c4675c6807e84'
+                    }
+                    'dashboard-field-read': {
+                        table: 'sys_security_acl'
+                        id: 'fe082e663dd742c3b5878e498df7c49b'
+                    }
+                    'dashboard-field-write': {
+                        table: 'sys_security_acl'
+                        id: 'f83ad8e2fb6249eb98f92c28a25989fc'
+                    }
+                    'dashboard-read': {
+                        table: 'sys_security_acl'
+                        id: 'e54aa2b0976f43ddb1668d71f3422178'
+                    }
+                    'dashboard-write': {
+                        table: 'sys_security_acl'
+                        id: '35b0100da1b342f88cf48a976588f347'
+                    }
                     'job-history-retention': {
                         table: 'sysauto_script'
                         id: '676c938240454f26930263745d8d9e1b'
@@ -125,6 +153,22 @@ declare global {
                     'lens-api-ai-status': {
                         table: 'sys_ws_operation'
                         id: 'bad5e74385b340c6be11847b5d4a6bee'
+                    }
+                    'lens-api-dashboard': {
+                        table: 'sys_ws_operation'
+                        id: '302933a8145442289753bea08b4a91c8'
+                    }
+                    'lens-api-dashboard-data': {
+                        table: 'sys_ws_operation'
+                        id: '151204e82fac4d72b76330d79bca8797'
+                    }
+                    'lens-api-dashboard-reset': {
+                        table: 'sys_ws_operation'
+                        id: 'c06c8eaa9c264fb6ae5c949ed7b0c66c'
+                    }
+                    'lens-api-dashboard-save': {
+                        table: 'sys_ws_operation'
+                        id: 'df19b8719b7445febc0a66b405688ba5'
                     }
                     'lens-api-fields': {
                         table: 'sys_ws_operation'
@@ -157,6 +201,22 @@ declare global {
                     'lens-api-me': {
                         table: 'sys_ws_operation'
                         id: 'e84e20c66d584fce8074ca10bb8da6fe'
+                    }
+                    'lens-api-report-delete': {
+                        table: 'sys_ws_operation'
+                        id: '0a2e3728989444f3bea205ae2de2a277'
+                    }
+                    'lens-api-report-preview': {
+                        table: 'sys_ws_operation'
+                        id: '7b90174e9d0c41b1b3e4cc76a346a775'
+                    }
+                    'lens-api-report-save': {
+                        table: 'sys_ws_operation'
+                        id: '9781f931270747eabd553e13eb725bd0'
+                    }
+                    'lens-api-reports': {
+                        table: 'sys_ws_operation'
+                        id: '9e054af7760c48f9984c7a3da5e58fd0'
                     }
                     'lens-api-run-archive': {
                         table: 'sys_ws_operation'
@@ -237,6 +297,86 @@ declare global {
                     'prop-ui-instance-theme': {
                         table: 'sys_properties'
                         id: '7e52628e72ad439c9b68b5ee00ee6959'
+                    }
+                    'report-access-by-subject': {
+                        table: 'x_acllens_report'
+                        id: 'f3b5dbeb7e85418ba87164a8bf9260a4'
+                    }
+                    'report-access-gained': {
+                        table: 'x_acllens_report'
+                        id: 'c45b40965aaa4441a517f010ab193171'
+                    }
+                    'report-access-glance': {
+                        table: 'x_acllens_report'
+                        id: '101a12e620a849a1a510ce5551eadc06'
+                    }
+                    'report-create': {
+                        table: 'sys_security_acl'
+                        id: '1b54958f144140fcb5e19e75e3fc911a'
+                    }
+                    'report-data-filters': {
+                        table: 'x_acllens_report'
+                        id: '498bc2b02c7f40d38704cc64cb226739'
+                    }
+                    'report-delete': {
+                        table: 'sys_security_acl'
+                        id: 'f0cfb4b0340a43f290ff7e1aecdf60d5'
+                    }
+                    'report-differences': {
+                        table: 'x_acllens_report'
+                        id: '978ff4b2802f4c3da10095a871378707'
+                    }
+                    'report-field-read': {
+                        table: 'sys_security_acl'
+                        id: '680818f6b19f4cf7a0858aeb4b8a667f'
+                    }
+                    'report-field-write': {
+                        table: 'sys_security_acl'
+                        id: 'c87f952d100d427a99488f8b0d73b278'
+                    }
+                    'report-high-risk-tables': {
+                        table: 'x_acllens_report'
+                        id: '254189b34b1a4590a6e3fa3ba4c93c8c'
+                    }
+                    'report-inactive': {
+                        table: 'x_acllens_report'
+                        id: '61b209e777cf4afbad1234d2cb18b8aa'
+                    }
+                    'report-machine-changes': {
+                        table: 'x_acllens_report'
+                        id: '4d413fd5544f4747b1dd417b80fb0674'
+                    }
+                    'report-no-rule': {
+                        table: 'x_acllens_report'
+                        id: '79f1fa737f98486db02ac46ea01c58f3'
+                    }
+                    'report-open-acls': {
+                        table: 'x_acllens_report'
+                        id: 'eae14a70aff947f18c1a689c55ddb809'
+                    }
+                    'report-privileged': {
+                        table: 'x_acllens_report'
+                        id: 'ebc23cf33e134bbc89efa9869d15071d'
+                    }
+                    'report-read': {
+                        table: 'sys_security_acl'
+                        id: 'dddfeb56f6794a53946b73eb38e1da06'
+                    }
+                    'report-scripted': {
+                        table: 'x_acllens_report'
+                        id: 'd9f4aa8f944a4a63a1be8efd51a1628d'
+                    }
+                    'report-shared-write': {
+                        table: 'sys_security_acl'
+                        id: '04127795d7814941947b1db3943dae73'
+                    }
+                    'report-unshared-roles': {
+                        table: 'x_acllens_report'
+                        id: '1acd8e7cc29a406fa9114bea150e3cb9'
+                    }
+                    'report-write': {
+                        table: 'sys_security_acl'
+                        id: '79399a59c25743cb990e0bc0368ade63'
                     }
                     'run-create': {
                         table: 'sys_security_acl'
@@ -346,6 +486,10 @@ declare global {
                         table: 'sys_module'
                         id: '8b7ee9cd0aef41fe807b8e1c877b278d'
                     }
+                    'src_server_engine_report-measures_ts': {
+                        table: 'sys_module'
+                        id: '17ef6f6e7114462f8cae0cb4c7f56608'
+                    }
                     src_server_engine_runs_ts: {
                         table: 'sys_module'
                         id: 'fdd88939314f46da9357a1c2815e816e'
@@ -370,6 +514,10 @@ declare global {
                         table: 'sys_module'
                         id: '7c1b710200e74adcb0cc56bd18a1c1c3'
                     }
+                    src_server_reports_reports_ts: {
+                        table: 'sys_module'
+                        id: '4f370022c4784c139442aeae838bf3bf'
+                    }
                     'src_server_rest_ai-handlers_ts': {
                         table: 'sys_module'
                         id: '33eae166dd0e493c9c0f8c3bdd31da07'
@@ -390,6 +538,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '4501ea9fa6ea4a42931de5e88982659f'
                     }
+                    'xscope-read-sys_group_has_role': {
+                        table: 'sys_scope_privilege'
+                        id: 'f380f247685c4920bd661e6c3de3254c'
+                    }
                     'xscope-read-sys_one_extend_capability': {
                         table: 'sys_scope_privilege'
                         id: '2f2ae2a370d94c10924220e49f2d41d4'
@@ -409,6 +561,10 @@ declare global {
                     'xscope-read-sys_security_attribute': {
                         table: 'sys_scope_privilege'
                         id: 'fd643f48c95f4a1ca05c9177269a2602'
+                    }
+                    'xscope-read-sys_security_data_filter': {
+                        table: 'sys_scope_privilege'
+                        id: '29947ea9d9ef46908aa8b76d8409781e'
                     }
                     'xscope-read-sys_security_operation': {
                         table: 'sys_scope_privilege'
@@ -472,6 +628,15 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_conversation'
                             element: 'message_count'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '0362240f2c1149cbad51704bf6587038'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
                             language: 'en'
                         }
                     },
@@ -554,6 +719,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '09c844bb4fa748f4915ccd8f810375ea'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'description'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_number'
                         id: '09e4f4139197406c99459a3b017868c0'
                         key: {
@@ -567,6 +741,14 @@ declare global {
                         key: {
                             name: 'x_acllens_run'
                             element: 'run_type'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0a2178b190f242f3a3a1c81e23cc39c8'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'options'
                         }
                     },
                     {
@@ -585,6 +767,23 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '0c5b7ec76a074304a4e5291b7d532111'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'options'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0ce07e203254419198281698ba42418c'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'copied_from'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '0d790dba2bca44fdb383d7885bc7451b'
                         key: {
@@ -597,6 +796,21 @@ declare global {
                         id: '0e9939f0c44b4e2aaf8e12756b8960f0'
                         key: {
                             name: 'x_acllens_run'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '0fe2a581ad0142548e2265152cf8a18e'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'owner'
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: '1169e61c2d9c4795b354114dfdba769a'
+                        key: {
+                            name: 'x_acllens_report'
                         }
                     },
                     {
@@ -666,6 +880,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '1923c5dfafb242a695bc4a7b88cd1a7f'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'bar'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '1af4aab984b04beb82d05225a1a0d46c'
                         key: {
@@ -682,10 +907,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '1e7c5b9fc0c84bda84524e1d888471a8'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'shared'
+                        }
+                    },
+                    {
                         table: 'sys_ux_lib_asset'
                         id: '1f16d64ec1e54d0c8ad8423edc36c94a'
                         key: {
                             name: 'x_acllens/main.js.map'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '1f3f822ae3204c769f68aa0d4d1d6a89'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'shared'
+                            language: 'en'
                         }
                     },
                     {
@@ -702,6 +944,50 @@ declare global {
                         key: {
                             name: 'x_acllens_run'
                             element: 'run_type'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '237ddd2b4cfe405c8a19a468decfc484'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'system'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '23c0109f9cd8421489885c6c656dcfc0'
+                        key: {
+                            sys_security_acl: '94dcf0b2b9ac4ce18e8c4675c6807e84'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '25816f888c464562a862035598867362'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'owner'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '27086f6f300443f3ac5f6ccebab2af0b'
+                        key: {
+                            sys_security_acl: '680818f6b19f4cf7a0858aeb4b8a667f'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {
@@ -747,6 +1033,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '2887678df1d14ca689cef10b94e29e00'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'measure'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '2a4db28520e449c288c6267af8ce6d61'
                         key: {
@@ -765,6 +1060,17 @@ declare global {
                                 }
                             }
                             field: 'capability'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '2d983e86490b47b5a8d92f2539b5a649'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'donut'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -936,6 +1242,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '42d97c71ba1541398a0e41093fc09c1d'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'run'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_user_role'
                         id: '43149c594d5a422ebdd87be3a3c4ed08'
                         key: {
@@ -952,6 +1267,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '45a75332dc7e44c393c47635dc74851d'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'description'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '4aa6c86b9931415d849a4c2295b1f826'
+                        key: {
+                            sys_security_acl: '4e51fbb28faa405eb2c379111fa3e197'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: '4d8867c983bc4c98a2f00f9bcdf8e88f'
                         key: {
@@ -963,11 +1299,32 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '4dfd1ddce04c40b9b823fe1227c3c78b'
+                        key: {
+                            sys_security_acl: 'fe082e663dd742c3b5878e498df7c49b'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ws_query_parameter_map'
                         id: '4e75e6084966464b873efe1d38d6bb5a'
                         key: {
                             web_service_operation: 'ade489ee6265409abedd286c8990e1bf'
                             web_service_query_parameter: '6afa24c92cfe4214b80a0deb81f2aa4e'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '4e94f4dd958f4ba4b369cdad39d862ff'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
                         }
                     },
                     {
@@ -1003,6 +1360,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '51ddbd6310734a9b8b21405e7d4036d5'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '526ad3d55c0e41f6b83e6161150d4565'
                         key: {
@@ -1017,6 +1383,23 @@ declare global {
                             name: 'x_acllens_ai_provider'
                             element: 'type'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5478822d88d04034b19c2ae52e93ac10'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'layout'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '57b799150cef416d9e62c5381bb22872'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
                         }
                     },
                     {
@@ -1047,6 +1430,15 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_conversation'
                             element: 'provider'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5a195fc4e26d45949fad7b39eb256b8f'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'NULL'
                             language: 'en'
                         }
                     },
@@ -1158,6 +1550,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '64517a4ef6684c9888a859d71b78e240'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'name'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '65c2cc7b47804104b2fda8af152f1c57'
                         key: {
@@ -1168,6 +1568,14 @@ declare global {
                                     name: 'x_acllens.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '662c69b2ec56497694ffb8587c76bdc9'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'measure'
                         }
                     },
                     {
@@ -1253,6 +1661,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '6e1d015add6e467c824bf4718984f9b4'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
+                            value: 'vulnerability'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '6e1f9ce6bc284710864cf36fd0c30bfc'
                         key: {
@@ -1267,6 +1686,19 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_provider'
                             element: 'max_tokens'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '712786270391440aa40953583c74eef2'
+                        key: {
+                            sys_security_acl: '35b0100da1b342f88cf48a976588f347'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {
@@ -1296,6 +1728,34 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_provider'
                             element: 'type'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '735aa55cf9914f43a57577ae6bd3e71a'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'name'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '75b3653a0c9c4a6c832543cddf3466c2'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
+                            value: 'overview'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '784607d0ed58404ba02767082e69d68c'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'run'
                         }
                     },
                     {
@@ -1345,6 +1805,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '7f5407eb642944758110e8e23f1c99da'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
+                            value: 'high_risk'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '801055cf1c3740829a89701831b830bb'
                         key: {
@@ -1363,6 +1834,32 @@ declare global {
                         key: {
                             name: 'x_acllens_run_data'
                             element: 'payload'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '80a3c645ac5f487f9f73eef4abae735e'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'copied_from'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '82ffb1c9bb874044a7d98f4311e3b5b7'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '83346bfbbd2b44c88d096d8f6a5651b1'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'order'
+                            language: 'en'
                         }
                     },
                     {
@@ -1410,6 +1907,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '87a232cdf7ca434c87527adedf2a0bbb'
+                        key: {
+                            sys_security_acl: '04127795d7814941947b1db3943dae73'
+                            sys_user_role: {
+                                id: '7e2edc83c71f4b3191d59ff5fc5504b6'
+                                key: {
+                                    name: 'x_acllens.admin'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '8b267085f9d74f74a3eb39c4702222c0'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'layout'
+                        }
+                    },
+                    {
                         table: 'sys_ws_query_parameter_map'
                         id: '8ce65b428d35406da3638c875d5746cf'
                         key: {
@@ -1424,6 +1942,14 @@ declare global {
                             name: 'x_acllens_ai_provider'
                             element: 'max_tokens'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice_set'
+                        id: '8f7047d17798420caa7f44e83b39c4f5'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
                         }
                     },
                     {
@@ -1552,6 +2078,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_db_object'
+                        id: 'a099fc25ebb445639bf0ae581a9a54ac'
+                        key: {
+                            name: 'x_acllens_report'
+                        }
+                    },
+                    {
                         table: 'sys_ui_policy_action'
                         id: 'a09c7fb49ea445949d18e2e84c9a1af5'
                         key: {
@@ -1580,6 +2113,23 @@ declare global {
                         key: {
                             application_file: '1f16d64ec1e54d0c8ad8423edc36c94a'
                             source_artifact: '94088204900c4b108266e921e2676675'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'a7e3eef0f67d4390b5ee8945d50ab2f7'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'a82722fad0d74b93bf9b75079fa9b340'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            language: 'en'
                         }
                     },
                     {
@@ -1613,6 +2163,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'aab95590cd844547a88946689e5f04e5'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'tile'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'ab909079999d4c1c9547f960d87fcd12'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'list'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'ad5bce2d09814f5582d96c8b6c9dfce2'
                         key: {
@@ -1636,6 +2208,13 @@ declare global {
                             name: 'x_acllens_run_data'
                             element: 'payload'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_db_object'
+                        id: 'b1af5f52434e41b9860485da50fafd85'
+                        key: {
+                            name: 'x_acllens_dashboard'
                         }
                     },
                     {
@@ -1668,6 +2247,19 @@ declare global {
                         key: {
                             name: 'x_acllens_run'
                             element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'bd4d6a2b1a6b4f87aec25e0ae9e7d506'
+                        key: {
+                            sys_security_acl: 'e54aa2b0976f43ddb1668d71f3422178'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {
@@ -1717,6 +2309,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'c8a29b5d688d43af9eb27863fee4a1d2'
+                        key: {
+                            sys_security_acl: 'f0cfb4b0340a43f290ff7e1aecdf60d5'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'c952b0ea7ea14cf3b0107c317d2c09a4'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'cb1ac9799b64420fa941c7e609d644fb'
                         key: {
@@ -1726,12 +2339,48 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'cd1ac16c52e34be09afd8c9e970532a7'
+                        key: {
+                            sys_security_acl: '79399a59c25743cb990e0bc0368ade63'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'cd2bda41ad2445c985d6067c484b96de'
                         key: {
                             name: 'x_acllens_run'
                             element: 'diff_count'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: 'cdf8527c0a7142deab460f2871cfe619'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'cea77b0eae424db1b9ccd5016ad4a180'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'system'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'cf8ceb14484b406db39dff4450419425'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'owner'
                         }
                     },
                     {
@@ -1789,6 +2438,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'd535cad24fca4c56aa7fc6a3a5a31b41'
+                        key: {
+                            sys_security_acl: '1b54958f144140fcb5e19e75e3fc911a'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ui_policy_action'
                         id: 'd5502f2eb9c64974b99de31f0cdb8a1a'
                         key: {
@@ -1821,6 +2483,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: 'dbf2d3b34e91463bb5d708ddfdd50e19'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'on_default'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: 'dc8f6341e73b496c982c155a8cb4d4e2'
                         key: {
                             name: 'x_acllens_ai_provider'
@@ -1847,11 +2518,33 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'df507c4a6bd04651b44d5e94e25d5e37'
+                        key: {
+                            name: 'x_acllens_dashboard'
+                            element: 'owner'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: 'e171204974e64ee8987f22c4239f1a18'
                         key: {
                             name: 'x_acllens_ai_message'
                             element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e2f292aa958d4a56848216aaa3ac7e66'
+                        key: {
+                            sys_security_acl: 'c87f952d100d427a99488f8b0d73b278'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {
@@ -1871,6 +2564,19 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_message'
                             element: 'tools_used'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e5bbfb19b56e406e84c81524db127286'
+                        key: {
+                            sys_security_acl: 'dddfeb56f6794a53946b73eb38e1da06'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {
@@ -1904,6 +2610,25 @@ declare global {
                         key: {
                             name: 'x_acllens_ai_conversation'
                             element: 'provider'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'eb4137cc36ec4c7183cddb1db8229fab'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'category'
+                            value: 'comparison'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'ebc19bc550cc4fbcab9ac6e89f2ec009'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'order'
                         }
                     },
                     {
@@ -1962,6 +2687,14 @@ declare global {
                         key: {
                             name: 'x_acllens_run'
                             element: 'duration_ms'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'f33f2c34f507446290087464391cbcab'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'on_default'
                         }
                     },
                     {
@@ -2059,6 +2792,19 @@ declare global {
                             value: 'drift'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'fc586f64386e4e9c924084adfc82d23d'
+                        key: {
+                            sys_security_acl: 'f83ad8e2fb6249eb98f92c28a25989fc'
+                            sys_user_role: {
+                                id: '43149c594d5a422ebdd87be3a3c4ed08'
+                                key: {
+                                    name: 'x_acllens.user'
+                                }
+                            }
                         }
                     },
                     {

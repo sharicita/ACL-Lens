@@ -1,4 +1,4 @@
-export type ViewName = 'workspace' | 'history' | 'run' | 'settings' | 'list' | 'mcp'
+export type ViewName = 'workspace' | 'dashboard' | 'history' | 'run' | 'settings' | 'list' | 'mcp'
 
 export interface ViewState {
     view: ViewName
@@ -10,7 +10,7 @@ export interface ViewState {
 export function getViewFromUrl(): ViewState {
     const params = new URLSearchParams(window.location.search)
     const v = params.get('view')
-    const view: ViewName = v === 'history' || v === 'run' || v === 'settings' || v === 'list' || v === 'mcp' ? v : 'workspace'
+    const view: ViewName = v === 'dashboard' || v === 'history' || v === 'run' || v === 'settings' || v === 'list' || v === 'mcp' ? v : 'workspace'
     return { view, id: params.get('id'), list: params.get('list') }
 }
 
