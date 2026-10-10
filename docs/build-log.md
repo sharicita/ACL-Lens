@@ -444,4 +444,7 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - The setup page now checks for the plugin (read-only) and mentions `snc_internal` in its next steps only when the plugin is active.
   - `INSTALL.md` states the condition.
   - The app shows a clear notice instead of loading half-empty.
+- **Incident (caught and contained):** saving the second PDI's profile from the setup page also made it the **default**, so a plain `npm run deploy` meant for the original PDI targeted the second one.
+  - The install failed there ("application was null"), and its rollback context recorded **zero changes**.
+  - **Safeguards:** with more than one profile, deploy, package and dev refuse to run without `--profile`; the setup page no longer replaces an existing default; the default was restored.
 

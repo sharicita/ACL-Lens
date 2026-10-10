@@ -55,7 +55,7 @@ To keep the repository free of any one company's code:
 | Command | What it does |
 |---|---|
 | `npm run setup` | Guided setup page (see §4) |
-| `npm run deploy` | Build and install the default profile |
+| `npm run deploy` | Build and install the profile, when only one exists. **With two or more profiles you must name one** (`--profile <name>`): the tools never guess which instance to change |
 | `npm run deploy -- --profile test` | Same, for a named profile |
 | `npm run deploy:build` | Profile build only (checks it compiles) |
 | `npm run package` | Profile build plus `now-sdk pack`. The installable ZIP goes to `.deploy/<profile>/target/` |

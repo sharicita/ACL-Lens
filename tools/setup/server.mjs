@@ -175,7 +175,8 @@ const api = {
     },
     async 'POST /api/profile'(b) {
         if (!validName(b.name)) throw new Error('Profile name may use lowercase letters, numbers, dash and underscore (start with a letter or number).')
-        saveProfile(b.name, { instance: b.instance, alias: b.alias, scope: b.scope, scopeId: b.scopeId || newSysId() }, true)
+        // never take over the default from another instance; the first profile becomes the default
+        saveProfile(b.name, { instance: b.instance, alias: b.alias, scope: b.scope, scopeId: b.scopeId || newSysId() }, !readProfiles().default)
         return { profiles: readProfiles() }
     },
     async 'POST /api/install'(b) {

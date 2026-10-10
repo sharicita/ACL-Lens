@@ -28,7 +28,7 @@ npm run deploy
 | Task | Command |
 |---|---|
 | Build (type check + client bundle + metadata) | `npm run build` |
-| Install on the instance (default profile) | `npm run deploy` |
+| Install on the instance | `npm run deploy` (one profile) or `npm run deploy -- --profile <name>` (required when several profiles exist) |
 | Build with the profile scope only | `npm run deploy:build` |
 | Live UI dev server against the instance (profile scope; edits under `src/` mirrored) | `npm run dev` (port 3000, or the first free port from 8081 if 3000 is taken) |
 | Installable package (update set ZIP) | `npm run package` |

@@ -17,6 +17,7 @@ Each item says **what**, and where useful **why**, in one line. ACL Lens is the 
 - [ ] **Install profiles** in a git-ignored file (`<app>.local.json`): instance URL, login alias, real scope, app `sys_id`. *(`tools/lib/profiles.mjs`)*
 - [ ] **Profile builds** in a git-ignored copy (`.deploy/<profile>/`) with the scope rewritten; new `keys.ts` entries copied back with the placeholder. *(`tools/lib/workspace.mjs`)*
 - [ ] `npm run deploy` **always goes through a profile**; never install the placeholder scope on an instance that has the real one (it would create a second app).
+- [ ] **With two or more profiles, commands that change an instance require `--profile`.** Setup flows never replace an existing default.
 - [ ] `.gitignore` covers profiles, `.deploy/`, `.now/`, `dist/`, `target/`, test builds and tool folders.
 - [ ] No instance names, company codes, emails, local paths or sys_ids of installed apps in tracked files. Check with `git grep` before every push.
 - [ ] Secrets are never stored in the repo: logins live in the OS credential store (`now-sdk auth`), API keys in encrypted fields on the instance.

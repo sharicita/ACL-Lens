@@ -66,6 +66,10 @@ export function saveProfile(name, profile, makeDefault = true) {
 
 export function getProfile(name) {
     const data = readProfiles()
+    const names = Object.keys(data.profiles)
+    // with more than one instance configured, never guess which one to change
+    if (!name && names.length > 1)
+        throw new Error(`Several install profiles exist (${names.join(', ')}). Name the one to use, for example: npm run deploy -- --profile ${data.default || names[0]}`)
     const key = name || data.default
     if (!key) throw new Error('No install profile yet. Run "npm run setup" (guided) or "npm run profile -- add" first.')
     const p = data.profiles[key]
