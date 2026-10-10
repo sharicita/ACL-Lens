@@ -3234,3 +3234,22 @@ tr.lens-group > th {
 .lens-filter {
     gap: var(--lx-block-gap);
 }
+
+/*
+ * Screen-reader-only text is absolutely positioned. Inside a list that scrolls on its own, it must
+ * not keep the position of a row far down the list, or it stretches the page (white space below the
+ * last card). Pin it to its container's corner, and make every inner scroll area its container.
+ */
+.lens-sr {
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+}
+.lens-roles,
+.lens-mx__scroll,
+.lens-drawer__body,
+.lens-detail-grid,
+.lens-ai__history,
+.lens-ai__body {
+    position: relative;
+}
