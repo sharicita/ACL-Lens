@@ -67,7 +67,7 @@ Record({
         hint: 'Platform list of run records (attachments include comparison CSVs)',
         roles: ['x_acllens.admin'],
         active: true,
-        order: 300,
+        order: 180,
     },
 })
 
@@ -130,6 +130,6 @@ Record({
         hint: 'Configure the Security Assistant AI connection (Now Assist is used automatically when available)',
         roles: CONFIG_ROLES,
         active: true,
-        order: 1300,
+        order: 1150,
     },
 })
