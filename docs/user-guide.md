@@ -9,6 +9,18 @@ Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a
   - Grouped rows sit under collapsible headings with counts, for example *Type: Comparison (10)*.
   - A bar above the list shows what is applied ("Grouped by …", "Sorted by …"); select **×** to remove one. **Expand all / Collapse all** work on the groups.
   - Status columns group by result (Granted, Conditional, Denied…); History's *Created* groups by day.
+  - **Right-click a cell** (or Shift+F10) for **Show matching** / **Filter out**. Each filter appears in the bar above the list, removable with ×. The same menu offers *Group by*.
+  - **Columns** (on the right of that bar) personalizes a list: untick columns to hide them (the row name always stays). The choice is remembered per list in this browser; *Show all columns* restores them.
+  - **Open list** opens the same items as real records in a ServiceNow list view in a new window:
+    - differences → their ACL records (each table or field with its operation);
+    - roles → *sys_user_role*;
+    - tables → *sys_db_object*;
+    - runs → run records;
+    - fields → dictionary entries.
+
+    Your own permissions apply there. Very long lists must be filtered first.
+  - **Copy query** copies the ServiceNow encoded query for those records, to paste into any list filter.
+  - **Export** downloads what is shown as CSV; hover it to see exactly what is included.
 
 ## 1. Run an analysis
 

@@ -34,10 +34,41 @@ export interface Sorter<T> {
     setAllCollapsed: (collapsed: boolean) => void
     /** column labels, filled in by the headings (used by the breadcrumb and menus) */
     labels: { [key: string]: string }
+    /** cell filters from "Show matching" / "Filter out" */
+    filters: CellFilter[]
+    addFilter: (f: CellFilter) => void
+    removeFilter: (index: number) => void
+    /** right-click handler for a cell in column `col` of `row` */
+    cellMenu: (col: string, row: T) => (e: React.MouseEvent) => void
+    menu: { x: number; y: number; col: string; id: string; label: string } | null
+    closeMenu: () => void
+    /** personalize columns (only when the list has an id) */
+    personalizable: boolean
+    shows: (col: string) => boolean
+    hiddenCols: Set<string>
+    setColumnHidden: (col: string, hidden: boolean) => void
+    resetColumns: () => void
+    /** columns that always stay visible */
+    isRequired: (col: string) => boolean
+}
+
+export interface CellFilter {
+    col: string
+    /** value identity (same as grouping) */
+    id: string
+    label: string
+    /** true = Filter out (not equal); false = Show matching */
+    out: boolean
 }
 
 export interface ListOptions<T> {
     initial?: { key?: string; dir?: SortDir }
+    /** a stable list name; enables "Personalize columns" (remembered in this browser) */
+    id?: string
+    /** columns that must stay visible (e.g. the row name) */
+    required?: string[]
+    /** called with the rows left after cell filters, in display order */
+    onVisible?: (rows: T[]) => void
     /** how a group heading names a value, e.g. status letter -> "Granted" */
     groupLabel?: { [key: string]: (row: T) => string }
 }
@@ -52,12 +83,49 @@ export function useSort<T>(rows: T[], columns: { [key: string]: (row: T) => Sort
     const [groupBy, setGroupByState] = useState('')
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
     const labels = useRef<{ [key: string]: string }>({}).current
+    const [filters, setFilters] = useState<CellFilter[]>([])
+    const [menu, setMenu] = useState<Sorter<T>['menu']>(null)
+    const storeKey = opts.id ? `acl-lens.columns.${opts.id}` : ''
+    const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
+        try {
+            return new Set(storeKey ? JSON.parse(window.localStorage.getItem(storeKey) || '[]') : [])
+        } catch (e) {
+            return new Set()
+        }
+    })
+    const saveHidden = (h: Set<string>) => {
+        setHiddenCols(h)
+        try {
+            if (storeKey) window.localStorage.setItem(storeKey, JSON.stringify(Array.from(h)))
+        } catch (e) {
+            /* storage unavailable: the choice lasts until the page is left */
+        }
+    }
+
+    // the identity of a cell value, shared by grouping and cell filters
+    const valueId = (col: string, r: T) => {
+        const named = opts.groupLabel && opts.groupLabel[col]
+        if (named) return named(r)
+        const get = columns[col]
+        return get ? String(get(r) ?? '') : ''
+    }
+    const valueLabel = (col: string, r: T) => {
+        const named = opts.groupLabel && opts.groupLabel[col]
+        const get = columns[col]
+        return (named ? named(r) : get ? String(get(r) ?? '') : '') || '(empty)'
+    }
+
+    const filtered = useMemo(() => {
+        if (!filters.length) return rows
+        return rows.filter((r) => filters.every((f) => (valueId(f.col, r) === f.id) !== f.out))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rows, filters])
 
     const sorted = useMemo(() => {
         const get = columns[key]
-        if (!get) return rows
+        if (!get) return filtered
         const factor = dir === 'asc' ? 1 : -1
-        return rows
+        return filtered
             .map((row, i) => ({ row, i, v: get(row) }))
             .sort((a, b) => {
                 const c = compareValues(a.v, b.v)
@@ -66,7 +134,13 @@ export function useSort<T>(rows: T[], columns: { [key: string]: (row: T) => Sort
             .map((x) => x.row)
         // columns is usually an inline object; the key and rows identify the sort
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rows, key, dir])
+    }, [filtered, key, dir])
+
+    const onVisible = opts.onVisible
+    useEffect(() => {
+        if (onVisible) onVisible(sorted)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sorted])
 
     const groups = useMemo(() => {
         const get = columns[groupBy]
@@ -130,6 +204,31 @@ export function useSort<T>(rows: T[], columns: { [key: string]: (row: T) => Sort
         },
         setAllCollapsed: (all) => setCollapsed(all && groups ? new Set(groups.map((g) => g.id)) : new Set()),
         labels,
+        filters,
+        addFilter: (f) => setFilters(filters.filter((x) => !(x.col === f.col && x.id === f.id)).concat([f])),
+        removeFilter: (i) => setFilters(filters.filter((_x, n) => n !== i)),
+        cellMenu: (col, row) => (e) => {
+            if (!columns[col]) return
+            e.preventDefault()
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+            // mouse position, or the cell's corner when opened from the keyboard (Shift+F10)
+            const x = e.clientX || r.left + 8
+            const y = e.clientY || r.bottom
+            setMenu({ x, y, col, id: valueId(col, row), label: valueLabel(col, row) })
+        },
+        menu,
+        closeMenu: () => setMenu(null),
+        personalizable: !!opts.id,
+        shows: (col) => !hiddenCols.has(col),
+        hiddenCols,
+        setColumnHidden: (col, hidden) => {
+            if (opts.required && opts.required.indexOf(col) >= 0) return
+            const n = new Set(hiddenCols)
+            hidden ? n.add(col) : n.delete(col)
+            saveHidden(n)
+        },
+        resetColumns: () => saveHidden(new Set()),
+        isRequired: (col) => !!opts.required && opts.required.indexOf(col) >= 0,
     }
 }
 
@@ -260,6 +359,7 @@ export default function SortTh<T>({ sorter, col, children, label, tip, className
     const btn = useRef<HTMLButtonElement>(null)
     const name = label || textOf(children).trim() || col
     sorter.labels[col] = name
+    if (!sorter.shows(col)) return null
     const active = sorter.key === col
     const ariaSort = active ? (sorter.dir === 'asc' ? 'ascending' : 'descending') : 'none'
     return (
@@ -290,12 +390,165 @@ export default function SortTh<T>({ sorter, col, children, label, tip, className
     )
 }
 
-/** Breadcrumb above a list: the active sort and grouping, each removable (hidden when neither). */
+/** A small popup menu at a screen position (cell menu), kept on screen. */
+function PopupMenu({ x, y, label, onClose, children }: { x: number; y: number; label: string; onClose: () => void; children: React.ReactNode }) {
+    const ref = useRef<HTMLUListElement>(null)
+    const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
+    useLayoutEffect(() => {
+        const m = ref.current
+        const w = m ? m.offsetWidth : 220
+        const h = m ? m.offsetHeight : 120
+        const vw = document.documentElement.clientWidth
+        setPos({ left: Math.min(Math.max(8, x), vw - w - 8), top: y + h > window.innerHeight - 8 ? Math.max(8, y - h) : y })
+    }, [x, y])
+    useEffect(() => {
+        if (pos) ref.current?.querySelector<HTMLButtonElement>('button')?.focus()
+    }, [pos !== null])
+    useEffect(() => {
+        const away = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && onClose()
+        const key = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose()
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                const items = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') || [])
+                const i = items.indexOf(document.activeElement as HTMLButtonElement)
+                items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length]?.focus()
+                e.preventDefault()
+            }
+        }
+        const scroll = () => onClose()
+        document.addEventListener('mousedown', away)
+        document.addEventListener('keydown', key)
+        window.addEventListener('scroll', scroll, true)
+        return () => {
+            document.removeEventListener('mousedown', away)
+            document.removeEventListener('keydown', key)
+            window.removeEventListener('scroll', scroll, true)
+        }
+    }, [onClose])
+    return (
+        <ul ref={ref} className="lens-colmenu" role="menu" aria-label={label} style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
+            {children}
+        </ul>
+    )
+}
+
+/** "Personalize columns": choose which columns this list shows (remembered in this browser). */
+function ColumnsPicker<T>({ sorter }: { sorter: Sorter<T> }) {
+    const [open, setOpen] = useState(false)
+    const btn = useRef<HTMLButtonElement>(null)
+    const cols = Object.keys(sorter.labels)
+    const visibleCount = cols.filter((c) => sorter.shows(c)).length
+    const r = btn.current?.getBoundingClientRect()
+    return (
+        <>
+            <button
+                ref={btn}
+                type="button"
+                className="lens-btn lens-btn--ghost lens-btn--small"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+                data-tip="Personalize columns: choose which columns this list shows (remembered in this browser)"
+            >
+                <Icon name="columns" />
+                Columns{sorter.hiddenCols.size ? ` (${visibleCount} of ${cols.length})` : ''}
+            </button>
+            {open && r && (
+                <PopupMenu x={r.right - 220} y={r.bottom + 4} label="Personalize columns" onClose={() => setOpen(false)}>
+                    {cols.map((c) => {
+                        const on = sorter.shows(c)
+                        return (
+                            <li role="none" key={c}>
+                                <button
+                                    type="button"
+                                    role="menuitemcheckbox"
+                                    aria-checked={on}
+                                    disabled={(on && visibleCount === 1) || sorter.isRequired(c)}
+                                    title={sorter.isRequired(c) ? 'Always shown' : undefined}
+                                    onClick={() => sorter.setColumnHidden(c, on)}
+                                >
+                                    <span className="lens-colmenu__check" aria-hidden="true">
+                                        {on ? '✓' : ''}
+                                    </span>
+                                    {sorter.labels[c]}
+                                </button>
+                            </li>
+                        )
+                    })}
+                    {sorter.hiddenCols.size > 0 && (
+                        <li role="none" className="lens-colmenu__sep">
+                            <button type="button" role="menuitem" onClick={() => sorter.resetColumns()}>
+                                Show all columns
+                            </button>
+                        </li>
+                    )}
+                </PopupMenu>
+            )}
+        </>
+    )
+}
+
+/**
+ * The bar above a list: active grouping, cell filters and sort (each removable), Expand / Collapse
+ * all, Personalize columns, and the right-click cell menu (Show matching / Filter out / Group by).
+ */
 export function ListBreadcrumb<T>({ sorter }: { sorter: Sorter<T> }) {
-    if (!sorter.key && !sorter.groupBy) return null
     const name = (k: string) => sorter.labels[k] || k
+    const m = sorter.menu
+    const cellMenu = m && (
+        <PopupMenu x={m.x} y={m.y} label={`${name(m.col)} cell options`} onClose={sorter.closeMenu}>
+            <li role="none">
+                <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                        sorter.addFilter({ col: m.col, id: m.id, label: m.label, out: false })
+                        sorter.closeMenu()
+                    }}
+                >
+                    Show matching ({name(m.col)} = {m.label})
+                </button>
+            </li>
+            <li role="none">
+                <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                        sorter.addFilter({ col: m.col, id: m.id, label: m.label, out: true })
+                        sorter.closeMenu()
+                    }}
+                >
+                    Filter out ({name(m.col)} ≠ {m.label})
+                </button>
+            </li>
+            <li role="none" className="lens-colmenu__sep">
+                <button
+                    type="button"
+                    role="menuitem"
+                    disabled={sorter.groupBy === m.col}
+                    onClick={() => {
+                        sorter.setGroupBy(m.col)
+                        sorter.closeMenu()
+                    }}
+                >
+                    Group by {name(m.col)}
+                </button>
+            </li>
+        </PopupMenu>
+    )
+    const active = sorter.key || sorter.groupBy || sorter.filters.length
+    if (!active && !sorter.personalizable) return cellMenu || null
     return (
         <div className="lens-crumbs" aria-label="List settings">
+            {sorter.filters.map((f, i) => (
+                <span className="lens-crumb lens-crumb--filter" key={`${f.col}:${f.id}:${f.out}`}>
+                    <Icon name="filter" size={12} />
+                    {name(f.col)} {f.out ? '≠' : '='} <strong>{f.label}</strong>
+                    <button type="button" className="lens-crumb__x" aria-label={`Remove filter ${name(f.col)} ${f.out ? 'not' : ''} ${f.label}`} onClick={() => sorter.removeFilter(i)}>
+                        <Icon name="close" size={12} />
+                    </button>
+                </span>
+            ))}
             {sorter.groupBy && (
                 <span className="lens-crumb">
                     Grouped by <strong>{name(sorter.groupBy)}</strong>
@@ -312,16 +565,21 @@ export function ListBreadcrumb<T>({ sorter }: { sorter: Sorter<T> }) {
                     </button>
                 </span>
             )}
-            {sorter.groups && (
-                <span className="lens-crumbs__actions">
-                    <button type="button" className="lens-link" onClick={() => sorter.setAllCollapsed(false)}>
-                        Expand all
-                    </button>
-                    <button type="button" className="lens-link" onClick={() => sorter.setAllCollapsed(true)}>
-                        Collapse all
-                    </button>
-                </span>
-            )}
+            {!active && <span className="lens-crumbs__hint">Right-click a cell to show matching or filter out.</span>}
+            <span className="lens-crumbs__actions">
+                {sorter.groups && (
+                    <>
+                        <button type="button" className="lens-link" onClick={() => sorter.setAllCollapsed(false)}>
+                            Expand all
+                        </button>
+                        <button type="button" className="lens-link" onClick={() => sorter.setAllCollapsed(true)}>
+                            Collapse all
+                        </button>
+                    </>
+                )}
+                {sorter.personalizable && <ColumnsPicker sorter={sorter} />}
+            </span>
+            {cellMenu}
         </div>
     )
 }

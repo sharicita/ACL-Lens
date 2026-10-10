@@ -396,3 +396,32 @@ The instance listed hundreds of npm packages being installed for the app. This w
   - History grouped by Type (Analysis 8 / Comparison 10) and by Created per day;
   - keyboard menu focus, arrows and Esc worked.
 
+---
+
+## 1.16 Open in ServiceNow, cell filters, personalize columns
+
+| | |
+|---|---|
+| **Date** | 2026-10-09 |
+
+- **List actions** (`ListActions`, `utils/snList.ts`):
+  - **Open list** opens the same records in a ServiceNow list view (new window):
+    - differences → `sys_security_acl`, one `^NQ` block per table/field + operation;
+    - roles → `sys_user_role`;
+    - tables → `sys_db_object`;
+    - runs → the run table;
+    - fields → `sys_dictionary`.
+  - Lists longer than 7,000 characters of query must be filtered first.
+  - **Copy query** copies the encoded query.
+  - **Export** is short, has an icon, and its hover says exactly what is exported.
+  - Applied to the report (roles and every difference), list pages, matrix, History, changes since original, Roles tab and live fields. The report's roles table has its own set.
+- **Right-click on cells: Show matching / Filter out** (and Group by). Filters appear as removable chips in the breadcrumb; Shift+F10 opens the menu from the keyboard.
+- **Personalize columns** (Columns button, `menuitemcheckbox`), remembered per list in this browser (`acl-lens.columns.<list>`). The row-name column is required. Available on every difference, report/list roles, tables list and History.
+- Counts, Open list, Copy query and Export follow what is shown after cell filters (`onVisible`).
+- **Roomier list pages:** more space between the toolbar, legend, breadcrumb and table, and taller rows.
+- **Verified in the preview:**
+  - Open list query for 4 CRUD differences found the 14 ACL records behind them;
+  - Show matching (Alva = Denied) gave 2 rows, with Open list and Export following;
+  - hiding Level and Field kept headings and cells aligned and survived a reload; Show all columns restored them;
+  - matrix Filter out took 3 rows to 1.
+

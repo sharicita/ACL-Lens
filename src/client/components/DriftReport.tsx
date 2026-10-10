@@ -81,16 +81,16 @@ export default function DriftReport({ drift, originalNumber, onOpenOriginal, onE
                                     <tbody>
                                         <GroupedRows sorter={sorter} colSpan={6} render={(r, i) => (
                                             <tr key={i}>
-                                                <td>{r.subject}</td>
-                                                <td>
+                                                <td onContextMenu={sorter.cellMenu('subject', r)}>{r.subject}</td>
+                                                <td onContextMenu={sorter.cellMenu('table', r)}>
                                                     <code>{r.t}</code>
                                                 </td>
-                                                <td>{r.f ? <code>{r.f}</code> : <span className="lens-muted">— (table rule)</span>}</td>
-                                                <td>{r.op}</td>
-                                                <td>
+                                                <td onContextMenu={sorter.cellMenu('field', r)}>{r.f ? <code>{r.f}</code> : <span className="lens-muted">— (table rule)</span>}</td>
+                                                <td onContextMenu={sorter.cellMenu('op', r)}>{r.op}</td>
+                                                <td onContextMenu={sorter.cellMenu('from', r)}>
                                                     <StatusCell s={r.from} op={r.op} defaultDeny />
                                                 </td>
-                                                <td>
+                                                <td onContextMenu={sorter.cellMenu('to', r)}>
                                                     <StatusCell s={r.to} op={r.op} defaultDeny differs />
                                                 </td>
                                             </tr>

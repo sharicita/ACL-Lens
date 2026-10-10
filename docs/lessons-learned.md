@@ -28,6 +28,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | U-17 | Field help text sat on the page under fields. | Keep help out of the way like ServiceNow field hints: an ⓘ next to the label shows it on hover or keyboard focus (announced as the description). Show only state (e.g. On/Off) inline. |
 | U-18 | Plain screens were harder to scan. | Add subtle single-colour icons to navigation, section headings, primary actions, tabs and exports (decorative, `aria-hidden`), and give card headers a faint accent gradient. **Never use an arrow or triangle as a decorative icon**: arrows imply an action (expand, go, play), so use them only on controls that do that. |
 | U-19 | A one-or-all dropdown limited the operation filter; lists couldn't be grouped. | Use toggle buttons for multi-choice filters (keep one selected). Give data lists ServiceNow list-view behaviour: column menu (sort a–z / z–a, group by, ungroup), collapsible group rows with counts, a removable breadcrumb, expand / collapse all. |
+| U-20 | Users wanted to act on query results in ServiceNow itself. | Every queried list gets **Open list** (same records in a native list via an encoded query: `^NQ` for exact pairs), **Copy query** and a short **Export** whose hover names what is exported. Add right-click Show matching / Filter out and per-list column personalization; counts and exports always follow what is shown. |
 | U-16 | An action error wiped the whole page. | Show action errors inline next to the action; keep the page usable. |
 
 ## 2. ServiceNow SDK / Fluent

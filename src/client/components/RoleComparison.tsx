@@ -208,13 +208,13 @@ function RoleTable({ title, roles, subjects, sourcesBy, showHow }: TableProps) {
             <tbody>
                 <GroupedRows sorter={sorter} colSpan={1 + subjects.length} render={(role) => (
                     <tr key={role}>
-                        <th scope="row">
+                        <th scope="row" onContextMenu={sorter.cellMenu('role', role)}>
                             <code>{role}</code> <RecordLink href={recordUrl.roleByName(role)} what={`role record for ${role}`} />
                         </th>
                         {subjects.map((s) => {
                             const src = sourcesBy[s.subject.key][role]
                             return (
-                                <td key={s.subject.key}>
+                                <td key={s.subject.key} onContextMenu={sorter.cellMenu(s.subject.key, role)}>
                                     {src ? (
                                         <span className="lens-yes-cell">
                                             <span className="lens-yes" aria-label="Has this role">

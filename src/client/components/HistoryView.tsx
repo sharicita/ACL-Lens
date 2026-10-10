@@ -36,7 +36,11 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
             created: (r) => (r.created || '').substring(0, 10),
             diffs: (r) => (r.run_type === 'compare' ? String(r.diff_count) : '—'),
         },
+        id: 'history',
+        required: ['run'],
     })
+    const on = (col: string, r: RunRecord) => ({ onContextMenu: sorter.cellMenu(col, r) })
+    const show = sorter.shows
     const [error, setError] = useState('')
 
     useEffect(() => {
@@ -96,15 +100,15 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                 {loading && <span className="lens-muted">Loading…</span>}
                 <span className="lens-history__actions-bar">
                     <ListActions
-                        list={bySysIds('x_acllens_run', runs.map((r) => r.sys_id), `these ${runs.length} runs`)}
+                        list={bySysIds('x_acllens_run', sorter.rows.map((r) => r.sys_id), `these ${sorter.rows.length} runs`)}
                         onExport={() => {
                             const out: unknown[][] = [['Run', 'Name', 'Type', 'Subjects', 'Tables', 'Differences', 'Original run', 'Created', 'Run by']]
                             for (const r of sorter.rows)
                                 out.push([r.number, r.name, r.run_type === 'compare' ? 'Comparison' : 'Analysis', r.subject_summary, r.table_count, r.run_type === 'compare' ? r.diff_count : '', r.original_number || '', r.created, r.run_by])
                             download(`acl-lens-history.csv`, toCsv(out), 'text/csv;charset=utf-8')
                         }}
-                        exportWhat={`the ${runs.length} runs listed${q || type ? ' (filtered)' : ''}`}
-                        filtered={!!(q || type)}
+                        exportWhat={`the ${sorter.rows.length} runs listed${q || type || sorter.filters.length ? ' (filtered)' : ''}`}
+                        filtered={!!(q || type || sorter.filters.length)}
                     />
                 </span>
             </div>
@@ -147,19 +151,21 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                     <tbody>
                         <GroupedRows sorter={sorter} colSpan={8} render={(r) => (
                             <tr key={r.sys_id}>
-                                <th scope="row">
+                                <th scope="row" {...on('run', r)}>
                                     <button type="button" className="lens-link" onClick={() => onOpen(r.sys_id)}>
                                         {r.number}
                                     </button>
                                     {r.name && <div className="lens-muted">{r.name}</div>}
                                     {r.status !== 'complete' && <span className={`lens-pill lens-pill--${r.status}`}>{r.status}</span>}
                                 </th>
-                                <td>
-                                    <span className={`lens-pill lens-pill--${r.run_type}`}>{r.run_type === 'compare' ? 'Comparison' : 'Analysis'}</span>
-                                </td>
-                                <td>{r.subject_summary || r.subjects.map((s) => s.label || s.id).join(', ')}</td>
-                                <td>{r.table_count}</td>
-                                <td>{r.run_type === 'compare' ? r.diff_count : '—'}</td>
+                                {show('type') && (
+                                    <td {...on('type', r)}>
+                                        <span className={`lens-pill lens-pill--${r.run_type}`}>{r.run_type === 'compare' ? 'Comparison' : 'Analysis'}</span>
+                                    </td>
+                                )}
+                                {show('subjects') && <td {...on('subjects', r)}>{r.subject_summary || r.subjects.map((s) => s.label || s.id).join(', ')}</td>}
+                                {show('tables') && <td {...on('tables', r)}>{r.table_count}</td>}
+                                {show('diffs') && <td {...on('diffs', r)}>{r.run_type === 'compare' ? r.diff_count : '—'}</td>}
                                 <td>
                                     {r.original_run && (
                                         <button
@@ -178,10 +184,12 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
                                     )}
                                     {r.summary?.drift && <div className="lens-muted">{r.summary.drift.total} change(s)</div>}
                                 </td>
-                                <td>
-                                    {r.created}
-                                    <div className="lens-muted">{r.run_by}</div>
-                                </td>
+                                {show('created') && (
+                                    <td {...on('created', r)}>
+                                        {r.created}
+                                        <div className="lens-muted">{r.run_by}</div>
+                                    </td>
+                                )}
                                 <td className="lens-history__actions">
                                     <button type="button" className="lens-btn lens-btn--tertiary" onClick={() => onOpen(r.sys_id)} data-tip="Open the saved results of this run.">
                                         Open

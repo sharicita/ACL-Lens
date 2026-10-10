@@ -2817,3 +2817,18 @@ tr.lens-group > th {
 .lens-mx--compact td:first-child {
     padding-left: 0.75rem;
 }
+
+/* cell filters and personalize */
+.lens-crumb--filter {
+    background: var(--lx-subtle);
+    border: 1px solid var(--lx-border);
+}
+.lens-crumbs__hint {
+    color: var(--lx-faint);
+    font-size: 0.78rem;
+}
+.lens-colmenu__check {
+    display: inline-block;
+    width: 1.1rem;
+    color: var(--lx-accent);
+}

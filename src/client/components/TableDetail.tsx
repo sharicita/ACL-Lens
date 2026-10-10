@@ -282,7 +282,7 @@ export default function TableDetail({ results, index, onClose }: Props) {
                                                         const c = r.cells[s.key][op]
                                                         const lvl = c.lvl ? `matched ${c.lvl}` : 'no rule'
                                                         return (
-                                                            <td key={`${s.key}-${op}`} title={lvl}>
+                                                            <td key={`${s.key}-${op}`} title={lvl} onContextMenu={liveSort.cellMenu(`${s.key}:${op}`, r)}>
                                                                 <StatusCell s={c.s} op={`${op} (${lvl})`} defaultDeny={dd} differs={c.s !== r.cells[live.subjects[0].key][op].s} subjectLabel={s.label} />
                                                             </td>
                                                         )

@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { RunPayload, Status, TABLE_OPS } from '../types'
+import { DiffRow, RunPayload, Status, TABLE_OPS } from '../types'
 import { LensApi } from '../services/LensApi'
 import { rankFilter } from '../utils/rank'
 import { setTitle } from '../utils/nav'
 import { download, safeName, toCsv } from '../utils/download'
 import { OP_SHORT, rank, statusText } from '../utils/status'
-import { filterDiffs, filterRoles, LIST_TITLES, ListKind, roleRows, TableRow, tableRows } from '../utils/reportLists'
+import { filterDiffs, filterRoles, LIST_TITLES, ListKind, roleRows, RoleRow, TableRow, tableRows } from '../utils/reportLists'
 import { RolesTable } from './ComparisonReport'
 import DiffTable, { diffCsvRows } from './DiffTable'
 import { Legend, StatusCell } from './StatusCell'
@@ -91,7 +91,7 @@ function Toolbar({ q, setQ, shown, total, noun, onExport, list }: { q: string; s
         <div className="lens-actions">
             <input className="lens-input" placeholder={`Filter ${noun}…`} value={q} onChange={(e) => setQ(e.target.value)} aria-label={`Filter ${noun}`} />
             <span className="lens-muted" aria-live="polite">
-                {q.trim() ? `${shown} of ${total}` : total} {noun}
+                {shown !== total ? `${shown} of ${total}` : total} {noun}
             </span>
             {q.trim() && (
                 <button type="button" className="lens-btn lens-btn--ghost lens-btn--small" onClick={() => setQ('')}>
@@ -99,7 +99,7 @@ function Toolbar({ q, setQ, shown, total, noun, onExport, list }: { q: string; s
                 </button>
             )}
             <span className="lens-list__export">
-                <ListActions list={list} onExport={onExport} exportWhat={`the ${shown} ${noun} shown${q.trim() ? ` (filtered by "${q.trim()}")` : ''}`} filtered={!!q.trim()} />
+                <ListActions list={list} onExport={onExport} exportWhat={`the ${shown} ${noun} shown${q.trim() ? ` (filtered by "${q.trim()}")` : shown !== total ? ' (filtered)' : ''}`} filtered={shown !== total} />
             </span>
         </div>
     )
@@ -109,15 +109,17 @@ function RoleList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
     const cmp = payload.comparison!
     const all = useMemo(() => filterRoles(roleRows(cmp, payload.results!.subjects), list), [payload, list])
     const rows = rankFilter(all, q, (r) => [r.role])
+    const [visible, setVisible] = useState<RoleRow[] | null>(null)
+    const shown = visible || rows
     const exportCsv = () => {
         const out: unknown[][] = [['Role'].concat(cmp.subjects.map((s) => s.label))]
-        for (const r of rows) out.push([r.role].concat(r.held.map((h) => h || '')))
+        for (const r of shown) out.push([r.role].concat(r.held.map((h) => h || '')))
         download(`${safeName(fileBase)}.csv`, toCsv(out), 'text/csv;charset=utf-8')
     }
     return (
         <>
-            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="roles" onExport={exportCsv} list={byNames('sys_user_role', rows.map((r) => r.role), `these ${rows.length} roles`)} />
-            {rows.length ? <RolesTable rows={rows} cmp={cmp} /> : <p className="lens-empty">{all.length ? 'No roles match the filter.' : 'No roles in this list.'}</p>}
+            <Toolbar q={q} setQ={setQ} shown={shown.length} total={all.length} noun="roles" onExport={exportCsv} list={byNames('sys_user_role', shown.map((r) => r.role), `these ${shown.length} roles`)} />
+            {rows.length ? <RolesTable rows={rows} cmp={cmp} listId="list-roles" onVisible={setVisible} /> : <p className="lens-empty">{all.length ? 'No roles match the filter.' : 'No roles in this list.'}</p>}
         </>
     )
 }
@@ -126,20 +128,22 @@ function DiffList({ q, setQ, payload, list, fileBase }: ListProps & { list: List
     const cmp = payload.comparison!
     const all = useMemo(() => filterDiffs(cmp.diffs, list), [cmp, list])
     const rows = useMemo(() => rankFilter(all, q, (d) => [d.t, d.f, d.l]), [all, q])
+    const [visible, setVisible] = useState<DiffRow[] | null>(null)
+    const shown = visible || rows
     return (
         <>
             <Toolbar
                 q={q}
                 setQ={setQ}
-                shown={rows.length}
+                shown={shown.length}
                 total={all.length}
                 noun="differences"
-                onExport={() => download(`${safeName(fileBase)}.csv`, toCsv(diffCsvRows(cmp, rows, statusText)), 'text/csv;charset=utf-8')}
-                list={aclsFor(rows.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })), `the ACL records for these ${rows.length} differences`)}
+                onExport={() => download(`${safeName(fileBase)}.csv`, toCsv(diffCsvRows(cmp, shown, statusText)), 'text/csv;charset=utf-8')}
+                list={aclsFor(shown.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })), `the ACL records for these ${shown.length} differences`)}
             />
             <Legend defaultDeny={cmp.defaultDeny} baseline={false} />
             <div className="lens-mx__scroll lens-list__scroll">
-                <DiffTable cmp={cmp} rows={rows} emptyText={all.length ? 'No differences match the filter.' : 'No differences in this list.'} />
+                <DiffTable cmp={cmp} rows={rows} listId="list-diffs" onVisible={setVisible} emptyText={all.length ? 'No differences match the filter.' : 'No differences in this list.'} />
             </div>
         </>
     )
@@ -153,7 +157,9 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
     cmp.subjects.forEach((s, i) => (columns[s.key] = (t) => t.ops[i].reduce((n, st: Status) => n + rank(st, dd), 0)))
     const groupLabel: { [key: string]: (t: TableRow) => string } = { diffs: (t) => (t.diffs ? `${t.diffs} differences` : 'identical') }
     cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (t) => t.ops[i].map((st, oi) => `${OP_SHORT[TABLE_OPS[oi]]}:${st === 'N' ? '–' : st}`).join(' ')))
-    const sorter = useSort(rows, columns, { groupLabel })
+    groupLabel.table = (t) => t.t
+    const sorter = useSort(rows, columns, { groupLabel, id: 'list-tables', required: ['table'] })
+    const on = (col: string, t: TableRow) => ({ onContextMenu: sorter.cellMenu(col, t) })
     const exportCsv = () => {
         const head: unknown[] = ['Table', 'Table label', 'Differences']
         cmp.subjects.forEach((s) => TABLE_OPS.forEach((op) => head.push(`${s.label} – ${op}`)))
@@ -167,7 +173,7 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
     }
     return (
         <>
-            <Toolbar q={q} setQ={setQ} shown={rows.length} total={all.length} noun="tables" onExport={exportCsv} list={byNames('sys_db_object', rows.map((t) => t.t), `these ${rows.length} tables`)} />
+            <Toolbar q={q} setQ={setQ} shown={sorter.rows.length} total={all.length} noun="tables" onExport={exportCsv} list={byNames('sys_db_object', sorter.rows.map((t) => t.t), `these ${sorter.rows.length} tables`)} />
             <Legend defaultDeny={dd} baseline={false} />
             <div className="lens-mx__scroll lens-list__scroll">
                 <ListBreadcrumb sorter={sorter} />
@@ -190,12 +196,12 @@ function TableList({ q, setQ, rows: all, payload, fileBase }: ListProps & { rows
                     <tbody>
                         <GroupedRows sorter={sorter} colSpan={2 + cmp.subjects.length} render={(t) => (
                             <tr key={t.t}>
-                                <th scope="row">
+                                <th scope="row" {...on('table', t)}>
                                     {t.l} <code>{t.t}</code> <RecordLink href={recordUrl.table(t.t)} what={`table definition for ${t.t}`} />
                                 </th>
-                                <td>{t.diffs ? t.diffs : <span className="lens-muted">identical</span>}</td>
-                                {t.ops.map((ops, si) => (
-                                    <td key={si}>
+                                {sorter.shows('diffs') && <td {...on('diffs', t)}>{t.diffs ? t.diffs : <span className="lens-muted">identical</span>}</td>}
+                                {t.ops.map((ops, si) => !sorter.shows(cmp.subjects[si].key) ? null : (
+                                    <td key={si} {...on(cmp.subjects[si].key, t)}>
                                         <span className="lens-crud" aria-label={`${cmp.subjects[si].label}`}>
                                             {ops.map((st, oi) => (
                                                 <span key={oi} className="lens-crud__op">

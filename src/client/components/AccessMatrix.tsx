@@ -206,7 +206,11 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                         </th>
                                         {visible.map((s, si) =>
                                                 ops.map((op) => (
-                                                    <td key={`${s.subject.key}-${op}`} className={`lens-mx__cell${op === ops[0] ? ' lens-mx__cell--first' : ''}`}>
+                                                    <td
+                                                        key={`${s.subject.key}-${op}`}
+                                                        className={`lens-mx__cell${op === ops[0] ? ' lens-mx__cell--first' : ''}`}
+                                                        onContextMenu={sorter.cellMenu(`${s.subject.key}:${op}`, { ti, differs })}
+                                                    >
                                                         <StatusCell
                                                             s={s.tables[ti].ops[op].s}
                                                             op={op}

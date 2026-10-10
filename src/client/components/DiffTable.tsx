@@ -12,10 +12,14 @@ interface Props {
     rows: DiffRow[]
     limit?: number
     emptyText: string
+    /** list name for "Personalize columns" (remembered per list) */
+    listId?: string
+    /** rows left after right-click filters, in display order */
+    onVisible?: (rows: DiffRow[]) => void
 }
 
 /** Sortable list of differing cells: level, table, field, operation and each subject's result. */
-export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
+export default function DiffTable({ cmp, rows, limit, emptyText, listId, onVisible }: Props) {
     const columns: { [key: string]: (d: DiffRow) => string | number } = {
         level: (d) => d.kind,
         table: (d) => d.l || d.t,
@@ -25,10 +29,13 @@ export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
     cmp.subjects.forEach((s, i) => (columns[s.key] = (d) => rank(d.statuses[i], cmp.defaultDeny)))
     const groupLabel: { [key: string]: (d: DiffRow) => string } = {
         level: (d) => (d.kind === 'table' ? 'Table' : 'Field'),
+        table: (d) => d.t,
         field: (d) => (d.kind === 'table' ? '— (table rule)' : d.f === '*' ? 'all other fields' : d.f),
     }
     cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (d) => statusText(d.statuses[i], cmp.defaultDeny)))
-    const sorter = useSort(rows, columns, { groupLabel })
+    const sorter = useSort(rows, columns, { groupLabel, id: listId, required: ['table'], onVisible })
+    const on = (col: string, d: DiffRow) => ({ onContextMenu: sorter.cellMenu(col, d) })
+    const show = sorter.shows
     return (
         <>
             <ListBreadcrumb sorter={sorter} />
@@ -57,34 +64,41 @@ export default function DiffTable({ cmp, rows, limit, emptyText }: Props) {
                 <tbody>
                     <GroupedRows sorter={sorter} colSpan={4 + cmp.subjects.length} limit={limit} render={(d, i) => (
                         <tr key={`${d.t}-${d.f}-${d.op}-${i}`}>
-                            <td>
-                                <span className={`lens-level lens-level--${d.kind}`}>{d.kind === 'table' ? 'Table' : 'Field'}</span>
-                            </td>
-                            <th scope="row">
+                            {show('level') && (
+                                <td {...on('level', d)}>
+                                    <span className={`lens-level lens-level--${d.kind}`}>{d.kind === 'table' ? 'Table' : 'Field'}</span>
+                                </td>
+                            )}
+                            <th scope="row" {...on('table', d)}>
                                 {d.l} <code>{d.t}</code> <RecordLink href={recordUrl.table(d.t)} what={`table definition for ${d.t}`} />
                             </th>
-                            <td>
-                                {d.kind === 'table' ? (
-                                    <span className="lens-muted" aria-label="Not a field rule">
-                                        —
-                                    </span>
-                                ) : d.f === '*' ? (
-                                    <em>all other fields</em>
-                                ) : (
-                                    <code>{d.f}</code>
-                                )}
-                            </td>
-                            <td>{d.op}</td>
-                            {d.statuses.map((st, si) => (
-                                <td key={si}>
-                                    <StatusCell s={st} op={d.op} defaultDeny={cmp.defaultDeny} differs={st !== d.statuses[0]} subjectLabel={cmp.subjects[si].label} />
+                            {show('field') && (
+                                <td {...on('field', d)}>
+                                    {d.kind === 'table' ? (
+                                        <span className="lens-muted" aria-label="Not a field rule">
+                                            —
+                                        </span>
+                                    ) : d.f === '*' ? (
+                                        <em>all other fields</em>
+                                    ) : (
+                                        <code>{d.f}</code>
+                                    )}
                                 </td>
-                            ))}
+                            )}
+                            {show('op') && <td {...on('op', d)}>{d.op}</td>}
+                            {d.statuses.map((st, si) =>
+                                show(cmp.subjects[si].key) ? (
+                                    <td key={si} {...on(cmp.subjects[si].key, d)}>
+                                        <StatusCell s={st} op={d.op} defaultDeny={cmp.defaultDeny} differs={st !== d.statuses[0]} subjectLabel={cmp.subjects[si].label} />
+                                    </td>
+                                ) : null
+                            )}
                         </tr>
                     )} />
                 </tbody>
             </table>
             {!rows.length && <p className="lens-empty">{emptyText}</p>}
+            {rows.length > 0 && !sorter.rows.length && <p className="lens-empty">No rows match the cell filters. Remove a filter above.</p>}
         </>
     )
 }

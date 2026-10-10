@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Comparison, SubjectResult } from '../types'
+import { Comparison, DiffRow, SubjectResult } from '../types'
 import { rankFilter } from '../utils/rank'
 import { exportFilteredDiffsCsv } from '../utils/exports'
 import { ListKind, listUrl, roleRows, RoleRow } from '../utils/reportLists'
@@ -38,6 +38,8 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
     const [q, setQ] = useState('')
     const [limit, setLimit] = useState(PAGE)
     const [showShared, setShowShared] = useState(true)
+    const [shownDiffs, setShownDiffs] = useState<DiffRow[] | null>(null)
+    const [shownRoles, setShownRoles] = useState<RoleRow[] | null>(null)
     const label = (key: string) => cmp.subjects.filter((s) => s.key === key)[0]?.label || key
     const s = cmp.summary
 
@@ -57,6 +59,8 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
         setLimit(PAGE)
     }
     const filterText = [kind ? KIND_TEXT[kind] : '', q.trim() ? `matching "${q.trim()}"` : ''].filter(Boolean).join(', ')
+    const shown = shownDiffs || diffs
+    const narrowed = filtered || shown.length !== diffs.length
 
     const tiles: Tile[] = [
         {
@@ -209,18 +213,18 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                         How each role is assigned
                     </button>
                     <ListActions
-                        list={byNames('sys_user_role', roles.map((r) => r.role), `these ${roles.length} roles`)}
+                        list={byNames('sys_user_role', (shownRoles || roles).map((r) => r.role), `these ${(shownRoles || roles).length} roles`)}
                         onExport={() => {
                             const out: unknown[][] = [['Role'].concat(cmp.subjects.map((x) => x.label))]
-                            for (const r of roles) out.push([r.role].concat(r.held.map((h) => h || '')))
+                            for (const r of shownRoles || roles) out.push([r.role].concat(r.held.map((h) => h || '')))
                             download(`${safeName(fileBase)}-roles.csv`, toCsv(out), 'text/csv;charset=utf-8')
                         }}
-                        exportWhat={`the ${roles.length} roles shown`}
+                        exportWhat={`the ${(shownRoles || roles).length} roles shown`}
                     />
                 </div>
                 <div className="lens-mx__scroll lens-mx__scroll--short">
                     {roles.length ? (
-                        <RolesTable rows={roles} cmp={cmp} />
+                        <RolesTable rows={roles} cmp={cmp} listId="report-roles" onVisible={setShownRoles} />
                     ) : (
                         <p className="lens-empty">Every role is shared. Tick "Shared roles" to list them.</p>
                     )}
@@ -238,7 +242,7 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                         </select>
                     </label>
                     <span className="lens-muted" aria-live="polite">
-                        {filtered ? `${diffs.length} of ${cmp.diffs.length} differences` : `${diffs.length} differences`}
+                        {narrowed ? `${shown.length} of ${cmp.diffs.length} differences` : `${shown.length} differences`}
                     </span>
                     {filtered && (
                         <button type="button" className="lens-btn lens-btn--ghost lens-btn--small" onClick={clearFilter}>
@@ -248,12 +252,12 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                     )}
                     <ListActions
                         list={aclsFor(
-                            diffs.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })),
-                            `the ACL records for ${filtered ? 'these' : 'all'} ${diffs.length} differences`
+                            shown.map((d) => ({ t: d.t, f: d.kind === 'field' ? d.f : '', op: d.op })),
+                            `the ACL records for ${narrowed ? 'these' : 'all'} ${shown.length} differences`
                         )}
-                        onExport={() => exportFilteredDiffsCsv(cmp, diffs, fileBase, filterText || 'all differences')}
-                        exportWhat={filtered ? `the ${diffs.length} differences shown (${filterText})` : `all ${diffs.length} differences`}
-                        filtered={filtered}
+                        onExport={() => exportFilteredDiffsCsv(cmp, shown, fileBase, filterText || (narrowed ? 'cell filters' : 'all differences'))}
+                        exportWhat={narrowed ? `the ${shown.length} differences shown${filterText ? ` (${filterText})` : ''}` : `all ${shown.length} differences`}
+                        filtered={narrowed}
                     />
                 </div>
                 <div className="lens-mx__scroll">
@@ -261,6 +265,8 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                         cmp={cmp}
                         rows={diffs}
                         limit={limit}
+                        listId="report-diffs"
+                        onVisible={setShownDiffs}
                         emptyText={filtered ? 'No differences match this filter.' : 'No differences – these subjects have identical access for the analyzed tables.'}
                     />
                 </div>
@@ -275,12 +281,14 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
 }
 
 /** Roles × subjects, sortable. Also used by the report list view. */
-export function RolesTable({ rows, cmp }: { rows: RoleRow[]; cmp: Comparison }) {
+export function RolesTable({ rows, cmp, listId, onVisible }: { rows: RoleRow[]; cmp: Comparison; listId?: string; onVisible?: (rows: RoleRow[]) => void }) {
     const columns: { [key: string]: (r: RoleRow) => string | number } = { role: (r) => r.role, held: (r) => r.held.filter(Boolean).length }
     cmp.subjects.forEach((s, i) => (columns[s.key] = (r) => (r.held[i] === 'explicit' ? 2 : r.held[i] === 'inherited' ? 1 : 0)))
     const groupLabel: { [key: string]: (r: RoleRow) => string } = { held: (r) => `${r.held.filter(Boolean).length} of ${cmp.subjects.length}` }
     cmp.subjects.forEach((s, i) => (groupLabel[s.key] = (r) => r.held[i] || 'not held'))
-    const sorter = useSort(rows, columns, { groupLabel })
+    const sorter = useSort(rows, columns, { groupLabel, id: listId, required: ['role'], onVisible })
+    const on = (col: string, r: RoleRow) => ({ onContextMenu: sorter.cellMenu(col, r) })
+    const show = sorter.shows
     return (
         <>
         <ListBreadcrumb sorter={sorter} />
@@ -303,32 +311,37 @@ export function RolesTable({ rows, cmp }: { rows: RoleRow[]; cmp: Comparison }) 
             <tbody>
                 <GroupedRows sorter={sorter} colSpan={2 + cmp.subjects.length} render={(r) => (
                     <tr key={r.role} className={r.shared ? '' : 'lens-row--diff'}>
-                        <th scope="row">
+                        <th scope="row" {...on('role', r)}>
                             <code>{r.role}</code> <RecordLink href={recordUrl.roleByName(r.role)} what={`role record for ${r.role}`} />
                         </th>
-                        {r.held.map((h, i) => (
-                            <td key={cmp.subjects[i].key}>
-                                {h ? (
-                                    <span className="lens-yes-cell">
-                                        <span className="lens-yes" aria-hidden="true">
-                                            ✓
+                        {r.held.map((h, i) =>
+                            show(cmp.subjects[i].key) ? (
+                                <td key={cmp.subjects[i].key} {...on(cmp.subjects[i].key, r)}>
+                                    {h ? (
+                                        <span className="lens-yes-cell">
+                                            <span className="lens-yes" aria-hidden="true">
+                                                ✓
+                                            </span>
+                                            <span className={h === 'inherited' ? 'lens-muted' : 'lens-sr'}>{h}</span>
                                         </span>
-                                        <span className={h === 'inherited' ? 'lens-muted' : 'lens-sr'}>{h}</span>
-                                    </span>
-                                ) : (
-                                    <span className="lens-no" aria-label="Does not have this role">
-                                        —
-                                    </span>
-                                )}
+                                    ) : (
+                                        <span className="lens-no" aria-label="Does not have this role">
+                                            —
+                                        </span>
+                                    )}
+                                </td>
+                            ) : null
+                        )}
+                        {show('held') && (
+                            <td {...on('held', r)}>
+                                {r.held.filter(Boolean).length} of {cmp.subjects.length}
                             </td>
-                        ))}
-                        <td>
-                            {r.held.filter(Boolean).length} of {cmp.subjects.length}
-                        </td>
+                        )}
                     </tr>
                 )} />
             </tbody>
         </table>
+        {rows.length > 0 && !sorter.rows.length && <p className="lens-empty">No roles match the cell filters. Remove a filter above.</p>}
         </>
     )
 }
