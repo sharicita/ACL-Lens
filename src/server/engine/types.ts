@@ -124,6 +124,13 @@ export interface Cell {
     /** matched deny-unless level, if any */
     dlvl?: string
     a: AclOutcome[]
+    /**
+     * Set when a security data filter limits which rows the subject can reach for this operation
+     * (A = applied, C = depends on a security attribute). `s` already includes it.
+     */
+    df?: 'A' | 'C'
+    /** the ACL-only status, when a data filter changed it (e.g. G -> C) */
+    acl?: Status
 }
 
 export interface FieldRow {

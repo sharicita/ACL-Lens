@@ -19,6 +19,7 @@ The engine reads with `GlideRecord`, because it must see rules that apply to oth
 
 ## Consequences
 - Fast and explainable. Works for roles and inactive users. Comparable across subjects.
-- *Granted* means "ACLs allow". Query business rules, data filters and domain separation are out of scope and documented.
+- *Granted* means "ACLs allow, and no security data filter limits the rows" (filters that apply turn Granted into Conditional). Query business rules, access handlers, data filtration, OAuth/API policy and domain separation are out of scope statically and documented.
+- Where the platform can do it, a live check closes the gap. **Verify live** runs the platform's own evaluation (the Access Analyzer's, which evaluates as the subject) for every table of a run as the baseline subject and lists where it differs from the prediction. It needs a role the platform grants for that evaluation (`admin`, `user_admin`, `access_analyzer_admin`); ACL Lens doesn't widen it.
 - For the signed-in user's *own* live access, the assistant's `check_my_access` asks the platform directly.
 - Engine rules are isolated in `evaluator.ts` and covered by offline tests, so platform semantic changes can be tracked.

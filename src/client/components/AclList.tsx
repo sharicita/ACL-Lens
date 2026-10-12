@@ -181,6 +181,12 @@ export default function AclList({ cell, acls, op, defaultDeny }: Props) {
                     ) : null}
                 </span>
             </div>
+            {cell.df && (
+                <p className="lens-muted lens-why__df">
+                    {cell.df === 'A' ? 'A security data filter applies' : 'A security data filter may apply (it depends on a security attribute)'}
+                    {cell.acl ? `: the ACLs alone give ${statusText(cell.acl, defaultDeny)}, but only rows inside the filter are reachable.` : ': only rows inside the filter are reachable.'} See the Data filters tab.
+                </p>
+            )}
             {cell.a.length > 0 && (
                 <ul className="lens-why__list">
                     {cell.a.map((o, idx) => {

@@ -1179,6 +1179,10 @@ code {
     align-items: center;
     flex-wrap: wrap;
 }
+.lens-why__df {
+    margin: 0.45rem 0 0;
+    font-size: 0.8rem;
+}
 .lens-why__list {
     list-style: none;
     margin: 0.55rem 0 0;
@@ -2174,6 +2178,68 @@ ul.lens-tiles {
 .lens-subject__roles strong {
     color: var(--lx-text);
 }
+/* roles on the card: assigned roles visible, implicit ones a click away */
+.lens-subject__rolelist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+}
+.lens-rolegroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+.lens-rolegroup__label {
+    color: var(--lx-muted);
+    font-size: 0.72rem;
+}
+.lens-rolegroup__toggle {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+}
+.lens-rolechips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+.lens-rolechip {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.08rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--lx-border);
+    background: var(--lx-subtle);
+    color: var(--lx-text);
+    font-family: 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.72rem;
+    text-decoration: none;
+}
+.lens-rolechip:hover,
+.lens-rolechip:focus-visible {
+    border-color: var(--lx-accent);
+    color: var(--lx-accent);
+}
+.lens-rolechip--assigned {
+    background: var(--lx-accent-soft);
+    border-color: transparent;
+}
+.lens-rolechip--implicit {
+    color: var(--lx-muted);
+}
+.lens-rolechips__more {
+    font-size: 0.72rem;
+}
 .lens-subject__actions {
     display: flex;
     flex-wrap: wrap;
@@ -2995,6 +3061,17 @@ tr.lens-group > th {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+.lens-condpop__df {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-space-sm);
+}
+.lens-condpop__filter {
+    display: block;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
 
 /* Security Assistant opens from the header (no floating button over results) */
 .lens-header__divider {
@@ -3679,4 +3756,83 @@ tr.lens-group > th {
 }
 .lens-list__toolbar .lens-input {
     flex: 1 1 260px;
+}
+
+/* Live verification: the platform's live check for every table, as the baseline */
+.lens-verify__head {
+    align-items: flex-start;
+}
+.lens-verify__head > div:first-child {
+    flex: 1 1 22rem;
+    min-width: 0;
+}
+.lens-verify__sub {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+}
+.lens-verify__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lx-space-sm);
+}
+.lens-verify__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-space-sm);
+    padding: 0.8rem 1.1rem 1rem;
+}
+.lens-verify__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-space-sm);
+}
+.lens-verify__progress progress {
+    flex: 0 1 16rem;
+    accent-color: var(--lx-accent);
+}
+.lens-verify__summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+}
+.lens-verify__chip {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.12rem 0.55rem;
+    border-radius: 999px;
+    background: var(--lx-subtle);
+    color: var(--lx-muted);
+}
+.lens-verify__chip--agree {
+    background: var(--lx-g-bg);
+    color: var(--lx-g-fg);
+}
+.lens-verify__chip--differs {
+    background: var(--lx-diff-soft);
+    color: var(--lx-diff);
+}
+.lens-verify__chip--error {
+    background: var(--lx-d-bg);
+    color: var(--lx-d-fg);
+}
+.lens-verify__table th,
+.lens-verify__table td {
+    text-align: left;
+    vertical-align: top;
+}
+.lens-verify__table th[scope='row'] {
+    font-weight: 600;
+}
+.lens-verify__row--differs > th[scope='row'] {
+    box-shadow: inset 3px 0 0 var(--lx-diff);
+}
+.lens-verify__why {
+    font-size: 0.82rem;
+    min-width: 14rem;
+}
+.lens-verify__err {
+    color: var(--lx-d-fg);
+    font-size: 0.82rem;
 }

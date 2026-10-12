@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { AclInfo, Cell } from '../types'
+import { AclInfo, Cell, DataFilterInfo } from '../types'
 import { REASON_TEXT } from '../utils/status'
 import { ConditionDetail } from './AclList'
 import RecordLink, { recordUrl } from './RecordLink'
@@ -13,6 +13,8 @@ interface Props {
     op: string
     /** "incident" or "incident.short_description" */
     target: string
+    /** the security data filters that apply (or may apply) to this subject on the table */
+    filters?: DataFilterInfo[]
     onOpenDetails?: () => void
     onClose: () => void
 }
@@ -21,7 +23,7 @@ interface Props {
  * "Why is this Conditional?" next to a matrix cell: the rules that decide record by record, with their
  * condition / script shown straight away. Positioned against the window so it is never cut off.
  */
-export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op, target, onOpenDetails, onClose }: Props) {
+export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op, target, filters = [], onOpenDetails, onClose }: Props) {
     const ref = useRef<HTMLDivElement>(null)
     const titleId = useId()
     const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
@@ -91,6 +93,33 @@ export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op,
                 </button>
             </div>
             <div className="lens-condpop__body">
+                {cell.df && (
+                    <div className="lens-condpop__df">
+                        <p className="lens-muted lens-condpop__lead">
+                            <Icon name="filter" size={12} />{' '}
+                            {cell.df === 'A'
+                                ? `A security data filter applies to ${subjectLabel}: rows outside the filter are hidden.`
+                                : `A security data filter may apply to ${subjectLabel}, depending on a security attribute that can't be resolved without a session.`}
+                            {cell.acl === 'G' && ' The ACLs alone grant this operation, so it reaches only some records.'}
+                        </p>
+                        {filters.length > 0 && (
+                            <ul className="lens-condpop__list">
+                                {filters.map((f) => (
+                                    <li key={f.id}>
+                                        <div className="lens-condpop__rule">
+                                            <span className="lens-pill">{f.mode === 'if' ? 'Filter if' : 'Filter unless'}</span>
+                                            <RecordLink href={`/sys_security_data_filter.do?sys_id=${encodeURIComponent(f.id)}`} what="the security data filter">
+                                                {f.description || f.table}
+                                            </RecordLink>
+                                            {f.securityAttribute && <span className="lens-muted">{f.securityAttribute}</span>}
+                                        </div>
+                                        {f.filter && <code className="lens-condpop__filter">{f.filter}</code>}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
                 {deciding.length ? (
                     <>
                         <p className="lens-muted lens-condpop__lead">
@@ -114,7 +143,7 @@ export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op,
                             })}
                         </ul>
                     </>
-                ) : (
+                ) : cell.df ? null : (
                     <p className="lens-muted">The result depends on the record or session, but no single rule is marked as the deciding one. Open the full details to see every rule checked.</p>
                 )}
                 {onOpenDetails && (

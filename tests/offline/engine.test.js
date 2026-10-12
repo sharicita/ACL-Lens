@@ -10,7 +10,8 @@ const resolve = Module._resolveFilename
 Module._resolveFilename = function (req, ...rest) {
     return resolve.call(this, req.endsWith('.ts') ? req.replace(/\.ts$/, '.js') : req, ...rest)
 }
-const { Evaluator } = require(path.join(BUILD, 'engine', 'evaluator.js'))
+const { Evaluator, applyDataFilters } = require(path.join(BUILD, 'engine', 'evaluator.js'))
+const { accountWarning } = require(path.join(BUILD, 'engine', 'account.js'))
 const { compare, drift } = require(path.join(BUILD, 'engine', 'compare.js'))
 const { parseCondition, evalAttribute, evalDataFilter, scriptIsEmpty } = require(path.join(BUILD, 'engine', 'attributes.js'))
 
@@ -149,6 +150,44 @@ assert.equal(evalDataFilter(iff, attrs, { maint: true }), 'A')
 assert.equal(evalDataFilter(iff, attrs, { itil: true }), 'N')
 assert.equal(evalDataFilter(Object.assign({}, unless, { securityAttribute: '' }), attrs, {}), 'A')
 assert.equal(evalDataFilter(Object.assign({}, unless, { securityAttribute: 'Unknown' }), attrs, {}), 'C')
+
+// security data filters fold into the status: Granted -> Conditional (except create), the ACL result is kept
+{
+    const cells = () => ({ create: { s: 'G', lvl: 't', a: [] }, read: { s: 'G', lvl: 't', a: [] }, write: { s: 'C', lvl: 't', a: [] }, delete: { s: 'D', lvl: 't', a: [] } })
+    const applied = cells()
+    applyDataFilters(applied, [{ i: 0, r: 'N' }, { i: 1, r: 'A' }])
+    assert.equal(applied.create.s, 'G', 'create does not query existing rows')
+    assert.equal(applied.read.s, 'C')
+    assert.equal(applied.read.acl, 'G')
+    assert.equal(applied.read.df, 'A')
+    assert.equal(applied.write.s, 'C')
+    assert.equal(applied.write.acl, undefined, 'already Conditional: status unchanged')
+    assert.equal(applied.write.df, 'A')
+    assert.equal(applied.delete.s, 'D', 'denied stays denied')
+    assert.equal(applied.delete.df, undefined)
+    const depends = cells()
+    applyDataFilters(depends, [{ i: 0, r: 'C' }])
+    assert.equal(depends.read.s, 'C')
+    assert.equal(depends.read.df, 'C')
+    const notApplied = cells()
+    applyDataFilters(notApplied, [{ i: 0, r: 'N' }])
+    assert.equal(notApplied.read.s, 'G', 'a filter that does not apply changes nothing')
+    assert.equal(notApplied.read.df, undefined)
+    applyDataFilters(notApplied, undefined)
+    assert.equal(notApplied.read.s, 'G')
+}
+
+// machine, AI agent, web-service-only and integration accounts get a warning that API-level controls aren't evaluated
+{
+    const acct = (a) => subj(['itil'], { label: 'Svc', account: Object.assign({ identity: '', identityLabel: '', webServiceOnly: false, integrationUser: false }, a) })
+    assert.ok(/machine identity/.test(accountWarning(acct({ identity: 'machine' }))))
+    assert.ok(/OAuth scopes/.test(accountWarning(acct({ webServiceOnly: true }))))
+    assert.ok(/integration user/.test(accountWarning(acct({ integrationUser: true }))))
+    assert.ok(/AI agent/.test(accountWarning(acct({ identity: 'ai_agent' }))))
+    assert.equal(accountWarning(acct({ identity: 'human' })), '')
+    assert.equal(accountWarning(subj(['itil'])), '', 'no account info recorded')
+    assert.equal(accountWarning(Object.assign(acct({ identity: 'machine' }), { type: 'role' })), '')
+}
 
 // comparison counts differences in the extra operations; runs without them still compare
 const withExtra = (ev) => ({ subject: ev.subject, counts: { create: { G: 0, C: 0, D: 0, N: 0 }, read: { G: 0, C: 0, D: 0, N: 0 }, write: { G: 0, C: 0, D: 0, N: 0 }, delete: { G: 0, C: 0, D: 0, N: 0 } }, tables: [{ t: 'cat', l: 'Cat', ops: Object.fromEntries(['create', 'read', 'write', 'delete', 'report_on'].map((op) => [op, ev.evalLevels(['cat', '*'], op)])), fields: [] }] })

@@ -1,6 +1,6 @@
 import { AclIndex } from './acl-index.ts'
 import { AttributeInfo, evalAttribute } from './attributes.ts'
-import { AclInfo, AclOutcome, AclResult, Cell, Op, Reason, Status, Subject } from './types.ts'
+import { AclInfo, AclOutcome, AclResult, Cell, DataFilterOutcome, Op, Reason, Status, Subject } from './types.ts'
 
 /** Security attributes whose outcome is known without a session/record. */
 const ATTR_ALWAYS_PASS: { [k: string]: boolean } = {
@@ -128,6 +128,30 @@ export class Evaluator {
         for (const t of chain) out.push(`${t}.*`)
         out.push('*.*')
         return out
+    }
+}
+
+/** Operations a security data filter does not restrict: creating a record doesn't query existing rows. */
+const DATA_FILTER_FREE_OPS: { [op: string]: boolean } = { create: true }
+
+/**
+ * Folds security data filter outcomes into table operation cells. A filter that applies (or may
+ * apply) hides rows outside it, so a Granted operation only reaches some records: Conditional.
+ * The ACL-only status is kept in `acl` so the UI can explain the change.
+ */
+export function applyDataFilters(ops: { [op: string]: Cell }, sdf: DataFilterOutcome[] | undefined) {
+    if (!sdf || !sdf.length) return
+    const r = sdf.some((o) => o.r === 'A') ? 'A' : sdf.some((o) => o.r === 'C') ? 'C' : ''
+    if (!r) return
+    for (const op in ops) {
+        if (DATA_FILTER_FREE_OPS[op]) continue
+        const cell = ops[op]
+        if (cell.s !== 'G' && cell.s !== 'C') continue
+        cell.df = r
+        if (cell.s === 'G') {
+            cell.acl = 'G'
+            cell.s = 'C'
+        }
     }
 }
 

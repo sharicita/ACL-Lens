@@ -10,6 +10,7 @@ import RunHeader from './RunHeader'
 import SubjectCards from './SubjectCards'
 import { Legend } from './StatusCell'
 import TableDetail from './TableDetail'
+import LiveVerify from './LiveVerify'
 import RoleComparison from './RoleComparison'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
@@ -59,6 +60,8 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
     const [reruns, setReruns] = useState<RunRecord[]>([])
     const [tab, setTab] = useState<Tab>(cached?.comparison ? 'comparison' : 'matrix')
     const filtered = useRef<Set<string>>(new Set())
+    // whether the matrix has reported its rows (after that, an empty set means "no tables match")
+    const matrixReported = useRef(false)
     const assistant = useAssistant()
 
     useEffect(() => {
@@ -245,6 +248,22 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                             )
                         }
                     />
+                    {canLiveCheck && (
+                        <LiveVerify
+                            results={results}
+                            baseline={baseline}
+                            canRun
+                            fileBase={fileBase}
+                            onOpenTable={setDetail}
+                            tables={() => {
+                                // the tables the matrix currently shows, or every table before it has rendered
+                                const all = results.subjects[0].tables.map((_t, i) => i)
+                                if (!matrixReported.current) return all
+                                const names = filtered.current
+                                return all.filter((i) => names.has(results.subjects[0].tables[i].t))
+                            }}
+                        />
+                    )}
                     <div className="lens-run-view__bar">
                         <AccountTypeFilter />
                         <div className="lens-segment" role="tablist" aria-label="Result views">
@@ -284,7 +303,10 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                             />
                         )}
                         {tab === 'matrix' && (
-                            <AccessMatrix results={results} hidden={hidden} baseline={baseline} onOpenTable={setDetail} onFilteredChange={(s) => (filtered.current = s)} onExport={() => exportMatrixCsv(results, fileBase, filtered.current)} />
+                            <AccessMatrix results={results} hidden={hidden} baseline={baseline} onOpenTable={setDetail} onFilteredChange={(s) => {
+                                    filtered.current = s
+                                    matrixReported.current = true
+                                }} onExport={() => exportMatrixCsv(results, fileBase, filtered.current)} />
                         )}
                         {tab === 'roles' && <RoleComparison subjects={results.subjects} />}
                     </div>

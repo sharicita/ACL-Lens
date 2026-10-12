@@ -42,6 +42,8 @@ In order:
 | **C** Conditional | No outright pass, but at least one ACL is conditional (or a deny-unless is conditional) |
 | **N** No rule | No ACL at any level. `glide.sm.default_mode` decides (deny on most instances) |
 
+**Security data filters** are then folded in (`applyDataFilters` in `evaluator.ts`). When any filter on the table or a parent applies to the subject (*A*) or may apply (*C*, its security attribute can't be resolved statically), every **G** table operation except `create` becomes **C**: only rows inside the filter are reachable. `C` stays `C`; `D` and `N` are unchanged. The cell records `df` (A or C) and, when the status changed, the ACL-only status in `acl`. `create` is exempt because inserting a record doesn't query existing rows. Field cells are not changed: they describe the field rule only.
+
 Each cell stores the matched level (`lvl`), the deny-unless level (`dlvl`) and each evaluated ACL with its result and reason code. That's what the Table details drawer explains.
 
 ## 5. Which fields are listed
@@ -67,7 +69,10 @@ Each cell stores the matched level (`lvl`), the deny-unless level (`dlvl`) and e
 | Not evaluated | Effect on results | How to check |
 |---|---|---|
 | Conditions, scripts, non-trivial security attributes | Shown as **Conditional** with the reason | Read the ACL (details drawer); test with impersonation |
-| Query business rules, before-query rules, data filters | Rows may be hidden even when ACLs allow | Assistant troubleshooting guidance; impersonation |
+| Query business rules, before-query rules | Rows may be hidden even when ACLs allow | Assistant troubleshooting guidance; live check with a record |
+| Security data filters | Folded in: Granted becomes Conditional where a filter applies (§4) | Data filters tab; live check |
+| Access handlers, data filtration | Not readable as records: they only appear in the platform's live evaluation | **Verify live** (whole run, as the baseline) or the **Live** tab (one table) |
+| OAuth token scopes, REST API access policies, API-level ACLs | Not evaluated, statically or live; machine, AI agent, web-service-only and integration users get a run warning (`account.ts`) | Test through the integration |
 | Domain separation | Not modelled | Test in the domain |
 | UI policies / client scripts | Fields may be hidden or read-only on forms | Form testing |
 | Non-record ACL types (REST, UI page, client-callable…) | Not shown | Platform ACL list |

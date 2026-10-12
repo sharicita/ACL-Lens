@@ -90,4 +90,5 @@ The **Check live** tab doesn't use an ACL Lens endpoint. The platform only lets 
 - Body: `[{type: "TRANSFORM", definitionSysId: "84b4614577c22110eba8fe21fe5a9943" (Get access debug logs), inputValues: {requestPayload: {type: "JSON_LITERAL", value: {entitySysId, entityType: User|Group|Role, targetName, targetResource: "record", targetField, targetMethod: "", targetRecord, targetOperations[]}}}}]`
 - The platform's ACL on that data broker allows `admin`, `user_admin` and `access_analyzer_admin` only. It needs the Access Analyzer plugin (`sn_access_analyzer`).
 - `src/client/utils/liveCheck.ts` turns the debug log into the Access Analyzer's columns, using the same rules as the analyzer's own `AccessAnalyzerUtil.parseResponse`.
+- **Verify live** (`src/client/utils/liveVerify.ts`) makes the same call once per table shown in the matrix, as the baseline subject (all the run's table operations per call, 3 at a time, at most 300 tables). It compares each operation's overall result with the prediction and keeps the result in the browser.
 

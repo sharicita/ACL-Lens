@@ -23,7 +23,7 @@ export interface WorkspaceDraft {
 
 const EMPTY_DRAFT: WorkspaceDraft = {
     subjects: [],
-    filter: { mode: 'secured_by_roles', value: '', includeFields: true, excludeSystem: true },
+    filter: { mode: 'tables', value: '', includeFields: true, excludeSystem: true },
     name: '',
 }
 

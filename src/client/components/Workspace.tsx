@@ -40,6 +40,9 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
     }
 
     const n = draft.subjects.length
+    // the table list, prefix or scope is required for those modes
+    const needsValue = ['tables', 'prefix', 'scope'].indexOf(draft.filter.mode) >= 0 && !(draft.filter.value || '').trim()
+    const missing = needsValue ? (draft.filter.mode === 'tables' ? 'Add at least one table to analyze.' : draft.filter.mode === 'prefix' ? 'Enter at least one table name prefix.' : 'Choose an application scope.') : ''
     return (
         <div className="lens-workspace">
             <a
@@ -86,9 +89,9 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                         <button
                             type="button"
                             className="lens-btn lens-btn--primary"
-                            disabled={!n || !!busy}
+                            disabled={!n || needsValue || !!busy}
                             onClick={() => run('analyze')}
-                            data-tip="Evaluate CRUD and field access for the selected users and roles and show them side by side."
+                            data-tip={missing || 'Evaluate CRUD and field access for the selected users and roles and show them side by side.'}
                         >
                             <Icon name="play" />
                             {busy === 'analyze' ? 'Analyzing…' : `Analyze ${n > 1 ? 'side by side' : 'access'}`}
@@ -96,8 +99,8 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                         <button
                             type="button"
                             className="lens-btn lens-btn--secondary"
-                            disabled={n < 2 || !!busy}
-                            data-tip={n < 2 ? 'Select at least two users or roles to compare.' : 'Analyze, then run the comparison script: totals, head-to-head counts, role differences and an exportable list of every difference.'}
+                            disabled={n < 2 || needsValue || !!busy}
+                            data-tip={n < 2 ? 'Select at least two users or roles to compare.' : missing ? missing : 'Analyze, then run the comparison script: totals, head-to-head counts, role differences and an exportable list of every difference.'}
                             onClick={() => run('compare')}
                         >
                             <Icon name="compare" />
@@ -110,6 +113,7 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                         </p>
                     )}
                     {n === 1 && <Tip id="ws-compare">Add a second user or role to compare them side by side.</Tip>}
+                    {n > 0 && missing && <p className="lens-muted">{missing}</p>}
                     {n === 0 && <Tip id="ws-start">Start by searching for a user (for example a colleague who reports a problem) or a role you are designing.</Tip>}
                     {busy && <p className="lens-muted">Evaluating ACLs on the instance – large table sets can take a minute.</p>}
                     {error && (

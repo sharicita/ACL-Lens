@@ -4,6 +4,7 @@ import HelpTip from './HelpTip'
 import AccountBadge from './AccountBadge'
 import RecordLink, { recordUrl } from './RecordLink'
 import AddSubjectCard from './AddSubjectCard'
+import SubjectRoles from './SubjectRoles'
 import { SubjectOption } from '../types'
 import Icon from './Icon'
 import { useSubjectVisible } from './SubjectName'
@@ -184,6 +185,7 @@ export default function SubjectCards({ subjects, defaultDeny, hidden, baseline, 
                                 </>
                             )}
                         </p>
+                        <SubjectRoles subject={s} />
 
                         <div className="lens-subject__actions">
                             <button type="button" className="lens-link" onClick={onShowRoles} data-tip="Compare roles side by side and see how each was assigned.">

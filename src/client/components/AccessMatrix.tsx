@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { AnalysisResult, Cell, EXTRA_OPS, FIELD_OPS, Op, TABLE_OPS } from '../types'
+import { AnalysisResult, Cell, DataFilterInfo, EXTRA_OPS, FIELD_OPS, Op, TABLE_OPS } from '../types'
 import { OP_HELP, OP_SHORT, rank, statusText } from '../utils/status'
 import Icon from './Icon'
 import { rankFilter } from '../utils/rank'
@@ -32,7 +32,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     const [expanded, setExpanded] = useState<Set<number>>(new Set())
     const [collapsing, setCollapsing] = useState<Set<number>>(new Set())
     // the open "why Conditional" panel
-    const [cond, setCond] = useState<{ anchor: HTMLElement; cell: Cell; subjectLabel: string; op: string; target: string; ti: number } | null>(null)
+    const [cond, setCond] = useState<{ anchor: HTMLElement; cell: Cell; subjectKey: string; subjectLabel: string; op: string; target: string; ti: number } | null>(null)
     const dd = results.defaultDeny
     const subjectVisible = useSubjectVisible()
     const visible = results.subjects.filter((s) => !hidden.has(s.subject.key) && subjectVisible(s.subject.key))
@@ -183,6 +183,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                     subjectLabel={cond.subjectLabel}
                     op={cond.op}
                     target={cond.target}
+                    filters={filtersFor(results, cond.subjectKey, cond.ti)}
                     onOpenDetails={() => onOpenTable(cond.ti)}
                     onClose={() => setCond(null)}
                 />
@@ -255,7 +256,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                                                 className="lens-cellbtn"
                                                                 aria-haspopup="dialog"
                                                                 onClick={(e) =>
-                                                                    setCond({ anchor: e.currentTarget, cell: s.tables[ti].ops[op], subjectLabel: s.subject.label, op, target: t.t, ti })
+                                                                    setCond({ anchor: e.currentTarget, cell: s.tables[ti].ops[op], subjectKey: s.subject.key, subjectLabel: s.subject.label, op, target: t.t, ti })
                                                                 }
                                                             >
                                                                 <StatusCell
@@ -299,7 +300,7 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                                                                         type="button"
                                                                         className="lens-cellbtn"
                                                                         aria-haspopup="dialog"
-                                                                        onClick={(e) => setCond({ anchor: e.currentTarget, cell, subjectLabel: s.subject.label, op, target: `${t.t}.${f.f}`, ti })}
+                                                                        onClick={(e) => setCond({ anchor: e.currentTarget, cell, subjectKey: s.subject.key, subjectLabel: s.subject.label, op, target: `${t.t}.${f.f}`, ti })}
                                                                     >
                                                                         <StatusCell s="C" op={`${f.f} ${op}`} defaultDeny={dd} differs={visible.length > 1 && si !== baseIdx && !!base && base.s !== cell.s} subjectLabel={s.subject.label} clickable />
                                                                     </button>
@@ -333,6 +334,13 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
     )
 }
 
+/** The security data filters that apply, or may apply, to one subject on a table. */
+function filtersFor(results: AnalysisResult, subjectKey: string, ti: number): DataFilterInfo[] {
+    const s = results.subjects.find((x) => x.subject.key === subjectKey)
+    const all = results.dataFilters || []
+    return ((s && s.tables[ti].sdf) || []).filter((o) => o.r !== 'N' && all[o.i]).map((o) => all[o.i])
+}
+
 /**
  * Marker beside a table that has security data filters: they hide rows from some subjects even
  * when the ACLs grant access. The tip says who the filters apply to.
@@ -350,7 +358,7 @@ function DataFilterMark({ results, ti, subjects }: { results: AnalysisResult; ti
             return `${s.subject.label}: ${applied ? `${applied} applied` : 'none applied'}${depends ? `, ${depends} depend on a security attribute` : ''}`
         })
     const anyApplied = results.subjects.some((s) => subjects.indexOf(s.subject.key) >= 0 && (s.tables[ti].sdf || []).some((o) => o.r !== 'N'))
-    const tip = `${n} security data filter${n === 1 ? '' : 's'} on this table: they hide rows even when the ACLs allow access. ${lines.join(' · ')}. Open the table for details.`
+    const tip = `${n} security data filter${n === 1 ? '' : 's'} on this table: they hide rows even when the ACLs allow access, so access they apply to shows as Conditional. ${lines.join(' · ')}. Open the table for details.`
     return (
         <span className={`lens-dfmark${anyApplied ? ' lens-dfmark--on' : ''}`} data-tip={tip} aria-label={tip} tabIndex={0}>
             <Icon name="filter" size={12} />

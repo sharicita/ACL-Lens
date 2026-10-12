@@ -2,7 +2,8 @@ import { gs, GlideDateTime } from '@servicenow/glide'
 import { AclIndex } from './acl-index.ts'
 import { AttributeInfo } from './attributes.ts'
 import { DataFilterIndex, dataFilterOutcomes, loadAttributes } from './data-filters.ts'
-import { Evaluator, emptyCounts } from './evaluator.ts'
+import { Evaluator, applyDataFilters, emptyCounts } from './evaluator.ts'
+import { accountWarning } from './account.ts'
 import { Schema, tablesDefiningFields, listFields, FieldMeta } from './schema.ts'
 import { loadElevatedRoles, resolveSubject } from './subjects.ts'
 import {
@@ -112,6 +113,7 @@ function evaluateTable(
     const out: TableResult = { t: table, l: ctx.schema.label(table), ops, fields }
     const sdf = dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles())
     if (sdf.length) out.sdf = sdf
+    applyDataFilters(ops, sdf)
     return out
 }
 
@@ -179,6 +181,8 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
             return r
         })
         if (!subject.active) warnings.push(`${subject.label} is inactive - they cannot log in, results show what their roles would allow.`)
+        const accountNote = accountWarning(subject)
+        if (accountNote) warnings.push(accountNote)
         return { subject, tables: tr, counts }
     })
     lap('evaluate')
@@ -258,9 +262,11 @@ export function fieldDetail(table: string, refs: SubjectRef[]) {
         return { field, cells }
     })
     const tableCells: { [k: string]: { [op: string]: Cell } } = {}
+    const dataFilters = evaluators.map((ev, i) => ({ key: subjects[i].key, sdf: dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles()) }))
     evaluators.forEach((ev, i) => {
         const o: { [op: string]: Cell } = {}
         for (const op of ALL_TABLE_OPS) o[op] = ev.evalLevels(ev.tableLevels(chain), op)
+        applyDataFilters(o, dataFilters[i].sdf)
         tableCells[subjects[i].key] = o
     })
     return {
@@ -270,7 +276,7 @@ export function fieldDetail(table: string, refs: SubjectRef[]) {
         defaultDeny: ctx.defaultDeny,
         subjects: subjects.map((s) => ({ key: s.key, label: s.label, type: s.type })),
         tableCells,
-        dataFilters: evaluators.map((ev, i) => ({ key: subjects[i].key, sdf: dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles()) })),
+        dataFilters,
         filters: ctx.dataFilters.filters,
         rows,
         acls: ctx.index.acls,

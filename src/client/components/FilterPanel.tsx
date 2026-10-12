@@ -14,12 +14,12 @@ interface Props {
 }
 
 const MODES: { value: FilterMode; label: string; help: string; placeholder?: string }[] = [
+    { value: 'tables', label: 'Specific tables', help: 'Search and add one or more tables. Parent tables are taken into account automatically. Fastest, and the default.', placeholder: 'incident' },
     {
         value: 'secured_by_roles',
         label: 'Tables secured by these roles',
-        help: 'Every table that has an ACL naming one of the selected subjects’ roles. Best starting point.',
+        help: 'Every table that has an ACL naming one of the selected subjects’ roles. Good for exploring what a role touches.',
     },
-    { value: 'tables', label: 'Specific tables', help: 'Search and add one or more tables. Parent tables are taken into account automatically.', placeholder: 'incident' },
     { value: 'prefix', label: 'Table name starts with', help: 'Every table whose name starts with one of these prefixes (for example cmdb_ci or a custom app prefix).', placeholder: 'cmdb_ci' },
     { value: 'scope', label: 'Application scope', help: 'All tables owned by an application scope.', placeholder: 'x_acme_app or global' },
     { value: 'all', label: 'All tables', help: 'Every table on the instance (use Max tables / exclude system to keep it fast).' },

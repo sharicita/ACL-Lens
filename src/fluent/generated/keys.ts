@@ -454,6 +454,10 @@ declare global {
                         table: 'sys_module'
                         id: 'cc2cd35bd23947129d075705026f8736'
                     }
+                    src_server_engine_account_ts: {
+                        table: 'sys_module'
+                        id: '328fecfc109442139e00292d808403ad'
+                    }
                     'src_server_engine_acl-detail_ts': {
                         table: 'sys_module'
                         id: '1a72a96dc4bd45c4943c3c9424f88111'

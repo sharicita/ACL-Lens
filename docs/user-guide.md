@@ -28,8 +28,8 @@ Open **ACL Lens → Access Workspace**. Hover over (or tab to) any control for a
    - Users include all their roles: direct, through groups, and inherited. Roles include every role they contain. Groups include the roles they give their members (and the roles those contain): what a new member gets from the group alone.
    - Add up to 8.
 2. **Which tables?**
-   - *Tables secured by these roles* (best start): tables whose ACLs name one of the subjects' roles.
-   - *Specific tables* / *Table name starts with*: type and pick from the list, or press Enter to use what you typed.
+   - *Specific tables* (the default) / *Table name starts with*: type and pick from the list, or press Enter to use what you typed. *Analyze* stays disabled until at least one table (or prefix, or scope) is entered.
+   - *Tables secured by these roles*: tables whose ACLs name one of the subjects' roles. Good for exploring what a role touches.
    - *Application scope*: custom `x_` apps appear first, and only scopes you can read are listed.
    - *All tables*: *Exclude system tables* (ticked by default) keeps it focused.
    - Options: *Include extended tables* (also analyze every table that extends the selected ones, at any depth; e.g. `task` adds `incident`, `problem`, `change_request`…), *Include field-level rules*, *Max tables* (default 1,500).
@@ -81,11 +81,24 @@ The **baseline** is the user or role that everyone else is compared to **on this
 | Is it remembered? | Yes, for this run, **in this browser**. It is still set when you come back later, even after signing out. |
 | Does it carry to other runs, devices or people? | No. Each run starts with its first subject as the baseline for everyone else. |
 
+### Live verification
+Shown to people with the `admin`, `user_admin` or `access_analyzer_admin` role (the platform enforces this).
+- **Verify live as *baseline*** asks the platform to evaluate every table shown in the matrix **as the baseline subject**, the same way its **Access Analyzer** does (it evaluates as that user, group or role). Choose the baseline first with *Use as baseline*; filter the matrix to verify fewer tables.
+- It covers what ACL Lens can't read on its own: **access handlers**, **data filtration**, and the platform's own reading of every ACL.
+- One platform check runs per table, up to 300 tables. You're asked to confirm above 50. **Stop** keeps what has been checked so far.
+- The summary counts operations that **agree**, **differ** (ACL Lens said Granted, Denied or No rule and the platform says otherwise) and **conditional** (ACL Lens said Conditional; the platform's table-level answer is listed for reference). The list shows the differences with *Access handler*, *Data filtration*, *Security data filter* and **Why**, for example *Blocked by access handler …*. Tick *Show every operation checked* to see all of them.
+- Select a table name to open its details; the **Live** tab there checks one table with a specific record or field.
+- The check is for the table, not a particular record: conditions and scripts are not run. *Export* downloads every operation checked as CSV. Nothing is saved or changed, and changing the baseline clears the results.
+
+### Machine and API-only accounts
+When a user is a machine identity, an AI agent identity, *Web service access only*, or an internal integration user, the run shows a warning. ACL Lens (and the live check) evaluate record ACLs and security data filters. **OAuth scopes on the token, REST API access policies and API-level ACLs are not evaluated** and can narrow that account's real access further. Test those through the integration itself.
+
 ### Matrix
 - **Click any C (Conditional) cell** (table or field row) to see right there **why it's Conditional**: the rule(s) that decide record by record, with the condition, the script (if you can read ACL scripts) and the description already open. *Open full details* goes to the table panel. Esc closes it.
 - **G** Granted · **C** Conditional (decided per record or session) · **D** Denied · **–** No rule. For create/read/write/delete, no rule means the instance default (`glide.sm.default_mode`) applies. For the other operations the platform has its own answer: *query_match* and *report_on* are allowed, *list_edit*, *add_to_list*, *save_as_template* and *personalize_choices* are blocked. Hover a cell to see which.
 - **Operations:** C, R, W, D show by default. Turn on the other table operations the platform checks: **LE** list_edit (edit from a list), **QM** query_match (filter with is / is not / is empty), **QR** query_range (filter with starts with, contains, greater than… and sort), **AL** add_to_list (personalize list columns), **ST** save_as_template, **RO** report_on (create reports), **PC** personalize_choices, **RV** report_view (see the table in reports). *All* shows every operation and **Reset** returns to C, R, W, D; at least one stays on. Runs saved before these operations were analyzed show C, R, W, D only; **Rerun** them to get the rest.
 - **Security data filters:** a filter icon beside a table name means the table (or a table it extends) has security data filters. They hide rows even where the ACLs grant access. The icon is highlighted when a filter applies to someone shown; hover it for each subject's result.
+- **Data filters change the result:** when a filter applies to a subject (or may apply, because its security attribute can't be worked out without a session), every operation the ACLs grant except *create* shows as **C**: the subject reaches only the rows inside the filter. Click the cell to see the filter. The details panel shows what the ACLs alone give. *Create* is unchanged because creating a record doesn't look up existing rows. Runs saved before this change keep their old results; **Rerun** them to apply it.
 - The bar above every list starts with the **record count**, worded like a ServiceNow list: "23 tables", "1 to 100 of 340 tables" when only the first rows are shown, and "(filtered from N)" after *Show matching* / *Filter out*.
 - Other filters: *Differences only*, *Hide tables nobody can access*, and a text filter.
 - The **▸** arrow expands field rules: *all other fields (\*)* plus fields with their own rules.

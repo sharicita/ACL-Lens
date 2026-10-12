@@ -84,6 +84,10 @@ export interface Cell {
     lvl: string
     dlvl?: string
     a: AclOutcome[]
+    /** a security data filter limits which rows this operation reaches (A = applied, C = depends on a security attribute) */
+    df?: 'A' | 'C'
+    /** the ACL-only status, when a data filter changed it */
+    acl?: Status
 }
 
 export interface FieldRow {

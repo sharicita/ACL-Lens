@@ -565,3 +565,17 @@ The run storage is unchanged: reports are definitions, and their numbers are cal
   - Customize saved a copy in place; delete and reset work.
   - A run on high-risk tables (ALR0001028: itil vs admin) shows admin 27 and itil 6 changes allowed on them.
 
+
+## 1.25 Data filters in the status, machine-account warning, Verify live
+
+| | |
+|---|---|
+| **Date** | 2026-10-11 |
+| **Status** | Built; not yet installed |
+
+Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API-only account. The causes were checks the static analysis didn't fold in or couldn't see.
+
+- **Security data filters change the status** (`applyDataFilters`, `evaluator.ts`): where a filter applies, or may apply, Granted becomes Conditional for every table operation except create. The cell keeps `df` and the ACL-only `acl` status. The matrix popover and the details panel name the filter. Saved runs are unchanged until rerun.
+- **Machine and API-only accounts** (`account.ts`): a run warning for machine and AI agent identities, web-service-only and internal integration users. OAuth scopes, REST API access policies and API-level ACLs are not evaluated, statically or live.
+- **Verify live** (`LiveVerify.tsx`, `liveVerify.ts`): runs the platform's live evaluation (the existing Access Analyzer data broker call) as the baseline subject for every table the matrix shows, up to 300, and lists where it differs from the prediction. Access handlers and data filtration aren't records, so this is the only way they're covered.
+- Offline tests cover the fold and the warning.
