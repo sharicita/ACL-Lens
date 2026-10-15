@@ -579,3 +579,22 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Machine and API-only accounts** (`account.ts`): a run warning for machine and AI agent identities, web-service-only and internal integration users. OAuth scopes, REST API access policies and API-level ACLs are not evaluated, statically or live.
 - **Verify live** (`LiveVerify.tsx`, `liveVerify.ts`): runs the platform's live evaluation (the existing Access Analyzer data broker call) as the baseline subject for every table the matrix shows, up to 300, and lists where it differs from the prediction. Access handlers and data filtration aren't records, so this is the only way they're covered.
 - Offline tests cover the fold and the warning.
+
+
+## Dependency audit: SDK build toolchain advisories
+
+| | |
+|---|---|
+| **Date** | 2026-10-15 |
+| **Status** | Reviewed; no change possible yet |
+
+- **Checked:** `npm audit` shows 13 high and 5 moderate advisories, all in devDependencies under `@servicenow/sdk` 4.13.6 and `@servicenow/isomorphic-rollup` 1.3.11. None of them is shipped to the instance. They come from just two root advisories:
+  - **braces ≤3.0.3** (high, GHSA-vfj7-8cjw-p6xm, stack exhaustion from deeply nested brace patterns). Pulled in by `fast-glob` 3.3.3 → `micromatch` 4.0.8 (SDK build core) and by `rollup-plugin-livereload` 2.0.5 → `livereload` 0.9.3 → `chokidar` 3.6.0 (isomorphic-rollup). The other high entries (`micromatch`, `fast-glob`, `chokidar`, `livereload`, `rollup-plugin-livereload` and the `@servicenow/*` packages) are only flagged because they depend on braces.
+  - **sprintf-js ≤1.1.3** (moderate, GHSA-hp3w-g68c-fv3c, unbounded precision specifiers). Pulled in by `@cyclonedx/cyclonedx-library` 8.6.0 → `xmlbuilder2` 3.1.1 → `js-yaml` 3.15.2 → `argparse` 1.0.10. js-yaml 3 only uses argparse in its command-line tool, which the build never runs.
+- **Not changed:** no override was added. braces 3.0.3 and sprintf-js 1.1.3 are the latest published versions, both inside the vulnerable range, and neither package has had a release since 2024. A same-major override has nothing to pin to. npm's suggested fix is a downgrade to `@servicenow/sdk` 3.0.3 and isomorphic-rollup 1.2.13, which the standard rules out, and 4.13.6 / 1.3.11 are already the latest releases.
+- **Rejected options:**
+  - `livereload` 0.10.3 (uses chokidar 4, which doesn't need braces) is a breaking 0.x minor bump outside rollup-plugin-livereload's `^0.9.1` range. braces would still come in through fast-glob → micromatch, so the high advisory would remain anyway.
+  - `argparse` 2 or `xmlbuilder2` 4 would remove sprintf-js, but both are major bumps under the SDK's SBOM code.
+- **Risk:** low. Both are denial-of-service bugs that need an attacker to control glob or format-string input. In the build toolchain those inputs come from the project's own config and source.
+- **Follow-up:** run `npm audit` again when a patched braces or sprintf-js is published, or when a new SDK or isomorphic-rollup release drops them, then add a same-major override or upgrade.
+- **Verified:** `npm audit` before and after: 13 high, 5 moderate, 0 critical. Unchanged because nothing was changed. `package.json` and `package-lock.json` were not touched.
