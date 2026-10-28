@@ -4,7 +4,7 @@
 |---|---|
 | **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.13.6 |
 | **Status** | **Working build on a development PDI**. Core analysis, comparison, history and settings were verified on the PDI. The AI assistant's language-model step has only been tested offline (see [06](architecture/06-risks-assumptions-decisions.md)) |
-| **Version** | `0.0.1` (package.json) |
+| **Version** | `1.0.0` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
 | **Date** | 2026-10-09 |
 | **Owner** | Project owner (PDI admin) |
 
@@ -52,8 +52,11 @@ ACL Lens shows clearly what a **user or role can create, read, write and delete*
 
 ## Change log
 
+From 1.0.0 the versions follow Semantic Versioning and the full history is in [CHANGELOG.md](../CHANGELOG.md). The `0.x` rows below are the earlier informal numbering.
+
 | Version | Date | Change |
 |---|---|---|
+| 1.0.0 | 2026-10-27 | Baseline for Semantic Versioning, Conventional Commits and `CHANGELOG.md` |
 | 0.7 | 2026-10-09 | Report list views, sorting everywhere, cleaner cards, tooltips kept on screen, tips with "Don't show again", admin archive/delete on the run page, instance-theme property, lessons learned |
 | 0.6 | 2026-10-09 | Publishable source (placeholder scope `x_acllens`, local install profiles), guided setup (`npm run setup`), INSTALL.md, scope GitHub Action; unified ranked search; baseline explained; Roles tab; condition details; record and documentation links; account-type badges; accessibility fixes |
 | 0.5 | 2026-10-08 | Supply chain: source upload to the instance turned off (uploaded source package removed); SDK 4.11.2 → 4.13.6; npm overrides for patched build-tool dependencies; ADR-0006 |
