@@ -9,7 +9,7 @@ const resolve = Module._resolveFilename
 Module._resolveFilename = function (req, ...rest) {
     return resolve.call(this, req.endsWith('.ts') ? req.replace(/\.ts$/, '.js') : req, ...rest)
 }
-const { policyLevel, policyDecision, scopeDecision, endpointDecision, evalApiGate, applyApiGate } = require(path.join(BUILD, 'engine', 'api-access.js'))
+const { normalizeApiContext, policyLevel, policyDecision, scopeDecision, endpointDecision, evalApiGate, applyApiGate } = require(path.join(BUILD, 'engine', 'api-access.js'))
 
 let n = 0
 function test(name, fn) {
@@ -282,6 +282,26 @@ test('gate: configuration the user cannot read makes the gate Conditional, never
 test('gate: hidden configuration does not soften a denial', () => {
     const g = evalApiGate(ctx(), 'incident', false, OPS, inputs({ hidden: ['oauth_entity'] }), subject())
     assert.strictEqual(g.s, 'D')
+})
+
+const SYS = 'a'.repeat(32)
+test('request cleaning: no API means no API run', () => {
+    assert.strictEqual(normalizeApiContext(undefined), undefined)
+    assert.strictEqual(normalizeApiContext({}), undefined)
+    assert.strictEqual(normalizeApiContext({ authProfile: SYS }), undefined)
+})
+test('request cleaning: keeps valid values, strips a leading /api/, defaults the Table API resource', () => {
+    const c = normalizeApiContext({ api: '/api/now/table', authProfile: 'any', oauthEntity: SYS, names: { api: 'Table API', oauthEntity: 'App\nA', extra: 'x' } })
+    assert.deepStrictEqual(c, { api: 'now/table', authProfile: 'any', oauthEntity: SYS, resource: '/now/table/{tableName}', names: { api: 'Table API', oauthEntity: 'App A' } })
+    assert.strictEqual(normalizeApiContext({ api: 'x_app/svc', operation: SYS }).operation, SYS)
+    assert.strictEqual(normalizeApiContext({ api: 'x_app/svc' }).resource, undefined)
+})
+test('request cleaning: refuses values that could reach a query', () => {
+    assert.throws(() => normalizeApiContext({ api: 'now/table^ORactive=true' }), /valid API/)
+    assert.throws(() => normalizeApiContext({ api: 'now/table', oauthEntity: 'abc^x' }), /OAuth/)
+    assert.throws(() => normalizeApiContext({ api: 'x/y', operation: 'zz' }), /resource/)
+    assert.throws(() => normalizeApiContext({ api: 'now/table', authProfile: 'a^b' }), /authentication/)
+    assert.throws(() => normalizeApiContext({ api: 'now/table', version: 'v1^x' }), /version/)
 })
 
 const { accountWarning } = require(path.join(BUILD, 'engine', 'account.js'))

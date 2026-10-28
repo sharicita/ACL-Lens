@@ -91,3 +91,15 @@ export const REASON_TEXT: { [c: string]: string } = {
 }
 
 export const RESULT_TEXT: { [r: string]: string } = { P: 'Pass', C: 'Conditional', F: 'Fail' }
+
+/** Why the API access checks limited a result (ApiGate.why codes) */
+export const API_REASON_TEXT: { [c: string]: string } = {
+    wsoff: 'The table does not allow web-service access ("Allow access to this table via web services" is off), so the Table API refuses it.',
+    authblocked: 'The REST API access policy that applies does not allow the chosen authentication method.',
+    noscope: "The OAuth application doesn't hold the auth scope this API requires.",
+    unscoped: 'This API has no auth scope and the OAuth application only allows APIs that have one.',
+    useraccount: 'The OAuth application holds the useraccount scope, which reaches every API.',
+    ext: "Depends on something that can't be resolved without a live request (a token from an external identity provider, or a resource that wasn't chosen).",
+    endpoint: "The Scripted REST API's own ACLs or resource settings (authentication, ACL authorization, internal role) decide this.",
+    hidden: "You can't read some of the API configuration (policies, scopes or applications), so those checks couldn't be evaluated.",
+}

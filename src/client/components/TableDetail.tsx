@@ -197,7 +197,7 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
                                     {TABLE_OPS.map((op) => (
                                         <div key={op} className="lens-detail-op">
                                             <h4>{op}</h4>
-                                            <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} />
+                                            <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} gate={s.tables[index].api} />
                                         </div>
                                     ))}
                                     {EXTRA_OPS.some((op) => s.tables[index].ops[op]) && (
@@ -208,7 +208,7 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
                                                     <h4 data-tip={OP_HELP[op]}>
                                                         {op} <span className="lens-muted">· {OP_HELP[op]}</span>
                                                     </h4>
-                                                    <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} />
+                                                    <AclList cell={s.tables[index].ops[op]} acls={results.acls} op={op} defaultDeny={dd} gate={s.tables[index].api} />
                                                 </div>
                                             ))}
                                         </details>

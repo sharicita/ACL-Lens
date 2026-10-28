@@ -594,6 +594,19 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Verified:** `npm test` (45 new tests) and the server type-check.
 - **Not verified:** the loader's queries against the instance (nothing sends an API context until Phase 2).
 
+## 1.27 Evaluate as API access on the run form (v1.2.0)
+
+| | |
+|---|---|
+| **Date** | 2026-10-27 |
+| **Status** | Built; offline tests, type-checks and SDK build pass; not yet run on an instance |
+
+- **Built:** the API context travels inside the run `filter` (validated by `normalizeApiContext`, stored with the run, repeated by reruns); four lookup routes under `/api-access/` (APIs, resources, authentication profiles, OAuth applications, all `GlideRecordSecure`); `ApiAccessPanel` on the run form; `ApiGateNote` on the conditional-cell popover and the table drawer; the API context on the run header; user search flags machine, AI agent, web-service-only and integration users so the section opens for them.
+- **Decision:** the section opens for API accounts but the "also check the API controls" box stays unticked, so a run never changes meaning without the user choosing it.
+- **Verified:** `npm test` (48 API tests), server and client type-checks, `npm run build`. `keys.ts` gained the new route, module and cross-scope entries.
+- **Not verified:** nothing has been run in the browser or against the instance yet (needs an install on a PDI).
+- **Left for Phase 2:** the `API` marker on cells, an explanation for Denied cells, an API tab in the table drawer, and the gate in comparison, drift, exports, the dashboard and the assistant.
+
 ## Dependency audit: SDK build toolchain advisories
 
 | | |

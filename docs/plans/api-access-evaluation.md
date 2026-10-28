@@ -1,6 +1,6 @@
 # Plan: evaluate API access (OAuth scopes, REST API access policies, API-level ACLs)
 
-Status: **Phase 0 complete** (2026-10-27, confirmed on pdi1; see `03-access-evaluation-engine.md` §9). **Phase 1 code complete, not yet verified on an instance**: engine logic, types, loader (`api-loader.ts`), `analyze.ts` wiring (`analyze(refs, filter, api?)`), the `account.ts` message, cross-scope privileges and 45 offline tests (type-check clean). Nothing calls `analyze` with an API context until Phase 2 adds the request field, so the loader is untested against the instance. Phases 2–4 not started. Owner: Eric. Created 2026-10-27.
+Status: **Phase 0 complete** (2026-10-27, confirmed on pdi1; see `03-access-evaluation-engine.md` §9). **Phase 1 code complete; Phase 2 under way (1.2.0: request field, lookups, run form, explanations on conditional cells)**. Not yet verified on an instance. Phase 1: engine logic, types, loader (`api-loader.ts`), `analyze.ts` wiring (`analyze(refs, filter, api?)`), the `account.ts` message, cross-scope privileges and 45 offline tests (type-check clean). The loader and the lookups have not run against the instance yet. Phases 3–4 not started. Owner: Eric. Created 2026-10-27.
 
 ## Goal
 
@@ -58,11 +58,11 @@ New module `src/server/engine/api-access.ts` (pure logic + a loader in the same 
 
 ## Phase 2 — REST + UI
 
-- [ ] `lens-api.now.ts` / `handlers.ts`: accept `api` on run requests; lookup endpoints for REST APIs, auth profiles and OAuth entities (`GlideRecordSecure`, `queryText()` sanitising, results limited to what the user can read). *Phase 0:* the API picker offers the built-in Table API (`now/table`) plus `sys_ws_definition` rows; role-only users will usually get empty lookups (reads need `api_service_admin` / `web_service_admin` / `oauth_admin`), so say so in the form.
-- [ ] Run form: an **"Evaluate as API access"** section (collapsed by default; opened automatically for machine / AI agent / web-service-only / integration users): API (default Table API), authentication method, OAuth application. ⓘ field hints per `servicenow.md` §7.
-- [ ] Status cells: an `API` marker beside `df`; clicking a cell explains the gate in place (policy matched + level, scope result, endpoint ACLs, web-service switch) with record links.
+- [x] `lens-api.now.ts` / `handlers.ts`: accept `api` on run requests; lookup endpoints for REST APIs, auth profiles and OAuth entities (`GlideRecordSecure`, `queryText()` sanitising, results limited to what the user can read). *Phase 0:* the API picker offers the built-in Table API (`now/table`) plus `sys_ws_definition` rows; role-only users will usually get empty lookups (reads need `api_service_admin` / `web_service_admin` / `oauth_admin`), so say so in the form. Done in 1.2.0: `api` travels inside the run `filter` (so reruns repeat it) and is validated by `normalizeApiContext`; four lookup routes under `/api-access/`.
+- [x] Run form: an **"Evaluate as API access"** section (collapsed by default; opened automatically for machine / AI agent / web-service-only / integration users): API (default Table API), authentication method, OAuth application. ⓘ field hints per `servicenow.md` §7. Done in 1.2.0 (`ApiAccessPanel`; the section opens for such users but the box stays unticked until the user ticks it, so a run never changes meaning silently; resource picker added for Scripted REST APIs).
+- [ ] Status cells: an `API` marker beside `df`; clicking a cell explains the gate in place (policy matched + level, scope result, endpoint ACLs, web-service switch) with record links. *Partly done in 1.2.0:* clicking a Conditional cell and the table drawer explain the gate (`ApiGateNote`). Still to do: the `API` marker beside `df`, and an explanation for Denied cells (they are not clickable yet), with policy level and record links.
 - [ ] Table details drawer: new **API access** tab.
-- [ ] Subject card / run header: show the API context used.
+- [x] Subject card / run header: show the API context used. Run header done in 1.2.0; the subject card does not show it.
 - [ ] Comparison, drift, exports (CSV/JSON) and the reporting dashboard carry the new fields; rank logic unchanged.
 - [ ] AI assistant tools (`src/server/ai/tools.ts`) and MCP: expose the gate in the evaluation view; read-only.
 

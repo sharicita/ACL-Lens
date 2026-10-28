@@ -6,6 +6,15 @@ export interface SubjectOption {
     id: string
     label: string
     sub: string
+    /** a machine, AI agent, web-service-only or integration user: usually reaches data through APIs */
+    apiAccount?: boolean
+}
+
+/** Whether the current sys_user row is an account that usually reaches data through APIs. */
+function isApiAccount(u: any): boolean {
+    const field = (f: string) => (u.isValidField(f) ? u.getValue(f) : '')
+    const identity = field('identity_type')
+    return identity === 'machine' || identity === 'ai_agent' || bool(field('web_service_access_only')) || bool(field('internal_integration_user'))
 }
 
 /** Typeahead search for users, roles or groups, ranked: starts-with first, then contains. */
@@ -28,6 +37,7 @@ export function searchSubjects(type: string, text: string, limit = 20): SubjectO
             id: u.getUniqueValue(),
             label: u.getValue('name') || u.getValue('user_name'),
             sub: `${u.getValue('user_name') || ''}${bool(u.getValue('active')) ? '' : ' (inactive)'}`,
+            apiAccount: isApiAccount(u) || undefined,
         })
     )
 }

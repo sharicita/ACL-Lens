@@ -1,5 +1,6 @@
 import { gs, GlideDateTime } from '@servicenow/glide'
 import { analyze, pruneAcls } from './analyze.ts'
+import { normalizeApiContext } from './api-access.ts'
 import { compare, comparisonCsv, drift, Comparison } from './compare.ts'
 import { attachText, createRun, finishRun, getRun, loadBlob, saveBlob } from './storage.ts'
 import { historyEnabled } from '../admin/settings.ts'
@@ -21,6 +22,7 @@ function normalizeFilter(f: AnalysisFilter | undefined): AnalysisFilter {
         excludeSystem: !!filter.excludeSystem,
         includeChildren: !!filter.includeChildren,
         maxTables: filter.maxTables ? Math.max(1, Math.floor(filter.maxTables)) : undefined,
+        api: normalizeApiContext(filter.api),
     }
 }
 
@@ -39,7 +41,7 @@ export function executeRun(req: RunRequest, originalRun?: string) {
     const runId = createRun({ name: req.name || '', runType, subjects, filter, originalRun })
     const started = new Date().getTime()
     try {
-        const result = pruneAcls(analyze(subjects, filter))
+        const result = pruneAcls(analyze(subjects, filter, filter.api))
         // persist resolved labels so history shows names even if the user/role is later renamed
         const storedSubjects = result.subjects.map((s) => ({ type: s.subject.type, id: s.subject.id, label: s.subject.label }))
         saveBlob(runId, 'results', result)
@@ -91,7 +93,7 @@ export function executeRun(req: RunRequest, originalRun?: string) {
 /** History is turned off: analyze and return the results without storing anything. */
 function executeUnsaved(name: string, runType: 'analyze' | 'compare', subjects: SubjectRef[], filter: AnalysisFilter) {
     const started = new Date().getTime()
-    const result = pruneAcls(analyze(subjects, filter))
+    const result = pruneAcls(analyze(subjects, filter, filter.api))
     const comparison = runType === 'compare' ? compare(result) : null
     const labels = result.subjects.map((s) => s.subject.label)
     const run = {

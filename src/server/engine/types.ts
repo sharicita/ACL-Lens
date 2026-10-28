@@ -164,6 +164,8 @@ export interface ApiContext {
     resource?: string
     /** sys_ws_operation sys_id of the Scripted REST resource (leave empty for the Table API or when not chosen) */
     operation?: string
+    /** display names for the ids above (api, authProfile, oauthEntity, operation); labels only, never used to evaluate */
+    names?: { [key: string]: string }
 }
 
 export interface ApiGate {
@@ -239,6 +241,8 @@ export interface AnalysisFilter {
     maxTables?: number
     /** also analyze every table that extends a selected table */
     includeChildren?: boolean
+    /** evaluate as API access: add the API gate (stored with the run, so reruns repeat it) */
+    api?: ApiContext
 }
 
 export interface AnalysisResult {

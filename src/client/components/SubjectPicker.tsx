@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { LensApi } from '../services/LensApi'
 import { SubjectOption, SubjectType } from '../types'
 import SearchCombo from './SearchCombo'
@@ -15,6 +15,7 @@ interface Props {
 export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props) {
     const [type, setType] = useState<SubjectType>('user')
     const full = selected.length >= max
+    const apiAccounts = useRef<{ [id: string]: boolean }>({})
     const isSelected = (t: SubjectType, id: string) => selected.some((s) => s.id === id && s.type === t)
 
     return (
@@ -60,7 +61,10 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
                         disabled={full}
                         clearOnPick
                         search={async (q) =>
-                            (await LensApi.searchSubjects(type, q)).map((o) => ({
+                            (await LensApi.searchSubjects(type, q)).map((o) => {
+                                if (o.apiAccount) apiAccounts.current[o.id] = true
+                                return o
+                            }).map((o) => ({
                                 key: o.id,
                                 primary: o.label,
                                 secondary: o.sub,
@@ -68,7 +72,7 @@ export default function SubjectPicker({ selected, max, onAdd, onRemove }: Props)
                                 disabled: isSelected(type, o.id),
                             }))
                         }
-                        onPick={(o) => onAdd({ id: o.key, type, label: o.primary, sub: o.secondary || '' })}
+                        onPick={(o) => onAdd({ id: o.key, type, label: o.primary, sub: o.secondary || '', apiAccount: apiAccounts.current[o.key] })}
                     />
                 </div>
                 <ul className="lens-chips" aria-label="Selected users, roles and groups">

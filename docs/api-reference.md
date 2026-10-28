@@ -20,6 +20,10 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | DELETE | `/runs/{id}` **admin** | — | `{deleted: 1, number}`. Removes the run, its `_run_data` rows and attachments |
 | GET | `/fields` | `table`, `subjects=user:<id>,role:<id>,group:<id>` | Live evaluation of every column of `table`, plus `tableCells` for all 12 table operations and `dataFilters` per subject |
 | GET | `/tables` | `q` | `{results: [{name, label, scope}], prefixCount}`: tables the caller can read in `sys_db_object` (`GlideRecordSecure`), ranked by name then label; `prefixCount` = tables whose name starts with `q` |
+| GET | `/api-access/apis` | `q` | `[{id, name, detail}]`: the built-in Table API (`id=now/table`) first, then active Scripted REST APIs (`id=<namespace>/<service_id>`) the caller can read in `sys_ws_definition` |
+| GET | `/api-access/resources` | `api`, `q` | Resources (`sys_ws_operation`) of one Scripted REST API the caller can read; `id` is the operation sys_id, `detail` is `METHOD /path` |
+| GET | `/api-access/profiles` | `q` | Active inbound authentication profiles the caller can read; `detail` is the profile type |
+| GET | `/api-access/oauth` | `q` | Active OAuth applications (`oauth_entity`) the caller can read; `detail` is the type and scope restriction |
 | GET | `/acl/{id}` | — | `{name, operation, decision, description, roles, condition, condition_query, applies_to, security_attribute, has_script, script, script_hidden, admin_overrides}`. `script` is returned only when the caller can read `sys_security_acl`; otherwise `script_hidden=true` |
 | GET | `/me` | — | `{user, is_admin, can_live_check, history_enabled, instance_theme}`. `can_live_check` is true for `admin`, `user_admin` or `access_analyzer_admin` (the platform enforces it on the live check itself) |
 | GET | `/admin/mcp` **admin** | — | MCP setup information (see the MCP section) |
@@ -28,6 +32,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 - `mode`: `secured_by_roles` · `tables` · `prefix` · `scope` · `all`
 - `value`: comma-separated tables or prefixes, or a scope
 - `includeFields` (default true), `excludeSystem`, `includeChildren` (also analyze tables that extend the selected ones; not used with `all`), `maxTables` (default 1,500; max 5,000)
+- `api` (optional, **evaluate as API access**): `{api, authProfile?, oauthEntity?, operation?, version?, resource?, names?}`. `api` is `now/table` or `<namespace>/<service_id>`; `authProfile` is an `inbound_auth_profile` sys_id or `any`; `oauthEntity` and `operation` are sys_ids; `names` are display labels only. Values are validated (a bad value returns 400). With `api`, each table result carries an `api` gate and cells limited by it carry `api: 'D' | 'C'`; the context is stored in the run's `filter`, so reruns repeat it. Tables the caller can't read (policies, scopes, applications) make the gate Conditional (`hidden`).
 
 ## Reporting dashboard
 

@@ -100,6 +100,49 @@ export interface ApiSubject {
     hasRole(role: string): boolean
 }
 
+const API_PATH = /^[A-Za-z0-9_\-./]{1,120}$/
+const SYS_ID = /^[0-9a-f]{32}$/
+const SHORT_TEXT = /^[A-Za-z0-9_\-. {}/]{0,200}$/
+
+/**
+ * Cleans the API context a client sends with a run. Returns undefined when no API was chosen and
+ * throws for values that could not be valid, so nothing unchecked reaches a query.
+ */
+export function normalizeApiContext(x: any): ApiContext | undefined {
+    if (!x || typeof x !== 'object' || !x.api) return undefined
+    const text = (v: any) => (v === undefined || v === null ? '' : String(v).trim())
+    const api = text(x.api).replace(/^\/?(api\/)?/, '')
+    if (!API_PATH.test(api)) throw new Error('Choose a valid API')
+    const out: ApiContext = { api }
+    const profile = text(x.authProfile)
+    if (profile) {
+        if (profile !== 'any' && !SYS_ID.test(profile)) throw new Error('Choose a valid authentication method')
+        out.authProfile = profile
+    }
+    for (const key of ['oauthEntity', 'operation'] as const) {
+        const v = text(x[key])
+        if (!v) continue
+        if (!SYS_ID.test(v)) throw new Error(key === 'oauthEntity' ? 'Choose a valid OAuth application' : 'Choose a valid REST resource')
+        out[key] = v
+    }
+    for (const key of ['version', 'resource'] as const) {
+        const v = text(x[key])
+        if (!v) continue
+        if (!SHORT_TEXT.test(v)) throw new Error(`The ${key} contains characters that are not allowed`)
+        out[key] = v
+    }
+    if (api === TABLE_API_PATH && !out.resource) out.resource = '/now/table/{tableName}'
+    if (x.names && typeof x.names === 'object') {
+        const names: { [key: string]: string } = {}
+        for (const key of ['api', 'authProfile', 'oauthEntity', 'operation']) {
+            const v = text(x.names[key]).replace(/[\r\n]/g, ' ').substring(0, 100)
+            if (v) names[key] = v
+        }
+        if (Object.keys(names).length) out.names = names
+    }
+    return out
+}
+
 const normVersion = (v: string | undefined) => v || 'latest'
 
 /**

@@ -4,6 +4,7 @@ import { LensApi } from '../services/LensApi'
 import { RunPayload } from '../types'
 import SubjectPicker from './SubjectPicker'
 import FilterPanel from './FilterPanel'
+import ApiAccessPanel from './ApiAccessPanel'
 import Tip from './Tip'
 import Icon from './Icon'
 
@@ -68,6 +69,11 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                 onRemove={(s) => onDraftChange({ ...draft, subjects: draft.subjects.filter((x) => !(x.id === s.id && x.type === s.type)) })}
             />
             <FilterPanel filter={draft.filter} onChange={(filter) => onDraftChange({ ...draft, filter })} />
+            <ApiAccessPanel
+                api={draft.filter.api}
+                suggest={draft.subjects.some((s) => s.apiAccount)}
+                onChange={(api) => onDraftChange({ ...draft, filter: { ...draft.filter, api } })}
+            />
             <section className="lens-card" aria-labelledby="run-title">
                 <div className="lens-card__header">
                     <h2 id="run-title">

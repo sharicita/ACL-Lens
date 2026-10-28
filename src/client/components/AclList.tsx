@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useState } from 'react'
 import { AclDetail, LensApi } from '../services/LensApi'
-import { AclInfo, AclOutcome, Cell } from '../types'
+import { AclInfo, AclOutcome, ApiGate, Cell } from '../types'
+import ApiGateNote from './ApiGateNote'
 import { REASON_TEXT, RESULT_TEXT, statusText } from '../utils/status'
 import { StatusCell } from './StatusCell'
 import DocLink from './DocLink'
@@ -11,6 +12,8 @@ interface Props {
     acls: AclInfo[]
     op: string
     defaultDeny: boolean
+    /** the API access gate for this table, when the run was evaluated as API access */
+    gate?: ApiGate
 }
 
 // ACL details are fetched once per page view and shared by every drawer that shows the ACL
@@ -159,7 +162,7 @@ function Outcome({ o, acl }: { o: AclOutcome; acl: AclInfo }) {
 }
 
 /** Explains one evaluated cell: the ACL level that matched and each ACL's outcome. */
-export default function AclList({ cell, acls, op, defaultDeny }: Props) {
+export default function AclList({ cell, acls, op, defaultDeny, gate }: Props) {
     return (
         <div className="lens-why">
             <div className="lens-why__head">
@@ -181,6 +184,7 @@ export default function AclList({ cell, acls, op, defaultDeny }: Props) {
                     ) : null}
                 </span>
             </div>
+            <ApiGateNote cell={cell} gate={gate} op={op} defaultDeny={defaultDeny} />
             {cell.df && (
                 <p className="lens-muted lens-why__df">
                     {cell.df === 'A' ? 'A security data filter applies' : 'A security data filter may apply (it depends on a security attribute)'}

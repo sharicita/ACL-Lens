@@ -69,6 +69,17 @@ export default function RunHeader(p: Props) {
                         {filter.includeChildren ? ' · extended tables included' : ''}
                         {filter.excludeSystem ? ' · system tables excluded' : ''}
                     </p>
+                    {filter.api && (
+                        <p
+                            className="lens-muted"
+                            data-tip="This run also applied the API access checks: the OAuth auth scope, the REST API access policy, the API's ACLs and web-service access. Cells marked API were limited by them."
+                        >
+                            <Icon name="plug" /> Evaluated as API access: {(filter.api.names || {}).api || filter.api.api}
+                            {filter.api.authProfile && filter.api.authProfile !== 'any' ? ` · ${(filter.api.names || {}).authProfile || 'one authentication method'}` : ' · any allowed authentication method'}
+                            {filter.api.oauthEntity ? ` · OAuth: ${(filter.api.names || {}).oauthEntity || filter.api.oauthEntity}` : ''}
+                            {filter.api.operation ? ` · resource: ${(filter.api.names || {}).operation || filter.api.operation}` : ''}
+                        </p>
+                    )}
                     {(run.original_run || p.reruns.length > 0) && (
                         <p className="lens-lineage">
                             {run.original_run && (

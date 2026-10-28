@@ -11,6 +11,20 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-27
+
+### Added
+- **Evaluate as API access** on the run form (collapsed by default, expanded when a machine, AI agent, web-service-only or integration user is selected): choose the REST API, authentication method, OAuth application and, for Scripted REST APIs, the resource. The choice is saved with the run, so reruns repeat it, and the run header shows it.
+- Clicking a Conditional cell, and the table details drawer, explain how the API access checks limited a result.
+- Lookup endpoints under `/api-access/` for APIs, resources, authentication profiles and OAuth applications, limited to what the signed-in user can read.
+- Request validation for the API context (`normalizeApiContext`): values that could reach a query are refused with a 400.
+
+### Changed
+- User search flags machine, AI agent, web-service-only and integration users.
+
+### Not yet available
+- Denied cells and the table details drawer have no dedicated API tab yet, and comparison, drift, exports, the reporting dashboard and the AI assistant don't carry the gate (Phase 2 continues).
+
 ## [1.1.0] - 2026-10-27
 
 ### Added

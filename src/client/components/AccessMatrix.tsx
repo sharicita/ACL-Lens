@@ -184,6 +184,8 @@ export default function AccessMatrix({ results, hidden, baseline, onOpenTable, o
                     op={cond.op}
                     target={cond.target}
                     filters={filtersFor(results, cond.subjectKey, cond.ti)}
+                    gate={(results.subjects.find((x) => x.subject.key === cond.subjectKey)?.tables[cond.ti] || { api: undefined }).api}
+                    defaultDeny={results.defaultDeny}
                     onOpenDetails={() => onOpenTable(cond.ti)}
                     onClose={() => setCond(null)}
                 />

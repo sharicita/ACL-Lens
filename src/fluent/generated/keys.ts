@@ -190,6 +190,22 @@ declare global {
                         table: 'sys_ws_operation'
                         id: '1c55c0bbea864c6e9df54adc33580bb2'
                     }
+                    'lens-api-lookup-apis': {
+                        table: 'sys_ws_operation'
+                        id: '413ec2d6e43d40bdad3c5b31439a4e16'
+                    }
+                    'lens-api-lookup-oauth': {
+                        table: 'sys_ws_operation'
+                        id: 'cfc7ba0417e9462f855771cbfe260ad1'
+                    }
+                    'lens-api-lookup-profiles': {
+                        table: 'sys_ws_operation'
+                        id: '7b03cb1a955b47328e2ee37e699533b4'
+                    }
+                    'lens-api-lookup-resources': {
+                        table: 'sys_ws_operation'
+                        id: 'aad4e4ed06e2415f9f0c4a0a0759fc04'
+                    }
                     'lens-api-mcp': {
                         table: 'sys_ws_operation'
                         id: '2a361c7c2a144813bd8cf41ce5d94bcb'
@@ -470,6 +486,18 @@ declare global {
                         table: 'sys_module'
                         id: '55d7894a01bf402285da419490b4ab04'
                     }
+                    'src_server_engine_api-access_ts': {
+                        table: 'sys_module'
+                        id: '19e9b246e951474cb68a862664b58f07'
+                    }
+                    'src_server_engine_api-loader_ts': {
+                        table: 'sys_module'
+                        id: '249b260355fd4321b4efc55953695343'
+                    }
+                    'src_server_engine_api-lookup_ts': {
+                        table: 'sys_module'
+                        id: '27c6313b82274232b18afed565794d51'
+                    }
                     src_server_engine_attributes_ts: {
                         table: 'sys_module'
                         id: '313d636c66d74435852f9ac86abb592d'
@@ -534,6 +562,46 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '4fea21cd39d449008e91ede1b3da4110'
                     }
+                    'xscope-read-http_body_auth': {
+                        table: 'sys_scope_privilege'
+                        id: '73a52c5e106c4e34b46b31e9b1885568'
+                    }
+                    'xscope-read-http_key_auth': {
+                        table: 'sys_scope_privilege'
+                        id: 'a22bf33ed01e4e25b8614cfb85d1cff5'
+                    }
+                    'xscope-read-inbound_auth_profile': {
+                        table: 'sys_scope_privilege'
+                        id: '31374c78960141a786f7006997b3c516'
+                    }
+                    'xscope-read-oauth_entity': {
+                        table: 'sys_scope_privilege'
+                        id: '2b24c3833c6f4d8698582c8f7aff4821'
+                    }
+                    'xscope-read-oauth_entity_auth_scope_mapping': {
+                        table: 'sys_scope_privilege'
+                        id: '8fb46580177b4b7696844d6c8ac34b26'
+                    }
+                    'xscope-read-std_http_auth': {
+                        table: 'sys_scope_privilege'
+                        id: '32bea18226db4b3da022cf7034d04939'
+                    }
+                    'xscope-read-sys_api_access_policy': {
+                        table: 'sys_scope_privilege'
+                        id: '35e83b87fa924399a625578214039b42'
+                    }
+                    'xscope-read-sys_api_access_scope': {
+                        table: 'sys_scope_privilege'
+                        id: '8e219e653f5344559b94a9afbb67efcb'
+                    }
+                    'xscope-read-sys_auth_profile_mapping': {
+                        table: 'sys_scope_privilege'
+                        id: 'f80cea7addca4897a46b24b051689e54'
+                    }
+                    'xscope-read-sys_auth_scope': {
+                        table: 'sys_scope_privilege'
+                        id: 'c8a88e8b5b96492eafea16067cfd85ee'
+                    }
                     'xscope-read-sys_db_object': {
                         table: 'sys_scope_privilege'
                         id: '8f4c6c87c3ff445fbe740a13fee2c199'
@@ -593,6 +661,18 @@ declare global {
                     'xscope-read-sys_user_role_contains': {
                         table: 'sys_scope_privilege'
                         id: '3fa73ab2192c4e049eff62ec2b565398'
+                    }
+                    'xscope-read-sys_ws_definition': {
+                        table: 'sys_scope_privilege'
+                        id: '475c5f112c6f473392c48b1455be6d54'
+                    }
+                    'xscope-read-sys_ws_operation': {
+                        table: 'sys_scope_privilege'
+                        id: '1fbdb786ecca45949571462da0ff07ba'
+                    }
+                    'xscope-read-sys_ws_version': {
+                        table: 'sys_scope_privilege'
+                        id: '05cc03ab3d09414d8f488e952f6ddfdd'
                     }
                 }
                 composite: [

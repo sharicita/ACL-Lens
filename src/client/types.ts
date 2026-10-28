@@ -26,6 +26,8 @@ export interface SubjectOption {
     label: string
     sub: string
     type: SubjectType
+    /** a machine, AI agent, web-service-only or integration user (set for users found by search) */
+    apiAccount?: boolean
 }
 
 export type RoleAssignment = 'direct' | 'group' | 'inherited' | 'selected' | 'contained'
@@ -102,6 +104,8 @@ export interface ApiContext {
     version?: string
     resource?: string
     operation?: string
+    /** display names for the ids above (api, authProfile, oauthEntity, operation) */
+    names?: { [key: string]: string }
 }
 
 export interface ApiGate {
@@ -163,6 +167,8 @@ export interface AnalysisFilter {
     maxTables?: number
     /** also analyze every table that extends a selected table */
     includeChildren?: boolean
+    /** evaluate as API access (adds the API gate to every table status) */
+    api?: ApiContext
 }
 
 export interface AnalysisResult {
