@@ -145,10 +145,11 @@ Phase 0 of [the API access plan](../plans/api-access-evaluation.md). Confirmed w
 | `sys_auth_scope` | `api_service_admin`, `web_service_admin`, `oauth_admin` |
 | `oauth_entity_auth_scope_mapping` | `oauth_admin` |
 | `sys_ws_definition`, `sys_ws_operation`, `sys_ws_version` | `web_service_admin` |
-| `oauth_entity` | Table, field (`.name`, `.type`, `.active`, `.*`) and related `oauth_entity_scope` / `oauth_entity_profile*` read ACLs exist. **Roles not captured; to confirm.** |
+| `oauth_entity` | `oauth_admin` (field `oauth_entity.*`), `external_app_install_admin`; `web_service_admin` / `api_service_admin` read only `oauth_entity.active`. The table also has an active **deny** ACL, so a role without the field ACLs may see rows but not names. |
+| `sys_token_auth_parameter` (API key parameters) | `api_service_admin`, `web_service_admin` |
 | `sys_db_object` (`ws_access`) | Already read by the app |
 
-A role-only ACL Lens user will see little or nothing here. Reads use `GlideRecordSecure`, and the engine must report "not visible to you" rather than "no policy" when ACLs hide the rows. Admins see everything. `http_key_auth` and `http_body_auth` roles were not checked.
+A role-only ACL Lens user will see little or nothing here. Reads use `GlideRecordSecure`, and the engine must report "not visible to you" rather than "no policy" when ACLs hide the rows. Admins see everything. `http_key_auth` and `http_body_auth` have no read ACL of their own; reads fall to the parent `inbound_auth_profile` ACLs.
 
 **Cross-scope privileges.** `src/fluent/security/cross-scope.now.ts` covers `sys_db_object`, `sys_dictionary`, `sys_scope`, `sys_security_*`, `sys_user*` and the group and role tables. **None of the Phase 0 tables are covered.** Each needs a read privilege: `sys_api_access_policy`, `sys_auth_profile_mapping`, `inbound_auth_profile`, `std_http_auth`, `http_key_auth`, `http_body_auth`, `sys_api_access_scope`, `sys_auth_scope`, `oauth_entity_auth_scope_mapping`, `oauth_entity`, `sys_ws_definition`, `sys_ws_operation`, `sys_ws_version`.
 

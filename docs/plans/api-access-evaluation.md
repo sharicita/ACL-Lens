@@ -1,6 +1,6 @@
 # Plan: evaluate API access (OAuth scopes, REST API access policies, API-level ACLs)
 
-Status: **Phase 0 complete** (2026-10-27, confirmed on pdi1; see `03-access-evaluation-engine.md` §9). Phases 1–4 not started. Owner: Eric. Created 2026-10-27.
+Status: **Phase 0 complete** (2026-10-27, confirmed on pdi1; see `03-access-evaluation-engine.md` §9). **Phase 1 code complete, not yet verified on an instance**: engine logic, types, loader (`api-loader.ts`), `analyze.ts` wiring (`analyze(refs, filter, api?)`), the `account.ts` message, cross-scope privileges and 45 offline tests (type-check clean). Nothing calls `analyze` with an API context until Phase 2 adds the request field, so the loader is untested against the instance. Phases 2–4 not started. Owner: Eric. Created 2026-10-27.
 
 ## Goal
 
@@ -42,18 +42,19 @@ Exit: confirmed names in `03-access-evaluation-engine.md` §9. Phases 1–4 adju
 
 New module `src/server/engine/api-access.ts` (pure logic + a loader in the same style as `data-filters.ts`):
 
-- [ ] **Types** (`types.ts`, mirrored in `src/client/types.ts`):
+- [x] **Types** (`types.ts`, mirrored in `src/client/types.ts`; done, `ApiGate` carries per-operation `ops` / `pol`):
   - `ApiContext` (run input): `{ api: 'table' | '<sys_ws_definition id>', authProfile?: string | 'any', oauthEntity?: string }`. *Phase 0:* the engine resolves `api` to an **`api_path`** (`now/table` for the Table API, `<namespace>/<service_id>` for scripted APIs), because policies and scopes match on the path. An auth profile is one `inbound_auth_profile` sys_id; one pinned to an OAuth entity (`std_http_auth.oauth_entity`) only matches that entity.
   - `ApiGate` per table: `{ s: Status; ws?: boolean; policy?: { id, allowed: boolean | 'C', lvl }; scope?: { id, result: 'P'|'F'|'C', reason }; ep?: AclOutcome[] }`.
   - New reason codes: `wsoff`, `authblocked`, `noscope`, `unscoped`, `useraccount`, `ext` (IdP/adaptive – conditional).
   - `TableResult.api?: ApiGate` (optional → old runs still load).
-- [ ] **Policy matcher** implementing the 9-level prioritization above (pure function, unit-tested per level).
-- [ ] **Scope check**: API scope set vs OAuth entity scope set, `useraccount`, `scope_restriction_status` (`restricted` refuses unscoped APIs; `unrestricted` / `useraccount` unconfirmed → Conditional until Phase 4 settles them).
-- [ ] **Endpoint ACLs**: reuse `Evaluator` for `REST_Endpoint` ACLs (roles, admin overrides, conditions/scripts → C), resolved from `enforce_acl` on the definition (default) and resource (override). Any one passing ACL = pass. Also check `requires_authentication`, `requires_acl_authorization` and `requires_snc_internal_role`.
-- [ ] *Phase 0:* add read-only cross-scope privileges for the 13 tables in §9 to `cross-scope.now.ts`, and guard every table/column with `isValid()` / `isValidField()`; a hidden or missing table yields Conditional ("not visible" / "not available on this release"), never Denied.
-- [ ] **Fold** into the cell (`applyApiGate`, after `applyDataFilters`): gate D → cell D (keep ACL-only status in `acl`), gate C → G becomes C, gate pass → unchanged. Record `api` on the cell like `df`.
-- [ ] Only applied when the run has an `ApiContext` — UI-only runs are unchanged.
-- [ ] Replace the `account.ts` warning: when an API context is set, say what was evaluated; when not set on a machine/API-only user, suggest setting one.
+- [x] **Policy matcher** implementing the 9-level prioritization above (pure function, unit-tested per level) — `policyLevel` / `policyDecision` in `api-access.ts`.
+- [x] **Scope check** (`scopeDecision`): API scope set vs OAuth entity scope set, `useraccount`, `scope_restriction_status` (`restricted` refuses unscoped APIs; `unrestricted` / `useraccount` unconfirmed → Conditional until Phase 4 settles them).
+- [x] **Endpoint ACLs** (`endpointDecision`; the loader still has to resolve the ACL records): reuse `Evaluator` for `REST_Endpoint` ACLs (roles, admin overrides, conditions/scripts → C), resolved from `enforce_acl` on the definition (default) and resource (override). Any one passing ACL = pass. Also check `requires_authentication`, `requires_acl_authorization` and `requires_snc_internal_role`.
+- [x] *Phase 0:* cross-scope privileges added (`keys.ts` entries arrive with the next build). The loader reads configuration with `GlideRecordSecure` and `isValid()` / `isValidField()` guards; an unreadable table is listed in `ApiInputs.hidden` and makes the gate Conditional with reason `hidden`; a missing table counts as no data. Original note: add read-only cross-scope privileges for the 13 tables in §9 to `cross-scope.now.ts`, and guard every table/column with `isValid()` / `isValidField()`; a hidden or missing table yields Conditional ("not visible" / "not available on this release"), never Denied.
+- [x] **Fold** into the cell (`applyApiGate`, wired into `evaluateTable` in `analyze.ts` right after `applyDataFilters`; after `applyDataFilters`): gate D → cell D (keep ACL-only status in `acl`), gate C → G becomes C, gate pass → unchanged. Record `api` on the cell like `df`.
+- [x] Only applied when the run has an `ApiContext` — UI-only runs are unchanged (`ctx.api` is unset, `TableResult.api` absent).
+- [x] `account.ts` warning: with an API context it says what was evaluated (done). **Deferred to Phase 2:** the "suggest setting one" sentence for runs without a context, because the run-form control it points to doesn't exist yet.
+- [ ] Not covered in Phase 1: `fieldDetail` (the per-field drill-down) ignores the API context, and `requires_authentication` is not checked (every subject is an authenticated user).
 
 ## Phase 2 — REST + UI
 

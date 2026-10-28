@@ -86,8 +86,32 @@ export interface Cell {
     a: AclOutcome[]
     /** a security data filter limits which rows this operation reaches (A = applied, C = depends on a security attribute) */
     df?: 'A' | 'C'
-    /** the ACL-only status, when a data filter changed it */
+    /** the API access gate limits this operation (D = denies it, C = depends on something not resolvable statically) */
+    api?: 'D' | 'C'
+    /** the ACL-only status, when a data filter or the API gate changed it */
     acl?: Status
+}
+
+export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden'
+
+/** What an API run is evaluated as; `api` is `now/table` or `<namespace>/<service_id>` */
+export interface ApiContext {
+    api: string
+    authProfile?: string
+    oauthEntity?: string
+    version?: string
+    resource?: string
+    operation?: string
+}
+
+export interface ApiGate {
+    s: Status
+    ws?: boolean
+    ops?: { [op: string]: Status }
+    pol?: { [op: string]: { id: string; ok: boolean | 'C'; lvl: number } }
+    scope?: { r: 'P' | 'F' | 'C'; why: ApiReason | 'scope' | ''; id?: string }
+    ep?: AclOutcome[]
+    why: ApiReason[]
 }
 
 export interface FieldRow {
@@ -119,6 +143,8 @@ export interface TableResult {
     fields: FieldRow[]
     /** security data filters (missing on runs saved before they were analyzed) */
     sdf?: DataFilterOutcome[]
+    /** API access gate (only on runs evaluated with an API context) */
+    api?: ApiGate
 }
 
 export interface SubjectResult {
@@ -149,6 +175,10 @@ export interface AnalysisResult {
     warnings: string[]
     acls: AclInfo[]
     dataFilters?: DataFilterInfo[]
+    /** what the run was evaluated as, when it had an API context */
+    api?: ApiContext
+    /** Scripted REST endpoint ACLs referenced by ApiGate.ep */
+    apiAcls?: AclInfo[]
     /** table operations evaluated (missing on runs saved before the extra operations: TABLE_OPS) */
     ops?: Op[]
     subjects: SubjectResult[]

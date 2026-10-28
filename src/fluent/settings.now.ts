@@ -104,7 +104,7 @@ UiAction({
     order: 100,
     // String script (not a module import) so it can keep the admin on the form afterwards.
     // The require path contains package.json "version" - update it if the version changes.
-    script: `const { testProviderAction } = require('x_acllens/acl-lens/1.0.0/src/server/ai/provider-test.ts');
+    script: `const { testProviderAction } = require('x_acllens/acl-lens/1.1.0/src/server/ai/provider-test.ts');
 testProviderAction(current);
 action.setRedirectURL(current);`,
 })

@@ -581,6 +581,19 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - Offline tests cover the fold and the warning.
 
 
+## 1.26 API access evaluation: data model and engine (v1.1.0)
+
+| | |
+|---|---|
+| **Date** | 2026-10-27 |
+| **Status** | Engine built and tested offline; not yet run on an instance |
+
+- **Confirmed (Phase 0):** the tables and columns behind REST API access policies, auth scopes, Scripted REST ACLs and the web-service switch, queried on the PDI. See `architecture/03-access-evaluation-engine.md` §9. The Table API is a built-in processor (`now/table`), not a Scripted REST API, and policies match on `api_path`.
+- **Built (Phase 1):** `engine/api-access.ts` (policy matcher with 9 priority levels, scope check, endpoint ACLs, gate, fold), `engine/api-loader.ts` (reads the configuration as the signed-in user; unreadable tables make the gate Conditional), the `analyze(refs, filter, api?)` wiring, `Schema.wsAccess`, and cross-scope read privileges.
+- **Versioning:** SemVer starts at 1.0.0; this change is 1.1.0 (`feat`). Rules in `CHANGELOG.md`.
+- **Verified:** `npm test` (45 new tests) and the server type-check.
+- **Not verified:** the loader's queries against the instance (nothing sends an API context until Phase 2).
+
 ## Dependency audit: SDK build toolchain advisories
 
 | | |

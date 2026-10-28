@@ -11,6 +11,19 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-27
+
+### Added
+- API access evaluation engine (not yet reachable from the UI): the REST API access policy, OAuth auth scope, Scripted REST endpoint ACL and web-service access checks, folded into the table status when a run has an API context. `analyze()` takes an optional `ApiContext`; runs without one are unchanged.
+- Read-only cross-scope privileges for the 13 platform tables behind those checks.
+- 45 offline tests for the policy matcher, scope check, endpoint ACLs, gate and fold.
+
+### Changed
+- `accountWarning` says what was evaluated when an API context is set.
+
+### Documentation
+- The API access data model confirmed on a PDI (`docs/architecture/03-access-evaluation-engine.md` §9) and the phased plan in `docs/plans/api-access-evaluation.md`.
+
 ## [1.0.0] - 2026-10-27
 
 Baseline. The version line starts here; earlier work used informal numbers (the `0.1`–`0.7` rows in the change log in `docs/README.md` and the `1.x` iterations in `docs/build-log.md`).

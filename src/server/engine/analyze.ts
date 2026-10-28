@@ -3,6 +3,8 @@ import { AclIndex } from './acl-index.ts'
 import { AttributeInfo } from './attributes.ts'
 import { DataFilterIndex, dataFilterOutcomes, loadAttributes } from './data-filters.ts'
 import { Evaluator, applyDataFilters, emptyCounts } from './evaluator.ts'
+import { ApiSubject, applyApiGate, evalApiGate } from './api-access.ts'
+import { ApiLoad, loadApiInputs } from './api-loader.ts'
 import { accountWarning } from './account.ts'
 import { Schema, tablesDefiningFields, listFields, FieldMeta } from './schema.ts'
 import { loadElevatedRoles, resolveSubject } from './subjects.ts'
@@ -10,6 +12,7 @@ import {
     ALL_TABLE_OPS,
     AnalysisFilter,
     AnalysisResult,
+    ApiContext,
     Cell,
     FIELD_OPS,
     FieldRow,
@@ -62,9 +65,11 @@ export interface AnalysisContext {
     defaultDeny: boolean
     dataFilters: DataFilterIndex
     attrs: { [name: string]: AttributeInfo }
+    /** set for runs evaluated as API access */
+    api?: { ctx: ApiContext; load: ApiLoad }
 }
 
-export function buildContext(schema: Schema, tables: string[] | null): AnalysisContext {
+export function buildContext(schema: Schema, tables: string[] | null, apiCtx?: ApiContext): AnalysisContext {
     let names: string[] | null = null
     if (tables) {
         const all: { [n: string]: boolean } = {}
@@ -73,13 +78,15 @@ export function buildContext(schema: Schema, tables: string[] | null): AnalysisC
     }
     const index = new AclIndex().load(names)
     const dataFilters = new DataFilterIndex().load(names)
+    const api = apiCtx ? { ctx: apiCtx, load: loadApiInputs(apiCtx) } : undefined
     return {
         schema,
         index,
         elevated: loadElevatedRoles(),
         defaultDeny: gs.getProperty('glide.sm.default_mode', 'deny') !== 'allow',
         dataFilters,
-        attrs: loadAttributes(index.attributeNames().concat(dataFilters.attributeNames())),
+        attrs: loadAttributes(index.attributeNames().concat(dataFilters.attributeNames(), api ? api.load.attributeNames() : [])),
+        api,
     }
 }
 
@@ -114,10 +121,15 @@ function evaluateTable(
     const sdf = dataFilterOutcomes(ctx.dataFilters, chain, ctx.attrs, ev.roles())
     if (sdf.length) out.sdf = sdf
     applyDataFilters(ops, sdf)
+    if (ctx.api) {
+        const who: ApiSubject = { evalAcl: (a) => ev.evalAcl(a), hasRole: (r) => !!ev.roles()[r] }
+        out.api = evalApiGate(ctx.api.ctx, table, ctx.schema.wsAccess(table), TABLE_OPS, ctx.api.load.inputs, who)
+        applyApiGate(ops, out.api)
+    }
     return out
 }
 
-export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisResult {
+export function analyze(refs: SubjectRef[], filter: AnalysisFilter, api?: ApiContext): AnalysisResult {
     if (!refs || !refs.length) throw new Error('Select at least one user or role')
     if (refs.length > 8) throw new Error('A maximum of 8 subjects can be analyzed at once')
     const warnings: string[] = []
@@ -145,7 +157,7 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
         return list.concat(extra)
     }
     if (tables) tables = addChildren(tables)
-    const ctx = buildContext(schema, tables)
+    const ctx = buildContext(schema, tables, api)
     lap('acls')
 
     if (tables === null) {
@@ -181,7 +193,7 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
             return r
         })
         if (!subject.active) warnings.push(`${subject.label} is inactive - they cannot log in, results show what their roles would allow.`)
-        const accountNote = accountWarning(subject)
+        const accountNote = accountWarning(subject, api)
         if (accountNote) warnings.push(accountNote)
         return { subject, tables: tr, counts }
     })
@@ -198,6 +210,8 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter): AnalysisRes
         timings,
         acls: ctx.index.acls,
         dataFilters: ctx.dataFilters.filters,
+        api: ctx.api ? ctx.api.ctx : undefined,
+        apiAcls: ctx.api ? ctx.api.load.acls : undefined,
         ops: ALL_TABLE_OPS,
         subjects: results,
     }

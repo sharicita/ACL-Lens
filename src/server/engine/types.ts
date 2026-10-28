@@ -129,8 +129,56 @@ export interface Cell {
      * (A = applied, C = depends on a security attribute). `s` already includes it.
      */
     df?: 'A' | 'C'
-    /** the ACL-only status, when a data filter changed it (e.g. G -> C) */
+    /**
+     * Set when the API access gate (run with an API context) limited this operation:
+     * D = the gate denies it, C = the gate depends on something that can't be resolved statically.
+     * `s` already includes it.
+     */
+    api?: 'D' | 'C'
+    /** the ACL-only status, when a data filter or the API gate changed it (e.g. G -> C) */
     acl?: Status
+}
+
+/**
+ * Why the API gate said what it said (short codes; the UI expands them):
+ * wsoff       - the table does not allow web-service access
+ * authblocked - the REST API access policy that applies does not allow the chosen authentication method
+ * noscope     - the OAuth application lacks the auth scope the API requires
+ * unscoped    - the API has no auth scope and the OAuth application only allows scoped APIs
+ * useraccount - the OAuth application holds the useraccount scope (reaches every API)
+ * ext         - depends on something not resolvable statically (external IdP token, a resource not chosen)
+ * endpoint    - Scripted REST endpoint ACLs / resource flags decided it
+ * hidden      - the signed-in user can't read some of the API configuration, so it could not be evaluated
+ */
+export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden'
+
+/** What an API run is evaluated as. `api` is the API path: `now/table` or `<namespace>/<service_id>`. */
+export interface ApiContext {
+    api: string
+    /** inbound_auth_profile sys_id, or 'any' to ask whether some profile is allowed */
+    authProfile?: string
+    /** oauth_entity sys_id; leave empty for non-OAuth authentication */
+    oauthEntity?: string
+    version?: string
+    /** the resource path a policy can name, e.g. /now/table/{tableName} */
+    resource?: string
+    /** sys_ws_operation sys_id of the Scripted REST resource (leave empty for the Table API or when not chosen) */
+    operation?: string
+}
+
+export interface ApiGate {
+    /** worst outcome across the core operations: G = passes, C = depends, D = blocked */
+    s: Status
+    /** the table's web-service access switch (Table API only) */
+    ws?: boolean
+    /** per operation, only where it differs from `s` */
+    ops?: { [op: string]: Status }
+    /** matched access policy per operation (lvl 1 = most specific, 9 = global) */
+    pol?: { [op: string]: { id: string; ok: boolean | 'C'; lvl: number } }
+    scope?: { r: 'P' | 'F' | 'C'; why: ApiReason | 'scope' | ''; id?: string }
+    /** Scripted REST endpoint ACL outcomes: `i` indexes AnalysisResult.apiAcls, not AnalysisResult.acls */
+    ep?: AclOutcome[]
+    why: ApiReason[]
 }
 
 export interface FieldRow {
@@ -168,6 +216,8 @@ export interface TableResult {
     fields: FieldRow[]
     /** security data filters on the table or a parent (missing on runs saved before they were analyzed) */
     sdf?: DataFilterOutcome[]
+    /** API access gate, present only on runs evaluated with an API context */
+    api?: ApiGate
 }
 
 export type Counts = { [op: string]: { [s: string]: number } }
@@ -204,6 +254,10 @@ export interface AnalysisResult {
     acls: AclInfo[]
     /** security data filters referenced by TableResult.sdf */
     dataFilters?: DataFilterInfo[]
+    /** what the run was evaluated as, when it had an API context (see TableResult.api) */
+    api?: ApiContext
+    /** Scripted REST endpoint ACLs referenced by ApiGate.ep */
+    apiAcls?: AclInfo[]
     /** operations evaluated for tables (runs saved before the extra operations hold only TABLE_OPS) */
     ops?: Op[]
     subjects: SubjectResult[]

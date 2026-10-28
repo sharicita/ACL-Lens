@@ -4,6 +4,8 @@ export interface TableMeta {
     name: string
     label: string
     parent: string
+    /** sys_db_object.ws_access: the table may be reached through web services (true on releases without the column) */
+    ws: boolean
 }
 
 const SYSTEM_PREFIXES = ['sys_', 'v_', 'ts_', 'syslog', 'ua_', 'sysevent', 'sysauto', 'sysrule', 'clone_', 'ecc_']
@@ -22,7 +24,7 @@ export class Schema {
             const name = t.getValue('name')
             idToName[t.getUniqueValue()] = name
             parentIds[name] = t.getValue('super_class') || ''
-            this.tables[name] = { name, label: t.getValue('label') || name, parent: '' }
+            this.tables[name] = { name, label: t.getValue('label') || name, parent: '', ws: !t.isValidField('ws_access') || t.getValue('ws_access') !== 'false' }
         }
         for (const name in parentIds) {
             const pid = parentIds[name]
@@ -33,6 +35,11 @@ export class Schema {
 
     exists(name: string): boolean {
         return !!this.tables[name]
+    }
+
+    /** whether the table allows access through web services (the Table API) */
+    wsAccess(name: string): boolean {
+        return !this.tables[name] || this.tables[name].ws
     }
 
     label(name: string): string {
