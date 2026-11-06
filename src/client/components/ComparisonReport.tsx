@@ -162,40 +162,42 @@ export default function ComparisonReport({ runId, cmp, subjects, fileBase, onExp
                 </ul>
 
                 <h3>Per subject (table × operation cells)</h3>
-                <table className="lens-mx lens-mx--compact lens-mx--report">
-                    <thead>
-                        <tr>
-                            <SortTh sorter={perSubject} col="subject" groupable={false}>
-                                Subject
-                            </SortTh>
-                            <SortTh sorter={perSubject} col="granted" groupable={false}>
-                                Granted
-                            </SortTh>
-                            <SortTh sorter={perSubject} col="conditional" groupable={false}>
-                                Conditional
-                            </SortTh>
-                            <SortTh sorter={perSubject} col="denied" groupable={false}>
-                                Denied
-                            </SortTh>
-                            <SortTh sorter={perSubject} col="exclusive" groupable={false} tip="Table × operation cells where only this subject has access">
-                                Exclusive access
-                            </SortTh>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {perSubject.rows.filter((p) => subjectVisible(p.key)).map((p) => (
-                            <tr key={p.key}>
-                                <th scope="row">
-                                    <SubjectName subjectKey={p.key} label={label(p.key)} focusable />
-                                </th>
-                                <td>{p.granted}</td>
-                                <td>{p.conditional}</td>
-                                <td>{p.denied}</td>
-                                <td>{p.exclusive}</td>
+                <div className="lens-mx__scroll">
+                    <table className="lens-mx lens-mx--compact lens-mx--report">
+                        <thead>
+                            <tr>
+                                <SortTh sorter={perSubject} col="subject" groupable={false}>
+                                    Subject
+                                </SortTh>
+                                <SortTh sorter={perSubject} col="granted" groupable={false}>
+                                    Granted
+                                </SortTh>
+                                <SortTh sorter={perSubject} col="conditional" groupable={false}>
+                                    Conditional
+                                </SortTh>
+                                <SortTh sorter={perSubject} col="denied" groupable={false}>
+                                    Denied
+                                </SortTh>
+                                <SortTh sorter={perSubject} col="exclusive" groupable={false} tip="Table × operation cells where only this subject has access">
+                                    Exclusive access
+                                </SortTh>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {perSubject.rows.filter((p) => subjectVisible(p.key)).map((p) => (
+                                <tr key={p.key}>
+                                    <th scope="row">
+                                        <SubjectName subjectKey={p.key} label={label(p.key)} focusable />
+                                    </th>
+                                    <td>{p.granted}</td>
+                                    <td>{p.conditional}</td>
+                                    <td>{p.denied}</td>
+                                    <td>{p.exclusive}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
                 <h3>Head to head</h3>
                 <ul className="lens-pairs">

@@ -11,6 +11,14 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-06
+
+### Fixed
+- The page no longer scrolls sideways at phone width (320px and 375px): the header and its tabs wrap, the operation picker wraps inside its card, the comparison summary table scrolls inside its own container, and workspace cards no longer overflow at 320px. Tabs and operation buttons are 44px tall on phones. Below 48rem the header scrolls with the page instead of staying fixed at the top. Desktop layout is unchanged.
+
+### Known issues
+- At phone width many other controls are still under 44px tall and text inputs are under 16px. Checked in a local test page with sample data, not on a PDI.
+
 ### Documentation
 - Documents moved to the app-forge layout (`docs/guides/`, `docs/reference/`, `docs/operations/`, `docs/project/`), with links updated, and a new `CONTRIBUTING.md`. Older changelog entries keep the paths they had at the time.
 

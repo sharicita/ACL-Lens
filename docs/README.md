@@ -4,7 +4,7 @@
 |---|---|
 | **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.14.0 |
 | **Status** | **Working build on a development PDI**. Core analysis, comparison, history and settings were verified on the PDI. The AI assistant's language-model step has only been tested offline (see [06](architecture/06-risks-assumptions-decisions.md)) |
-| **Version** | `1.3.1` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
+| **Version** | `1.3.2` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
 | **Date** | 2026-11-06 |
 | **Owner** | Project owner (PDI admin) |
 
@@ -57,6 +57,7 @@ From 1.0.0 the versions follow Semantic Versioning and the full history is in [C
 
 | Version | Date | Change |
 |---|---|---|
+| 1.3.2 | 2026-11-06 | Fix: no sideways page scroll at phone width (header, operation picker, comparison summary table) |
 | 1.3.1 | 2026-11-06 | Fix: phone browsers use the device width (viewport tag); the header and operation picker still overflow at phone width. SDK 4.14.0 |
 | 1.3.0 | 2026-11-06 | Live verification checks field rules too and has a Result column; fix: it did nothing on ServiceNow pages (Prototype.js `Array.from`) |
 | 1.2.1 | 2026-10-27 | Fix: the web-service access switch was read wrongly (tables with it off passed the API gate) |

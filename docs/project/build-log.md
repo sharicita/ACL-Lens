@@ -671,3 +671,14 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 
 - **Changed:** 9 documents moved with `npm run docs-migrate -- <folder> --apply` in app-forge, so history is kept and relative links are fixed. `CONTRIBUTING.md` added from the app-forge template.
 - **Fixed by hand:** the migration fixes link targets, not link text or code. The setup wizard's document map in `tools/setup/server.mjs` still pointed at the old files, and link text in `INSTALL.md` and `SECURITY.md` showed the old paths.
+
+## 1.30 Phone layout: no sideways page scroll (v1.3.2)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; checked at 320px, 375px and 1280px in a local test page with sample data, not on a PDI |
+
+- **Changed:** phone styles are the base for `.lens-header`, `.lens-header__tabs`, `.lens-tab` and `.lens-opsel`, with desktop restored at `min-width: 48rem`. The comparison summary table now has a scroll container, and the workspace grid column can shrink (`minmax(0, 1fr)`).
+- **Why the tabs wrap:** a scrolling tab bar could hide the current page; wrapped tabs are all visible without any script.
+- **Not done:** other controls under 44px, text inputs under 16px, and tables in drawers and dashboard reports, which weren't checked at phone width.
