@@ -161,7 +161,11 @@ function http(p: Provider, key: string, headers: { [k: string]: string }, body: 
     }
     if (status < 200 || status >= 300) {
         const msg = (data && (data.error?.message || data.message)) || res.getErrorMessage() || text.substring(0, 300)
-        throw new Error(`AI provider returned HTTP ${status}: ${redactSecrets(String(msg), key)}`)
+        const modelHelp =
+            status === 404 && /model/i.test(String(msg))
+                ? ' Check the Model field: it needs the API model ID (for example claude-haiku-5-5), not the display name. Leave it empty to use the default. Model IDs are listed at docs.anthropic.com/en/docs/about-claude/models.'
+                : ''
+        throw new Error(`AI provider returned HTTP ${status}: ${redactSecrets(String(msg), key)}${modelHelp}`)
     }
     return data
 }

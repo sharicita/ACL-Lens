@@ -213,4 +213,4 @@ Turning it off makes the endpoint refuse every request straight away.
 
 ### AI providers
 
-**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. See [05 §2](../../architecture/05-ai-assistant-and-mcp.md#2-providers).
+**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. In **Model**, enter the API model ID (for example `claude-haiku-5-5`), not the display name ("Claude Haiku 5.5"); leave it empty to use the default. Anthropic lists model IDs at <https://docs.anthropic.com/en/docs/about-claude/models>. See [05 §2](../../architecture/05-ai-assistant-and-mcp.md#2-providers).
