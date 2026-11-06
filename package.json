@@ -1,6 +1,6 @@
 {
     "name": "acl-lens",
-    "version": "1.3.2",
+    "version": "1.4.0",
     "description": "Analyze and compare detailed access permissions across users, roles, tables, records, and fields.",
     "license": "MIT",
     "imports": {

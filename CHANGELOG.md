@@ -11,6 +11,13 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-06
+
+### Changed
+- Colors, shapes and motion now come from the app-forge Harbor theme (`src/client/styles/app-forge/theme.css`), which is embedded ahead of `app.css` in the JS bundle. Harbor was based on this app, so the change is small: secondary text is darker for contrast (`#6b7783` to `#58646f`), and borders and a few status colors shift slightly. Where the instance sets no font, text uses the system font instead of Lato.
+- The page stays light even when the operating system is in dark mode. "Follow each user's ServiceNow theme" works as before.
+- Checked in a local test page with sample data, not on a PDI.
+
 ## [1.3.2] - 2026-11-06
 
 ### Fixed

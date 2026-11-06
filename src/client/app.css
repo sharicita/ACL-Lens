@@ -1,45 +1,48 @@
 /* ACL Lens – light, quiet, modern. Accent follows the instance theme (Horizon token); neutrals are
    kept deliberately soft so the access colours carry the meaning. */
 :root {
-    --lx-bg: #f8fafb;
-    --lx-surface: #ffffff;
-    --lx-subtle: #f4f6f8;
-    --lx-hover: #f1f4f7;
-    --lx-border: #e8ecf0;
-    --lx-border-strong: #d9dfe5;
-    --lx-text: #1f2a33;
-    --lx-muted: #6b7783;
+    /* These tokens come from the app-forge theme (styles/app-forge/theme.css, embedded ahead of this
+       file by the prebuild). Change the look in app-forge, not here. */
+    --lx-bg: var(--ui-canvas);
+    --lx-surface: var(--ui-surface);
+    --lx-subtle: var(--ui-subtle);
+    --lx-hover: var(--ui-hover);
+    --lx-border: var(--ui-line);
+    --lx-border-strong: var(--ui-line-strong);
+    --lx-text: var(--ui-fg);
+    --lx-muted: var(--ui-muted);
     /* decorative only; text uses --lx-muted (contrast >= 4.5:1) */
-    --lx-faint: #8c97a1;
-    /* ACL Lens's own accent; "Follow each user's ServiceNow theme" replaces it with the user's */
+    --lx-faint: var(--ui-faint);
+    /* Harbor's accent as RGB, for the translucent tints below; "Follow each user's ServiceNow theme" replaces it */
     --lx-accent-rgb: 3, 117, 160;
-    --lx-accent: rgb(var(--lx-accent-rgb));
-    --lx-accent-soft: rgba(var(--lx-accent-rgb), 0.08);
-    --lx-accent-soft-2: rgba(var(--lx-accent-rgb), 0.14);
-    --lx-on-accent: #ffffff;
+    --lx-accent: var(--ui-accent);
+    --lx-accent-soft: var(--ui-accent-soft);
+    --lx-accent-soft-2: var(--ui-accent-soft-2);
+    --lx-on-accent: var(--ui-on-accent);
     --lx-focus: rgba(var(--lx-accent-rgb), 0.35);
 
-    --lx-g-bg: #e9f6ee;
-    --lx-g-fg: #1e7a46;
-    --lx-c-bg: #fdf4dc;
-    --lx-c-fg: #8a6210;
-    --lx-d-bg: #fbecec;
-    --lx-d-fg: #b03a3a;
-    --lx-n-bg: #f0f2f4;
-    --lx-n-fg: #5f6b75;
-    --lx-diff: #7c5cc4;
-    --lx-diff-soft: rgba(124, 92, 196, 0.1);
+    --lx-g-bg: var(--ui-success-bg);
+    --lx-g-fg: var(--ui-success);
+    --lx-c-bg: var(--ui-warning-bg);
+    --lx-c-fg: var(--ui-warning);
+    --lx-d-bg: var(--ui-danger-bg);
+    --lx-d-fg: var(--ui-danger);
+    --lx-n-bg: var(--ui-neutral-bg);
+    --lx-n-fg: var(--ui-neutral);
+    --lx-diff: var(--ui-highlight);
+    --lx-diff-soft: var(--ui-highlight-bg);
 
-    --lx-radius: 10px;
-    --lx-radius-sm: 6px;
-    --lx-shadow: 0 1px 2px rgba(16, 24, 32, 0.04);
-    --lx-shadow-pop: 0 8px 24px rgba(16, 24, 32, 0.08), 0 1px 3px rgba(16, 24, 32, 0.06);
-    --lx-space: 1rem;
-    --lx-space-sm: 0.5rem;
-    --lx-font: var(--now-font-family, 'Lato', 'Segoe UI', system-ui, Arial, sans-serif);
-    --lx-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --lx-radius: var(--ui-radius-md);
+    --lx-radius-sm: var(--ui-radius-sm);
+    --lx-shadow: var(--ui-shadow-sm);
+    --lx-shadow-pop: var(--ui-shadow-pop);
+    --lx-space: var(--ui-space-md);
+    --lx-space-sm: var(--ui-space-sm);
+    /* the instance's font when it has one */
+    --lx-font: var(--now-font-family, var(--ui-font-body));
+    --lx-ease: var(--ui-motion-ease);
     --lx-ease-in: cubic-bezier(0.4, 0, 0.8, 0.4);
-    --lx-slide-in: 0.4s;
+    --lx-slide-in: var(--ui-motion-slow);
     --lx-slide-out: 0.32s;
 }
 
@@ -48,6 +51,10 @@
    appearance). Access colours are unchanged so results read the same in every theme. */
 :root.lens-theme-instance {
     --lx-accent-rgb: var(--now-actionable--primary--background-color, 3, 117, 160);
+    --lx-accent: rgb(var(--lx-accent-rgb));
+    --lx-accent-soft: rgba(var(--lx-accent-rgb), 0.08);
+    --lx-accent-soft-2: rgba(var(--lx-accent-rgb), 0.14);
+    --lx-diff-soft: rgba(124, 92, 196, 0.1);
     --lx-on-accent: rgb(var(--now-actionable_label--primary--color, 255, 255, 255));
     --lx-focus: rgba(var(--now-color_focus-ring, var(--lx-accent-rgb)), 0.45);
     --lx-bg: rgb(var(--now-color_background--secondary, 248, 250, 251));

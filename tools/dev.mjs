@@ -11,8 +11,13 @@ import { prepareWorkspace, runSdk, syncFile } from './lib/workspace.mjs'
 
 function embedCss(ws) {
     const dir = path.join(ws, 'src', 'client')
-    const css = fs.readFileSync(path.join(dir, 'app.css'), 'utf8')
-    fs.writeFileSync(path.join(dir, 'styles.generated.ts'), `// Generated from app.css by now.prebuild.mjs - edit app.css instead.
+    // same order as now.prebuild.mjs: the app-forge theme first, then app.css
+    const css = ['styles/app-forge/base.css', 'styles/app-forge/theme.css', 'app.css']
+        .map((f) => path.join(dir, f))
+        .filter((f) => fs.existsSync(f))
+        .map((f) => fs.readFileSync(f, 'utf8'))
+        .join('\n')
+    fs.writeFileSync(path.join(dir, 'styles.generated.ts'), `// Generated from styles/app-forge/*.css and app.css by now.prebuild.mjs - edit those instead.
 export const APP_CSS = ${JSON.stringify(css)}
 `)
 }

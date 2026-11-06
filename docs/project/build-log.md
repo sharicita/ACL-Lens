@@ -682,3 +682,15 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Changed:** phone styles are the base for `.lens-header`, `.lens-header__tabs`, `.lens-tab` and `.lens-opsel`, with desktop restored at `min-width: 48rem`. The comparison summary table now has a scroll container, and the workspace grid column can shrink (`minmax(0, 1fr)`).
 - **Why the tabs wrap:** a scrolling tab bar could hide the current page; wrapped tabs are all visible without any script.
 - **Not done:** other controls under 44px, text inputs under 16px, and tables in drawers and dashboard reports, which weren't checked at phone width.
+
+## 1.31 App-forge Harbor theme (v1.4.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; checked in a local test page with sample data (light, simulated dark instance theme, 375px and 1280px), not on a PDI |
+
+- **Changed:** `theme.css` from app-forge's Harbor theme added, `--lx-*` tokens mapped onto `--ui-*` at the top of `app.css`, the theme embedded by `now.prebuild.mjs` and `tools/dev.mjs`, and `app-forge.json` added. `.lens-*` classes are unchanged.
+- **`data-theme="light"` on `<html>`:** Harbor follows the operating system's dark mode, but much of `app.css` still has fixed light colors, so a dark OS would have mixed dark and light surfaces.
+- **`base.css` left out for now:** with it embedded, its element styles changed the app wherever `.lens-*` rules didn't set a property: narrower paragraphs, lighter link weight in the title, shaded table headers and extra table margins (the run page grew from 1716px to 1925px tall), and dark headings on a dark instance theme. The prebuild already picks it up if the file is added, once those rules are dealt with.
+- **Still open:** moving hard-coded colors in `app.css` to tokens, spacing tokens, and `.ui-*` classes. Tips and meter tracks are light on a dark instance theme.
