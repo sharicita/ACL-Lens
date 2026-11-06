@@ -14,21 +14,22 @@ ACL Lens shows clearly what a **user or role can create, read, write and delete*
 
 | # | Document | Covers |
 |---|---|---|
-| 01 | [Overview & Scope](architecture/01-overview-and-scope.md) | Purpose, users and roles, features, product boundary (what it does and does not do) |
+| 01 | [Overview & Scope](architecture/overview.md) | Purpose, users and roles, features, product boundary (what it does and does not do) |
 | 02 | [System Architecture](architecture/02-system-architecture.md) | Components, request flow, project layout, build pipeline, performance |
 | 03 | [Access Evaluation Engine](architecture/03-access-evaluation-engine.md) | How access is computed: matching order, statuses, reason codes, comparison, drift, known limits |
-| 04 | [Security Architecture](architecture/04-security-architecture.md) | Roles, ACLs, cross-scope privileges, data exposure, secrets, retention, threat model |
+| 04 | [Security Architecture](architecture/security.md) | Roles, ACLs, cross-scope privileges, data exposure, secrets, retention, threat model |
 | 05 | [AI Assistant & MCP](architecture/05-ai-assistant-and-mcp.md) | Provider abstraction, Now Assist setup, agent loop, read-only tools, MCP server, guard rails |
 | 06 | [Risks, Assumptions & Decisions](architecture/06-risks-assumptions-decisions.md) | Decision log, verified vs unverified items, risks, open items |
-| — | [Data Dictionary](data-dictionary.md) | Tables, columns, properties, roles and every metadata record the app installs |
-| — | [API Reference](api-reference.md) | REST endpoints and MCP methods |
-| — | [User Guide](user-guide.md) | How to use the Workspace, matrix, details, comparison, history, assistant and settings |
-| — | [Install & Deployment](install-and-deploy.md) | Every install route (guided setup, ServiceNow IDE, update sets, multiple instances), how scopes and profiles work, keeping the repo publishable. End-user steps: [INSTALL.md](../INSTALL.md) |
-| — | [Developer Setup](dev-setup.md) | Prerequisites, build/deploy, conventions, tests, troubleshooting |
+| — | [Data Dictionary](architecture/data-model.md) | Tables, columns, properties, roles and every metadata record the app installs |
+| — | [API Reference](reference/api.md) | REST endpoints and MCP methods |
+| — | [User Guide](guides/user/user-guide.md) | How to use the Workspace, matrix, details, comparison, history, assistant and settings |
+| — | [Install & Deployment](operations/runbook.md) | Every install route (guided setup, ServiceNow IDE, update sets, multiple instances), how scopes and profiles work, keeping the repo publishable. End-user steps: [INSTALL.md](../INSTALL.md) |
+| — | [Developer Setup](guides/developer/dev-setup.md) | Prerequisites, build/deploy, conventions, tests, troubleshooting |
 | — | [New App Build Standards](new-app-build-standards.md) | The reusable baseline for every new ServiceNow app: setup, install, security, navigation, UI/UX, lists, accessibility, docs and process (checklist) |
-| — | [Lessons Learned](lessons-learned.md) | What this build taught us, and the UX baseline for future builds |
-| — | [Build Log](build-log.md) | What was built in each iteration, issues found on the PDI and how they were fixed |
+| — | [Lessons Learned](project/lessons-learned.md) | What this build taught us, and the UX baseline for future builds |
+| — | [Build Log](project/build-log.md) | What was built in each iteration, issues found on the PDI and how they were fixed |
 | — | [ADRs](adr/) | Architecture decision records |
+| — | [Contributing](../CONTRIBUTING.md) | Branches, commits, versions and what to run before a pull request |
 
 ## Architecture decision records
 

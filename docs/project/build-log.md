@@ -54,14 +54,14 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 
 ### Built
 - Subtitle text; slide animations (drawer, field rows, panels); scope typeahead; light restyle; contextual dismissible tips.
-- Security Assistant ([ADR-0003](adr/ADR-0003-ai-provider-agnostic-read-only.md)):
+- Security Assistant ([ADR-0003](../adr/ADR-0003-ai-provider-agnostic-read-only.md)):
   - provider tables and ACLs;
   - Now Assist / Anthropic / OpenAI-compatible / Azure connectors;
   - agent loop and 10 read-only tools;
   - MCP endpoint, panel UI and Markdown renderer.
 
 ### Found and fixed
-- The instance served the *previous* stylesheet after every deploy (cached server-side by asset record). Styles moved into the JS bundle ([ADR-0004](adr/ADR-0004-styles-in-js-bundle.md)).
+- The instance served the *previous* stylesheet after every deploy (cached server-side by asset record). Styles moved into the JS bundle ([ADR-0004](../adr/ADR-0004-styles-in-js-bundle.md)).
 - Unescaped apostrophes in `.now.ts` strings broke the Fluent parser.
 
 ### Verified
@@ -83,7 +83,7 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 - Scope search ranking: scope prefix → name prefix → contains; `x_` apps first when empty.
 - Longer slides: 0.4 s in / 0.32 s out, 64 px travel.
 - Standard tooltip layer (`data-tip`) on every interactive element, including the rerun links.
-- Properties / Settings view ([ADR-0005](adr/ADR-0005-history-governance.md)): history toggle, clear history (all / range / older than), retention (off by default, 90 days, delete or archive), daily job, archive/restore.
+- Properties / Settings view ([ADR-0005](../adr/ADR-0005-history-governance.md)): history toggle, clear history (all / range / older than), retention (off by default, 90 days, delete or archive), daily job, archive/restore.
 - Provider form:
   - capability reference and skill input name;
   - type-based UI policy;
@@ -117,7 +117,7 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 | | |
 |---|---|
 | **Date** | 2026-10-08 |
-| **Decision** | [ADR-0006](adr/ADR-0006-dependency-supply-chain.md) |
+| **Decision** | [ADR-0006](../adr/ADR-0006-dependency-supply-chain.md) |
 
 ### Why
 The instance listed hundreds of npm packages being installed for the app. This was the full development dependency tree, restored because the template uploads the app source to the instance.
@@ -199,7 +199,7 @@ The instance listed hundreds of npm packages being installed for the app. This w
 | | |
 |---|---|
 | **Date** | 2026-10-09 |
-| **Decisions** | D-13 ([ADR-0007](adr/ADR-0007-placeholder-scope-and-install-profiles.md)) |
+| **Decisions** | D-13 ([ADR-0007](../adr/ADR-0007-placeholder-scope-and-install-profiles.md)) |
 
 ### Built
 - **One search everywhere:** `rankedSearch` on the server (prefix matches first, then contains; deduplicated; `GlideRecordSecure` where the user's access matters) and `SearchCombo` / `rankFilter` on the client (ARIA combobox, highlighted matches, result count announced). Used for users, roles, scopes, tables (new `GET /tables`) and the result filters.
@@ -209,7 +209,7 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - **Condition details:** *Show the condition* loads `GET /acl/{id}` on demand (condition, applies-to, security attribute, script only with ACL read, description).
 - **Links:** `RecordLink` to users, roles, groups, tables, fields and ACLs; `DocLink` (book icon) to ServiceNow documentation; both open in a new window and are labelled for screen readers.
 - **Accessibility and performance:** the assistant opens above the details drawer (z-index fix); focus moves into the drawer and is trapped there, and returns on close; table captions and header scopes; `lang`; contrast of muted text; ACL details cached per page; data loaded only when expanded.
-- **Publishable source:** placeholder scope `x_acllens`, new neutral `scopeId`, app description set; `tools/deploy.mjs`, `tools/profile.mjs`, `tools/scope.mjs`, the GitHub Action, `npm run setup` (local wizard), `INSTALL.md`, [install-and-deploy.md](install-and-deploy.md).
+- **Publishable source:** placeholder scope `x_acllens`, new neutral `scopeId`, app description set; `tools/deploy.mjs`, `tools/profile.mjs`, `tools/scope.mjs`, the GitHub Action, `npm run setup` (local wizard), `INSTALL.md`, [install-and-deploy.md](../operations/runbook.md).
 
 ### Verified on the PDI
 - As the role-only user: ranked user and role search; table search empty by design (no `sys_db_object` read; typed names still work); new cards, Roles tab, condition details and Ask assistant from the drawer.
@@ -661,3 +661,13 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Found at 375px:** the header doesn't wrap, so `.lens-header__tabs` pushes the page to about 690px and the whole page scrolls sideways; `.lens-opsel` runs past its card to 565px; most controls are under 44px and text inputs under 16px.
 - **Working at 375px:** the workspace and run cards stack, the matrix and history tables scroll inside their own containers, and the Conditional popover fits the screen.
 - **Not checked:** the Polaris shell (the iframe's width comes from the parent page), the MCP view and a dashboard with data.
+
+## Documentation layout and CONTRIBUTING.md
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Done; no change to what ships to the instance |
+
+- **Changed:** 9 documents moved with `npm run docs-migrate -- <folder> --apply` in app-forge, so history is kept and relative links are fixed. `CONTRIBUTING.md` added from the app-forge template.
+- **Fixed by hand:** the migration fixes link targets, not link text or code. The setup wizard's document map in `tools/setup/server.mjs` still pointed at the old files, and link text in `INSTALL.md` and `SECURITY.md` showed the old paths.

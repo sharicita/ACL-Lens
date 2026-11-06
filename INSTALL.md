@@ -70,7 +70,7 @@ npm run profile -- add mypdi --alias mypdi --scope x_<company code>_acllens --in
 npm run deploy
 ```
 
-Your company code is the system property `glide.appcreator.company.code`. More detail is in [docs/install-and-deploy.md](docs/install-and-deploy.md).
+Your company code is the system property `glide.appcreator.company.code`. More detail is in [docs/operations/runbook.md](docs/operations/runbook.md).
 
 </details>
 
@@ -143,7 +143,7 @@ What carries over and what doesn't:
 > [!IMPORTANT]
 > **Now Assist and other ServiceNow generative AI features are not available on free Personal Developer Instances.** On a PDI, use an external provider (Anthropic Claude, an OpenAI-compatible API, or Azure OpenAI) with your own API key. On a licensed company instance, Now Assist can be used once your admin has turned it on.
 
-4. **Learn the app:** read the [user guide](docs/user-guide.md).
+4. **Learn the app:** read the [user guide](docs/guides/user/user-guide.md).
 
 ---
 
@@ -170,4 +170,4 @@ What carries over and what doesn't:
 | "External User Not Authorized" | The Explicit Roles plugin is active and the account lacks `snc_internal`. Add the role, then sign out and back in. |
 | The app loads but says you need a role | Assign `<your scope>.user` and sign out and in again. |
 
-More: [full install and deployment reference](docs/install-and-deploy.md) · [developer setup](docs/dev-setup.md) · [all documentation](docs/README.md)
+More: [full install and deployment reference](docs/operations/runbook.md) · [developer setup](docs/guides/developer/dev-setup.md) · [all documentation](docs/README.md)

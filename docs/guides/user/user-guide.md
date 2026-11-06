@@ -213,4 +213,4 @@ Turning it off makes the endpoint refuse every request straight away.
 
 ### AI providers
 
-**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. See [05 §2](architecture/05-ai-assistant-and-mcp.md#2-providers).
+**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. See [05 §2](../../architecture/05-ai-assistant-and-mcp.md#2-providers).

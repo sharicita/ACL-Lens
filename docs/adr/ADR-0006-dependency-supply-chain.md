@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [04 §7](../architecture/04-security-architecture.md#7-dependencies-and-supply-chain), [dev setup](../dev-setup.md#7-dependency-maintenance) |
+| **Relates to** | [04 §7](../architecture/security.md#7-dependencies-and-supply-chain), [dev setup](../guides/developer/dev-setup.md#7-dependency-maintenance) |
 
 ## Context
 The instance listed hundreds of npm packages "installed" for the app. Investigation showed:

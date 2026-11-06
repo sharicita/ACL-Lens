@@ -1,6 +1,6 @@
 # Data Dictionary
 
-All tables are in scope `x_acllens`. Access rules are in [04 §3](architecture/04-security-architecture.md#3-record-acls-installed).
+All tables are in scope `x_acllens`. Access rules are in [04 §3](security.md#3-record-acls-installed).
 
 ## Tables
 
@@ -28,7 +28,7 @@ Attachments: `acl-lens-comparison.csv` on comparison runs.
 
 ### `x_acllens_run_data` — ACL Lens Run Data
 
-Large payloads split into ordered chunks of 60,000 characters ([ADR-0002](adr/ADR-0002-run-history-storage.md)).
+Large payloads split into ordered chunks of 60,000 characters ([ADR-0002](../adr/ADR-0002-run-history-storage.md)).
 
 | Column | Type | Notes |
 |---|---|---|
@@ -127,12 +127,12 @@ Seed record (first install only): **Now Assist** (`type=now_assist`, order 10).
 
 | Type | Name / key | Purpose |
 |---|---|---|
-| Roles | `x_acllens.user`, `x_acllens.admin` | [04 §2](architecture/04-security-architecture.md#2-roles) |
+| Roles | `x_acllens.user`, `x_acllens.admin` | [04 §2](security.md#2-roles) |
 | UI page | `x_acllens_lens.do` | React SPA (`direct: true`) |
-| Scripted REST API | `ACL Lens` (`serviceId: lens`) | [API reference](api-reference.md) |
+| Scripted REST API | `ACL Lens` (`serviceId: lens`) | [API reference](../reference/api.md) |
 | Scheduled job | `ACL Lens - history retention` (daily 02:30) | No-op unless retention is on |
 | UI policy | "Show only the fields used by the selected provider type" | Provider form |
 | UI action | `Test connection` (provider form, admin) | Saves and tests the provider |
-| Application menu | `ACL Lens`: Access Workspace, Run History, Run Records, and a **Configuration** separator (admins only) with Properties, MCP Server and AI Providers | [01 §5](architecture/01-overview-and-scope.md#5-navigator) |
-| Cross-scope privileges | 13 read + 1 execute | [04 §4](architecture/04-security-architecture.md#4-cross-scope-privileges-all-allowed) |
+| Application menu | `ACL Lens`: Access Workspace, Run History, Run Records, and a **Configuration** separator (admins only) with Properties, MCP Server and AI Providers | [01 §5](overview.md#5-navigator) |
+| Cross-scope privileges | 13 read + 1 execute | [04 §4](security.md#4-cross-scope-privileges-all-allowed) |
 | Server modules | every file in `src/server` | `sys_module` records |

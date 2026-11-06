@@ -11,6 +11,9 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Documentation
+- Documents moved to the app-forge layout (`docs/guides/`, `docs/reference/`, `docs/operations/`, `docs/project/`), with links updated, and a new `CONTRIBUTING.md`. Older changelog entries keep the paths they had at the time.
+
 ## [1.3.1] - 2026-11-06
 
 ### Fixed

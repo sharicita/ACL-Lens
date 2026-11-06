@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [05](../architecture/05-ai-assistant-and-mcp.md), [04](../architecture/04-security-architecture.md) |
+| **Relates to** | [05](../architecture/05-ai-assistant-and-mcp.md), [04](../architecture/security.md) |
 
 ## Context
 The assistant must help troubleshoot and design ACLs, prefer Now Assist, allow an admin-specified provider, never modify the system, and never reveal more than the signed-in user may see. Providers differ in tool-calling support (Now Assist skills take a prompt; external APIs differ in format).

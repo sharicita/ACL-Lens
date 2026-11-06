@@ -27,7 +27,7 @@
 | D-05 | History on by default; admin clearing; retention off by default (90 days, delete or archive) | [ADR-0005](../adr/ADR-0005-history-governance.md) |
 | D-06 | Plain React components on Horizon tokens instead of `@servicenow/react-components` | Matches the SDK 4.11 `typescript.react` template; the matrix needs custom cells |
 | D-07 | ~~Scope uses the PDI company code~~ Superseded by D-13 | — |
-| D-08 | Server modules import each other with explicit `.ts` extensions | The platform module resolver requires them ([build log 1.1](../build-log.md)) |
+| D-08 | Server modules import each other with explicit `.ts` extensions | The platform module resolver requires them ([build log 1.1](../project/build-log.md)) |
 | D-09 | Default Anthropic model `claude-opus-5-5`, effort `medium`, refusal fallback on | Admin can change the model per provider |
 | D-11 | Assistant ACL detail is strict (decision A): ACL names, rule levels and roles only for users who can read `sys_security_acl` | Build log 1.7; ADR-0003 amended |
 | D-12 | Provider endpoint must match its Type, HTTPS only, custom gateways by explicit opt-in; provider errors scrubbed of key fragments | Build log 1.7 |
@@ -41,14 +41,14 @@
 | R-01 | Users read *Granted* as "can see every record" | Legend and tooltips; known limits ([03 §7](03-access-evaluation-engine.md#7-known-limits)); assistant guidance on query BRs and data filters |
 | R-02 | Large analyses hit the REST transaction quota | 1,500-table default cap; per-phase timings; filters |
 | R-03 | `x_acllens.user` over-granted | Documented as sensitive; grant through a group |
-| R-04 | Security metadata sent to an external LLM | Admin-only provider config; prefer Now Assist; documented ([04 §6](04-security-architecture.md)) |
+| R-04 | Security metadata sent to an external LLM | Admin-only provider config; prefer Now Assist; documented ([04 §6](security.md)) |
 | R-05 | Instance serves a stale CSS asset after deploy | Styles in the JS bundle ([ADR-0004](../adr/ADR-0004-styles-in-js-bundle.md)) |
-| R-06 | The Test connection UI action's `require` path contains the package version | Comment in `settings.now.ts`; [dev setup](../dev-setup.md) checklist |
+| R-06 | The Test connection UI action's `require` path contains the package version | Comment in `settings.now.ts`; [dev setup](../guides/developer/dev-setup.md) checklist |
 | R-07 | Now Assist response shape differs from the parser's expectations | Tolerant parsing; Test connection shows the exact error |
 | R-08 | Platform ACL semantics change in a future release | Engine is isolated in `evaluator.ts` with offline tests |
 | R-10 | Provider misconfiguration sends an API key to the wrong service (happened once: Anthropic key sent to an OpenAI endpoint because Type was free text) | Type is a dropdown; unknown types are refused; Anthropic endpoint normalized. Rotate any key sent to the wrong service. Endpoint-vs-type host check and key-fragment masking added (build log 1.7) |
 | R-11 | Installing from the project root (`x_acllens`) on an instance that already has a profile install creates a second app | `npm run deploy` always uses a profile; documented in dev setup and ADR-0007 |
-| R-12 | Older git commits contain the development instance name and company code | Documented; fresh repository or history rewrite before publishing ([install-and-deploy §9](../install-and-deploy.md#9-keeping-the-repository-publishable)) |
+| R-12 | Older git commits contain the development instance name and company code | Documented; fresh repository or history rewrite before publishing ([install-and-deploy §9](../operations/runbook.md#9-keeping-the-repository-publishable)) |
 | R-09 | Unfixed advisories in build tooling: `braces` (high, DoS) and `sprintf-js` (moderate, DoS); third-party packages not code-reviewed | Not shipped to the instance; needs attacker-controlled input to a local build; re-check on each SDK upgrade; Dependabot |
 
 ## 4. Assumptions

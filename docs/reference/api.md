@@ -75,7 +75,7 @@ Stateless JSON-RPC 2.0 (MCP `2025-06-18`). Single requests or batches; notificat
 |---|---|
 | `initialize` | `serverInfo.name = acl-lens`; capabilities: tools, prompts, resources; `instructions` = operating rules |
 | `ping` | |
-| `tools/list`, `tools/call` | 10 read-only tools ([05 §4](architecture/05-ai-assistant-and-mcp.md#4-read-only-tools-toolsts)). Results come as text content; `isError` when the tool reports an error such as `no_access` |
+| `tools/list`, `tools/call` | 10 read-only tools ([05 §4](../architecture/05-ai-assistant-and-mcp.md#4-read-only-tools-toolsts)). Results come as text content; `isError` when the tool reports an error such as `no_access` |
 | `resources/list`, `resources/read` | `acl-lens://guidance/{evaluation\|troubleshooting\|design\|testing\|scripted\|scoped_apps}` |
 | `prompts/list`, `prompts/get` | `troubleshoot_access(user, table, operation?, field?)`, `design_acls(table, requirements)`, `review_acl(acl)` |
 

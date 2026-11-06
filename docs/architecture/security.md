@@ -77,4 +77,4 @@ Policy: [ADR-0006](../adr/ADR-0006-dependency-supply-chain.md).
 - Use the history and retention settings to match your audit policy.
 - Before you configure an external AI provider, confirm it's allowed to receive security metadata. Prefer Now Assist where it's available.
 - ACL changes recommended by the assistant should go through normal change control: sub-production first, update sets, impersonation testing, rollback.
-- Turn on GitHub Dependabot alerts for the repository and re-run the dependency checks ([dev setup §7](../dev-setup.md#7-dependency-maintenance)) on every upgrade.
+- Turn on GitHub Dependabot alerts for the repository and re-run the dependency checks ([dev setup §7](../guides/developer/dev-setup.md#7-dependency-maintenance)) on every upgrade.

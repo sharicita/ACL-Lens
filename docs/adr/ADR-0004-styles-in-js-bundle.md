@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [02 §5](../architecture/02-system-architecture.md#5-build-pipeline), [build log 1.2](../build-log.md) |
+| **Relates to** | [02 §5](../architecture/02-system-architecture.md#5-build-pipeline), [build log 1.2](../project/build-log.md) |
 
 ## Context
 The SDK's client build published `app.css` as a separate theme asset. After each deploy the instance kept serving the **previous** stylesheet:

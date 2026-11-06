@@ -6,7 +6,7 @@ The baseline every new ServiceNow app (ServiceNow SDK / Fluent) should meet from
 - **Building a screen:** treat §5–§9 as its definition of done.
 - **Before each release:** run the checks in §12–§13.
 
-Each item says **what**, and where useful **why**, in one line. ACL Lens is the reference implementation. File names in `code` point to working examples in this repository, and the reasoning behind each item is in [lessons-learned.md](lessons-learned.md).
+Each item says **what**, and where useful **why**, in one line. ACL Lens is the reference implementation. File names in `code` point to working examples in this repository, and the reasoning behind each item is in [lessons-learned.md](project/lessons-learned.md).
 
 ---
 
