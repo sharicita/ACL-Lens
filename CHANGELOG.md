@@ -11,6 +11,9 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Changed
+- Build tools: ServiceNow SDK 4.13.6 → 4.14.0 and `@servicenow/isomorphic-rollup` → 1.3.13, with patched `fastify`, `joi`, `undici` and `zod` through `overrides`. `npm audit` goes from 10 high, 12 moderate and 1 low to 17 moderate, all in development tools. Nothing shipped to the instance changes. Not yet verified on a PDI.
+
 ## [1.3.0] - 2026-11-06
 
 ### Added

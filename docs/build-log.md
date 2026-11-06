@@ -624,3 +624,28 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Risk:** low. Both are denial-of-service bugs that need an attacker to control glob or format-string input. In the build toolchain those inputs come from the project's own config and source.
 - **Follow-up:** run `npm audit` again when a patched braces or sprintf-js is published, or when a new SDK or isomorphic-rollup release drops them, then add a same-major override or upgrade.
 - **Verified:** `npm audit` before and after: 13 high, 5 moderate, 0 critical. Unchanged because nothing was changed. `package.json` and `package-lock.json` were not touched.
+
+## 1.28 Live verification covers field rules (v1.2.1, v1.3.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Built; offline tests, type-checks and SDK build pass; not yet run on an instance |
+
+- **v1.2.1:** `sys_db_object.ws_access` was treated as on unless it was the string `false`, so a table with it off (returned as `0`) passed the API gate. It now reads the value as a boolean, and a missing or empty value means allowed. The Denied explanation reads "deny this operation".
+- **v1.3.0:** Live verification runs one platform check per table plus one per field rule (up to 300), shows the field in rows and the CSV, adds a Result column, and hides only agreeing rows. Errors and empty results now show a message.
+- **Fixed:** Live verification did nothing on ServiceNow pages, because Prototype.js replaces `Array.from` with a version that ignores the map function (lesson P-12). Offline tests can't show this.
+- **Added while committing:** a color for the Conditional result chip, which had none.
+
+## Dependency update: SDK 4.14.0
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests, type-checks and SDK build pass; PDI deploy and smoke test still to do (ADR-0006) |
+
+- **Changed:** `@servicenow/sdk` 4.13.6 → 4.14.0 (exact pin); `@servicenow/isomorphic-rollup` → ^1.3.13 (1.3.13). Overrides: `fastify` 5.12.8, `joi` 17.13.9, `undici` 7.30.2, new `zod` 4.6.7. `fast-uri` patched in the lockfile with `npm audit fix` (never `--force`).
+- **`npm audit`:** before 10 high, 12 moderate, 1 low; after 17 moderate, 0 high, 0 critical. `npm audit --omit=dev`: 0.
+- **Accepted for now:** all 17 come from two advisories in development tools: `glob` (patched only above 14.0.1; the tree has 10.5.0 and 13.0.7) and `minimatch` (patched in 11.0.1; the tree has 3.1.5, 9.0.9 and 10.2.6). Those are major changes under the SDK's own dependencies, which ADR-0006 rules out. Neither ships to the instance. The earlier `braces` and `sprintf-js` advisories no longer appear. Recheck in the weekly dependency report.
+- **Supply chain (ADR-0006):** `npm audit signatures`: 489 packages verified, none invalid or missing; integrity hashes present; all packages from `registry.npmjs.org`.
+- **Verified:** clean `npm ci`, offline tests (engine, api-access 48, agent, safety) and `now-sdk build` with no change to generated source. **Not verified:** deploy and smoke test on a PDI.

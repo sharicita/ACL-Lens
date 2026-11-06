@@ -4,7 +4,7 @@
 
 - Node.js 20+ (built with 24.20) and npm.
 - A ServiceNow instance with admin rights (a Personal Developer Instance is fine).
-- The Now SDK is installed locally from the lockfile (`@servicenow/sdk` 4.13.6).
+- The Now SDK is installed locally from the lockfile (`@servicenow/sdk` 4.14.0).
 
 ## 2. First run
 

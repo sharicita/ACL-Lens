@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.13.6 |
+| **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.14.0 |
 | **Status** | **Working build on a development PDI**. Core analysis, comparison, history and settings were verified on the PDI. The AI assistant's language-model step has only been tested offline (see [06](architecture/06-risks-assumptions-decisions.md)) |
 | **Version** | `1.3.0` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
-| **Date** | 2026-10-09 |
+| **Date** | 2026-11-06 |
 | **Owner** | Project owner (PDI admin) |
 
 ACL Lens shows clearly what a **user or role can create, read, write and delete**, table by table and field by field. It explains **which ACLs decided each result and why**. You can open several users and roles side by side, run a server-side **comparison script** with exportable results, and keep a **history** of runs you can reopen and rerun. A read-only **Security Assistant** (AI) helps troubleshoot and design ACLs while seeing only what the signed-in user can see.

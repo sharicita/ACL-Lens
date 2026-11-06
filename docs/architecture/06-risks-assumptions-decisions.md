@@ -14,6 +14,7 @@
 | Now Assist invocation | **Unverified** | No callable skill on PDI |
 | Engine rules (matching order, deny-unless, admin, elevation, `public`) | Offline tests + PDI spot checks | `tests/offline/engine.test.js` |
 | App works after SDK 4.13.6 + overrides | **Verified on PDI** | ALR0001009: same results as before the upgrade (3.5 s) |
+| App works after SDK 4.14.0 + overrides | **Offline only** | Offline tests and SDK build pass; deploy and smoke test on a PDI still to do (ADR-0006) |
 
 ## 2. Decision log
 
