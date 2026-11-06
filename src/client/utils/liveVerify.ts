@@ -1,4 +1,4 @@
-import { AnalysisResult, Status, SubjectResult } from '../types'
+import { AnalysisResult, Cell, FIELD_OPS, Status, SubjectResult } from '../types'
 import { LiveOperation, runLiveCheck } from './liveCheck'
 import { rank } from './status'
 
@@ -21,6 +21,8 @@ export interface VerifyRow {
     ti: number
     table: string
     label: string
+    /** the field checked, or '' for the table operations */
+    field: string
     op: string
     predicted: Status
     live: LiveOperation | null
@@ -34,8 +36,8 @@ export interface VerifyProgress {
     total: number
 }
 
-/** The tables the live check can't be run on more than this many times in one go. */
-export const VERIFY_MAX_TABLES = 300
+/** At most this many platform checks (one per table, plus one per field rule) in one go. */
+export const VERIFY_MAX_CHECKS = 300
 const CONCURRENCY = 3
 
 /** What the prediction means for a live answer: true = allowed, false = blocked, null = depends. */
@@ -66,42 +68,62 @@ export function compareOperation(predicted: Status, o: LiveOperation, defaultDen
     return want === (o.overall === 'passed') ? 'agree' : 'differs'
 }
 
+/** One platform check: a table's operations, or one field's create/read/write. */
+interface Check {
+    ti: number
+    field: string
+}
+
+/** The checks for the given tables: each table, then each field with an explicit rule in the run. */
+export function verifyChecks(subject: SubjectResult, tables: number[]): Check[] {
+    const out: Check[] = []
+    for (const ti of tables) {
+        out.push({ ti, field: '' })
+        for (const f of subject.tables[ti].fields) if (f.f !== '*') out.push({ ti, field: f.f })
+    }
+    return out
+}
+
 export async function verifyLive(args: {
     results: AnalysisResult
     subject: SubjectResult
-    /** table indexes to check */
+    /** table indexes to check (their field rules are checked too) */
     tables: number[]
     ops: string[]
     onProgress: (p: VerifyProgress, rows: VerifyRow[]) => void
     isCancelled: () => boolean
 }): Promise<VerifyRow[]> {
     const { results, subject, ops, onProgress, isCancelled } = args
-    const tables = args.tables.slice(0, VERIFY_MAX_TABLES)
+    const checks = verifyChecks(subject, args.tables).slice(0, VERIFY_MAX_CHECKS)
     const dd = results.defaultDeny
     const rows: VerifyRow[] = []
     let next = 0
     let done = 0
     const worker = async () => {
-        while (next < tables.length && !isCancelled()) {
-            const ti = tables[next++]
+        while (next < checks.length && !isCancelled()) {
+            const { ti, field } = checks[next++]
             const t = subject.tables[ti]
+            const cells: { [op: string]: Cell } = field ? (t.fields.find((f) => f.f === field) || { ops: {} }).ops : t.ops
             try {
-                const live = await runLiveCheck({ subject: { type: subject.subject.type, id: subject.subject.id, label: subject.subject.label }, table: t.t, ops })
+                const live = await runLiveCheck({ subject: { type: subject.subject.type, id: subject.subject.id, label: subject.subject.label }, table: t.t, field, ops: field ? (FIELD_OPS as string[]) : ops })
                 for (const o of live.operations) {
-                    const cell = t.ops[o.op]
+                    const cell = cells[o.op]
                     if (!cell) continue
                     const verdict = compareOperation(cell.s, o, dd)
-                    rows.push({ ti, table: t.t, label: t.l, op: o.op, predicted: cell.s, live: o, verdict, reason: verdict === 'agree' ? '' : liveReason(o) })
+                    rows.push({ ti, table: t.t, label: t.l, field, op: o.op, predicted: cell.s, live: o, verdict, reason: liveReason(o) })
                 }
             } catch (e: any) {
-                rows.push({ ti, table: t.t, label: t.l, op: '', predicted: 'N', live: null, verdict: 'error', reason: e && e.message ? e.message : String(e) })
-                // a refusal (role, plugin) fails the same way for every table: stop early
-                if (/refused|could not run/.test(String(e && e.message))) next = tables.length
+                rows.push({ ti, table: t.t, label: t.l, field, op: '', predicted: 'N', live: null, verdict: 'error', reason: e && e.message ? e.message : String(e) })
+                // a refusal (role, plugin) fails the same way for every check: stop early
+                if (/refused|could not run/.test(String(e && e.message))) next = checks.length
             }
             done++
-            onProgress({ done, total: tables.length }, rows.slice())
+            onProgress({ done, total: checks.length }, rows.slice())
         }
     }
-    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tables.length) }, worker))
+    // not Array.from({ length }, fn): ServiceNow pages replace Array.from with a version that ignores fn for non-iterables
+    const workers: Promise<void>[] = []
+    for (let i = 0; i < Math.min(CONCURRENCY, checks.length); i++) workers.push(worker())
+    await Promise.all(workers)
     return rows
 }

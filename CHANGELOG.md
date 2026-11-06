@@ -11,6 +11,16 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-06
+
+### Added
+- Live verification now checks each field rule in the run as well as each table's operations (one platform check each, up to 300 in one go). Field rows and the CSV export show the field.
+- A Result column in Live verification (Agrees, Differs, Conditional), and rows the platform resolved for a Conditional result are shown by default; only agreeing rows are hidden.
+
+### Fixed
+- Live verification did nothing on ServiceNow pages: Prototype.js replaces `Array.from` with a version that ignores the map function, so no checks started. Offline tests didn't show it.
+- Live verification now says so when it stops on an error or when the platform returns no operations, instead of ending silently.
+
 ## [1.2.1] - 2026-10-27
 
 ### Fixed

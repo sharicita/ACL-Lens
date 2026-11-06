@@ -64,6 +64,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | P-09 | Some platform APIs check the *original* calling scope, even through another scope's public wrapper (`Unsupported caller scope`). The Access Analyzer's evaluation is one. | Look for how the platform's own UI calls it (often a UX data broker) and call that from the browser with the user's session, so the platform's own ACL still decides. |
 | P-10 | ServiceNow has 12 record operations, not 4, and "no rule" behaves differently per operation (query_match and report_on allow; list_edit, add_to_list, save_as_template and personalize_choices block). | Confirm platform behaviour with a live evaluation, not documentation summaries. |
 | P-11 | Most security attributes are compound role checks (`Role=<sys_id>^ORRole=…`) with an empty template script. | Resolve them from the subject's roles; keep anything scripted or non-role as Conditional. |
+| P-12 | UI pages load Prototype.js, and `Array.from` there ignores the map function for non-iterables: `Array.from({ length: 2 }, fn)` returns `[null, null]`. Offline tests pass; the page silently does nothing. | Don't use `Array.from` with a map function on array-likes in client code; use a plain loop. |
 
 ## 4. AI assistant and providers
 

@@ -3813,6 +3813,10 @@ tr.lens-group > th {
     background: var(--lx-diff-soft);
     color: var(--lx-diff);
 }
+.lens-verify__chip--resolved {
+    background: var(--lx-c-bg);
+    color: var(--lx-c-fg);
+}
 .lens-verify__chip--error {
     background: var(--lx-d-bg);
     color: var(--lx-d-fg);
