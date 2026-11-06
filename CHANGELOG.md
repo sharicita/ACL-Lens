@@ -11,6 +11,12 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-27
+
+### Fixed
+- The table web-service access switch (`sys_db_object.ws_access`) was read as always on, so a table with it switched off still passed the API gate. Found when verifying 1.2.0 on a PDI.
+- The API explanation on a Denied operation now reads "deny this operation".
+
 ## [1.2.0] - 2026-10-27
 
 ### Added

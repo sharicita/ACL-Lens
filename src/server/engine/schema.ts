@@ -1,4 +1,4 @@
-import { gr, chunk } from './glide.ts'
+import { gr, chunk, bool } from './glide.ts'
 
 export interface TableMeta {
     name: string
@@ -6,6 +6,13 @@ export interface TableMeta {
     parent: string
     /** sys_db_object.ws_access: the table may be reached through web services (true on releases without the column) */
     ws: boolean
+}
+
+/** sys_db_object.ws_access: GlideRecord returns booleans as "true"/"false" or "1"/"0"; a missing column or empty value means allowed. */
+function wsAccessValue(t: any): boolean {
+    if (!t.isValidField('ws_access')) return true
+    const v = t.getValue('ws_access')
+    return v === null || v === undefined || v === '' ? true : bool(v)
 }
 
 const SYSTEM_PREFIXES = ['sys_', 'v_', 'ts_', 'syslog', 'ua_', 'sysevent', 'sysauto', 'sysrule', 'clone_', 'ecc_']
@@ -24,7 +31,7 @@ export class Schema {
             const name = t.getValue('name')
             idToName[t.getUniqueValue()] = name
             parentIds[name] = t.getValue('super_class') || ''
-            this.tables[name] = { name, label: t.getValue('label') || name, parent: '', ws: !t.isValidField('ws_access') || t.getValue('ws_access') !== 'false' }
+            this.tables[name] = { name, label: t.getValue('label') || name, parent: '', ws: wsAccessValue(t) }
         }
         for (const name in parentIds) {
             const pid = parentIds[name]

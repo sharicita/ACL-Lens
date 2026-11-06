@@ -21,7 +21,7 @@ export default function ApiGateNote({ cell, gate, op, subjectLabel, defaultDeny 
             <p className="lens-muted lens-condpop__lead">
                 <Icon name="plug" size={12} />{' '}
                 {cell.api === 'D'
-                    ? `The API access checks deny this${who}, whatever the record ACLs say.`
+                    ? `The API access checks deny this operation${who}, whatever the record ACLs say.`
                     : `The API access checks depend on something that can't be resolved statically${who}.`}
                 {cell.acl && ` The record ACLs alone give ${statusText(cell.acl, defaultDeny)}.`}
             </p>
