@@ -649,3 +649,15 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Accepted for now:** all 17 come from two advisories in development tools: `glob` (patched only above 14.0.1; the tree has 10.5.0 and 13.0.7) and `minimatch` (patched in 11.0.1; the tree has 3.1.5, 9.0.9 and 10.2.6). Those are major changes under the SDK's own dependencies, which ADR-0006 rules out. Neither ships to the instance. The earlier `braces` and `sprintf-js` advisories no longer appear. Recheck in the weekly dependency report.
 - **Supply chain (ADR-0006):** `npm audit signatures`: 489 packages verified, none invalid or missing; integrity hashes present; all packages from `registry.npmjs.org`.
 - **Verified:** clean `npm ci`, offline tests (engine, api-access 48, agent, safety) and `now-sdk build` with no change to generated source. **Not verified:** deploy and smoke test on a PDI.
+
+## 1.29 Phone viewport and .env ignore rules (v1.3.1)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; phone layout checked in a local test page with sample data, not on a PDI |
+
+- **Changed:** viewport tag in `src/client/index.html`; `.env` and `.env.*` git-ignored, `.env.example` kept (app-forge standards check).
+- **Found at 375px:** the header doesn't wrap, so `.lens-header__tabs` pushes the page to about 690px and the whole page scrolls sideways; `.lens-opsel` runs past its card to 565px; most controls are under 44px and text inputs under 16px.
+- **Working at 375px:** the workspace and run cards stack, the matrix and history tables scroll inside their own containers, and the Conditional popover fits the screen.
+- **Not checked:** the Polaris shell (the iframe's width comes from the parent page), the MCP view and a dashboard with data.

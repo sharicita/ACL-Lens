@@ -11,6 +11,14 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-06
+
+### Fixed
+- Phone browsers now lay the app out at the device width instead of a zoomed-out desktop page (viewport tag in `src/client/index.html`). Desktop browsers are unaffected.
+
+### Known issues
+- At phone width the header tabs push the page to about 690px wide, so the whole page scrolls sideways, and the operation picker in the access matrix runs past its card. Most controls are under 44px tall and text inputs are under 16px. Checked in a local test page with sample data, not on a PDI.
+
 ### Changed
 - Build tools: ServiceNow SDK 4.13.6 → 4.14.0 and `@servicenow/isomorphic-rollup` → 1.3.13, with patched `fastify`, `joi`, `undici` and `zod` through `overrides`. `npm audit` goes from 10 high, 12 moderate and 1 low to 17 moderate, all in development tools. Nothing shipped to the instance changes. Not yet verified on a PDI.
 
