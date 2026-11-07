@@ -24,10 +24,13 @@ function fnv(text: string, seed: number): string {
  * can't show another report's numbers. Which run it applies to is not part of it: results are
  * stored per run, and a copy of a report tied to a different run has its own results there.
  */
+/** Raise when a report's results change shape, so results stored before aren't reused. 2: differences have parts. */
+const RESULT_SHAPE = 2
+
 export function reportCacheKey(def: CacheableDef): { key: string; text: string } {
     const given = (def.options || {}) as { [k: string]: unknown }
     const options: { [k: string]: unknown } = {}
     for (const k of Object.keys(given).sort()) if (k !== 'run' && given[k] !== undefined) options[k] = given[k]
-    const text = JSON.stringify([def.measure, def.chart, options])
+    const text = JSON.stringify([def.measure, def.chart, options, RESULT_SHAPE])
     return { key: fnv(text, 2166136261) + fnv(text, 33554467), text }
 }

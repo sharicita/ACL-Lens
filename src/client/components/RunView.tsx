@@ -14,6 +14,7 @@ import LiveVerify from './LiveVerify'
 import RoleComparison from './RoleComparison'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
+import { runContext } from '../assistant/screenContext'
 import Icon from './Icon'
 import { AccountTypeFilter, SubjectsProvider } from './SubjectName'
 import RunCoverage, { coverageOf, nextSetName } from './RunCoverage'
@@ -89,14 +90,9 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
 
     useEffect(() => {
         if (!payload) return
-        assistant.setContext({
-            view: 'run',
-            run_id: payload.run.sys_id,
-            run_number: payload.run.number,
-            subjects: (payload.results?.subjects || []).map((s) => `${s.subject.label} (${s.subject.type})`),
-        })
+        assistant.setContext(runContext(payload, tab))
         return () => assistant.setContext({})
-    }, [payload])
+    }, [payload, tab])
 
     useEffect(() => {
         if (payload) {

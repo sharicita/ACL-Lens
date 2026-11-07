@@ -4,7 +4,7 @@ import FieldInfo from '../components/FieldInfo'
 import { LensApi } from '../services/LensApi'
 import { OP_HELP, OP_SHORT } from '../utils/status'
 import ReportChart from './ReportChart'
-import { Catalog, CATEGORY_LABEL, CHART_LABEL, ChartType, DIM_LABEL, Report, ReportData, ReportOptions } from './types'
+import { Catalog, CATEGORY_LABEL, CHART_LABEL, CHART_TYPES, ChartType, DIM_LABEL, Report, ReportData, ReportOptions } from './types'
 
 interface Props {
     /** an existing report (edit, or customize a read-only one), or null for a new report */
@@ -189,7 +189,7 @@ export default function ReportEditor({ report, catalog, run, isAdmin, onSaved, o
                     <div className="lens-field">
                         <span className="lens-field__label">Chart</span>
                         <div className="lens-segment" role="radiogroup" aria-label="Chart">
-                            {(['bar', 'donut', 'tile', 'list'] as ChartType[]).map((c) => (
+                            {CHART_TYPES.map((c) => (
                                 <button key={c} type="button" role="radio" aria-checked={chart === c} className={`lens-segment__item${chart === c ? ' lens-segment__item--on' : ''}`} onClick={() => setChart(c)}>
                                     {CHART_LABEL[c]}
                                 </button>

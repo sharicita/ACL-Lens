@@ -11,6 +11,20 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-06
+
+### Added
+- **The Security Assistant sees the page behind it:** the run, the reports on a dashboard tab with their totals, the table you have open, the run being set up, or the runs listed. "What does this graph show?" no longer needs a run number. Totals and top groups are sent, not row data, and it uses the same read-only tools as before.
+- **Copy buttons** beside report and run names, and report names can now be highlighted.
+- **Chart icons on each report card:** bar chart, overlay bars, pie chart, donut, number and list. The choice is saved for that card on your dashboard, so it works on read-only reports too. Pie charts and donuts show the six largest groups and add the rest to Other.
+- **Overlay bars** draw a group's parts from the same starting line, largest behind, so they can be compared directly.
+- **Add a report** card, with a plus, at the end of each tab: add to this tab, add to a new tab, or build a new report.
+
+### Changed
+- Clicking outside the Security Assistant closes it. The conversation stays for when it reopens.
+- The run number on a report card now opens the run in a new window, with a pop-out icon, and its hover text says so.
+- **Differences between subjects** reports are broken down by who has the most access, or by Table and Field when grouped by subject, so their bar charts are now stacked.
+
 ## [1.8.1] - 2026-11-06
 
 ### Changed

@@ -26,6 +26,13 @@ export function setTitle(title: string) {
     document.title = title
 }
 
+/** The address of a view, for links that open in a new window. */
+export function viewHref(view: ViewName, id?: string | null): string {
+    const params = new URLSearchParams({ view })
+    if (id) params.set('id', id)
+    return `${window.location.pathname}?${params}`
+}
+
 /** Pushes a URLSearchParams route (works standalone and inside the Polaris iframe). */
 export function pushView(view: ViewName, id?: string | null, title = 'ACL Lens') {
     const params = new URLSearchParams({ view })

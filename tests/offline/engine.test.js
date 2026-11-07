@@ -244,6 +244,14 @@ assert.equal(rep('unshared_roles').total, 1, 'admin is held by Hana only')
 assert.equal(rep('differences', { groupBy: 'table' }).groups[0].key, 'sys_user')
 assert.ok(rep('access_gained').note, 'a run that is not a rerun explains why it is empty')
 // filters and "Other"
+// differences are broken down by who has the most access, or by level when grouped by subject
+{
+    const diffs = rep('differences')
+    assert.ok(diffs.total > 0)
+    for (const g of diffs.groups) assert.equal(Object.keys(g.parts).reduce((n, p) => n + g.parts[p], 0), g.value, 'parts add up to the group')
+    const bySubject = rep('differences', { groupBy: 'subject' })
+    for (const g of bySubject.groups) for (const p of Object.keys(g.parts)) assert.ok(p === 'Table' || p === 'Field', p)
+}
 assert.equal(rep('access', { kinds: ['Machine / service'], ops: ['write'] }).total, 2)
 assert.equal(rep('access', { tableText: 'inc', ops: ['read'] }).total, 2)
 const capped = rep('access', { groupBy: 'table', limit: 1 })

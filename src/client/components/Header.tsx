@@ -63,6 +63,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
                     type="button"
                     className={`lens-tab lens-tab--assistant${assistant.open ? ' lens-tab--active' : ''}`}
                     aria-expanded={assistant.open}
+                    data-assistant-opener
                     onClick={() => (assistant.open ? assistant.close() : assistant.ask())}
                     data-tip="Security Assistant: ask about access, troubleshooting or designing ACLs. Read-only; it sees only what you can access."
                 >

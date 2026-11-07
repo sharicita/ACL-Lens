@@ -15,7 +15,7 @@ spawnSync(process.execPath, [tsc, ...sources, '--outDir', out, '--rootDir', path
     stdio: 'ignore',
 })
 // the dashboard's pure layout helpers
-spawnSync(process.execPath, [tsc, path.join(root, 'src', 'client', 'dashboard', 'layout.ts'), '--outDir', path.join(out, 'client'), '--rootDir', path.join(root, 'src', 'client'), '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck', '--noEmitOnError', 'false'], {
+spawnSync(process.execPath, [tsc, path.join(root, 'src', 'client', 'dashboard', 'layout.ts'), path.join(root, 'src', 'client', 'assistant', 'screenContext.ts'), '--outDir', path.join(out, 'client'), '--rootDir', path.join(root, 'src', 'client'), '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck', '--noEmitOnError', 'false'], {
     stdio: 'ignore',
 })
 

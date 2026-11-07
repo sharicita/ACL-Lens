@@ -13,7 +13,8 @@ const build = path.join(__dirname, '..', '..', '.test-build')
 const { tableWindow, coverageWarning } = require(path.join(build, 'engine', 'table-window.js'))
 const { cleanTabs, layoutJson, readLayout } = require(path.join(build, 'reports', 'dashboard-layout.js'))
 const { reportCacheKey } = require(path.join(build, 'reports', 'report-cache.js'))
-const { moveItem, moveTileToTab, addTileToTab, runReportDef } = require(path.join(build, 'client', 'dashboard', 'layout.js'))
+const { reportLine, dashboardContext, runContext, tableLine, workspaceContext, historyContext } = require(path.join(build, 'client', 'assistant', 'screenContext.js'))
+const { moveItem, moveTileToTab, addTileToTab, runReportDef, sliceGroups } = require(path.join(build, 'client', 'dashboard', 'layout.js'))
 
 const id = (c) => c.repeat(32)
 
@@ -110,6 +111,22 @@ const fullTiles = Array.from({ length: 40 }, (_, i) => ({ report: i.toString(16)
 const full = cleanTabs(Array.from({ length: 20 }, (_, i) => ({ id: 't' + i, title: 'T'.repeat(60), description: 'D'.repeat(300), tiles: fullTiles })))
 assert.ok(layoutJson(full).length < 60000)
 
+// a card's chart choice is kept, and anything unknown is dropped
+const charted = cleanTabs([{ id: 'a', title: 'A', tiles: [{ report: id('a'), size: 1, chart: 'pie' }, { report: id('b'), size: 1, chart: 'hologram' }] }])[0].tiles
+assert.equal(charted[0].chart, 'pie')
+assert.equal('chart' in charted[1], false)
+
+// ---- pie slices ------------------------------------------------------------------
+const gs = (n) => Array.from({ length: n }, (_, i) => ({ key: 'g' + i, label: 'G' + i, value: 10 - i }))
+assert.equal(sliceGroups(gs(6)).length, 6, 'few groups stay as they are')
+const sliced = sliceGroups(gs(9).concat([{ key: '__other', label: 'Other (5)', value: 7 }]))
+assert.equal(sliced.length, 7)
+assert.equal(sliced[6].label, 'Other (8)', 'three more groups join the five in Other')
+assert.equal(sliced.reduce((n, g) => n + g.value, 0), gs(9).reduce((n, g) => n + g.value, 7), 'the total stays the same')
+const fresh = sliceGroups(gs(8))
+assert.equal(fresh[6].key, '__other')
+assert.equal(fresh[6].label, 'Other (2)')
+
 // ---- stored report results --------------------------------------------------------
 const def = { measure: 'access', chart: 'bar', options: { ops: ['read'], run: id('a') } }
 const k = reportCacheKey(def)
@@ -154,5 +171,40 @@ assert.deepStrictEqual(analysis.options, { run: id('a') })
 assert.equal(runReportDef({ sys_id: id('a'), number: 'ALR1', run_type: 'compare' }).measure, 'differences')
 assert.equal(runReportDef({ sys_id: id('a'), number: 'ALR1' }).name, 'ALR1', 'no name')
 assert.equal(runReportDef({ sys_id: id('a'), number: 'ALR1', name: 'x'.repeat(200) }).name.length, 100)
+
+// ---- what the assistant is told about the page --------------------------------------
+const source = { sys_id: id('a'), number: 'ALR0001014', name: 'Agents', created: 'today' }
+const chartData = { unit: 'differences', total: 61022, groupBy: 'operation', groups: [{ key: 'create', label: 'create', value: 50010 }, { key: 'write', label: 'write', value: 9643 }], source }
+const line = reportLine('Agents', chartData)
+assert.ok(line.includes('61,022 differences') && line.includes('create 50,010') && line.includes('ALR0001014'))
+assert.match(reportLine('Slow'), /still calculating/)
+assert.match(reportLine('Bad', { error: 'gone' }), /could not be calculated \(gone\)/)
+const shown = { sys_id: id('b'), number: 'ALR0001004', name: '', subject_summary: 'AIEDG Service' }
+const aiTab = { id: 't', title: 'AI EDG', description: 'AI EDG agent access', tiles: [] }
+// every report from one run: that run is the context, not the dashboard's Data from
+let screen = dashboardContext({ tab: aiTab, shownRun: shown, reports: [{ name: 'Agents', data: chartData }] })
+assert.equal(screen.run_number, 'ALR0001014')
+assert.equal(screen.tab, 'AI EDG')
+assert.ok(screen.summary.some((s) => s.includes('AI EDG agent access')))
+assert.ok(!screen.summary.join().includes('ALR0001004'))
+// a mix: the Data from run is named as well
+screen = dashboardContext({ tab: aiTab, shownRun: shown, reports: [{ name: 'Agents', data: chartData }, { name: 'Other', data: { ...chartData, source: undefined } }], detail: 'rows open' })
+assert.equal(screen.run_number, 'ALR0001004')
+assert.ok(screen.summary.join().includes('ALR0001004') && screen.summary.includes('rows open'))
+assert.equal(dashboardContext({ tab: aiTab, shownRun: null, reports: [] }).run_id, undefined)
+const counts = { read: { G: 1, C: 2, D: 3, N: 0 } }
+const page = runContext({
+    run: { sys_id: id('c'), number: 'ALR1', name: 'x', run_type: 'compare', created: 'today', table_count: 1500, status: 'complete', filter: { mode: 'all', excludeSystem: true }, original_run: '', original_number: '', error_message: '' },
+    results: { coverage: { from: 1, to: 1500, total: 4166 }, subjects: [{ subject: { label: 'Bot', type: 'user', roles: ['a'] }, counts }] },
+    comparison: { summary: { tablesCompared: 1500, tablesDifferent: 12, tablesIdentical: 1488, tableCellsDifferent: 40, fieldCellsDifferent: 60 } },
+    drift: null,
+}, 'matrix')
+const text = page.summary.join(' ')
+assert.equal(page.run_number, 'ALR1')
+assert.deepStrictEqual(page.subjects, ['Bot (user)'])
+assert.ok(['1 to 1,500 of 4,166', 'read: 1 granted, 2 conditional, 3 denied', '12 differ', 'Side-by-side matrix', 'system tables excluded'].every((x) => text.includes(x)), text)
+assert.equal(tableLine('incident', [{ label: 'Bot', ops: { read: { s: 'G' }, write: { s: 'D' } } }]), 'Table details are open for incident. Bot: read Granted, write Denied.')
+assert.ok(workspaceContext({ subjects: [{ label: 'Bot', type: 'user' }], filter: { mode: 'tables', value: 'incident' } }).summary.join().includes('Bot (user)'))
+assert.equal(historyContext(Array.from({ length: 30 }, () => ({ number: 'A', run_type: 'analyze', status: 'complete' })), false).summary.length, 16, 'a long list is cut down')
 
 console.log('dashboard tests passed')

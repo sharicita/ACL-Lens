@@ -14,6 +14,7 @@ import { StatusCell } from './StatusCell'
 import Tip from './Tip'
 import Icon from './Icon'
 import { useAssistant } from '../assistant/AssistantContext'
+import { tableLine } from '../assistant/screenContext'
 import ListActions from './ListActions'
 import { fieldsOf } from '../utils/snList'
 import SubjectName from './SubjectName'
@@ -80,8 +81,9 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
 
     useEffect(() => {
         const prev = assistant.context
-        assistant.setContext({ ...prev, table: table.t })
-        return () => assistant.setContext({ ...prev, table: undefined })
+        const rows = results.subjects.map((s) => ({ label: s.subject.label, ops: s.tables[index].ops }))
+        assistant.setContext({ ...prev, table: table.t, summary: (prev.summary || []).concat([tableLine(table.t, rows)]) })
+        return () => assistant.setContext({ ...prev, table: undefined, summary: prev.summary })
     }, [table.t])
 
     const loadFields = async () => {
@@ -148,6 +150,7 @@ export default function TableDetail({ results, index, canLiveCheck, onClose }: P
                             type="button"
                             className="lens-btn lens-btn--secondary"
                             onClick={() => assistant.ask(`Explain the access results for the ${table.t} table in this run and anything I should check.`)}
+                            data-assistant-opener
                             data-tip="Opens the Security Assistant with a question about this table."
                         >
                             <Icon name="shield" size={14} />

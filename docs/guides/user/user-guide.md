@@ -166,6 +166,8 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 | **Comparison** | *Tables where subjects differ* · *Roles held by only some subjects* |
 
 - **Drill in:** click a bar, a donut slice or a number to see the rows behind it, with sort, group, filter, **Open list** (the tables in ServiceNow), **Copy query** and **Export**. The list icon on a tile shows every row.
+- **Charts:** the icons at the top of a report card show it as a bar chart, overlay bars, pie chart, donut, number or list. Your choice is saved for that card. Overlay bars are available when a report's groups are broken down.
+- **Add a report:** the card with the plus at the end of a tab adds a report to this tab or to a new tab, or builds a new one.
 - **Tabs:** group reports on tabs with their own titles and descriptions. **+ New tab** adds one, then asks what to put on it. Choose a run under **Show data from** and it appears as a pill (× removes it); **Add report** adds a report of each run's data. **Choose specific reports** is optional: it lists your reports, with those on your other tabs first. **Add report** → *Add several, or from a previous run* does the same on any tab. Drag a tab to change the order. The buttons beside the tab's title edit it, move it or remove it (its reports stay available under **Add report**).
 - **Drag reports:** drag a report by its title bar to another position, or drop it on another tab.
 - **Save as report:** on a run page, **Save as report** adds a chart of that run to the tab you choose. It keeps showing that run, and its title bar names the run, whatever **Data from** says. To make it follow **Data from**, edit it and untick *Always use*.
@@ -186,7 +188,8 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 
 ## 6. Security Assistant
 
-- Click **Assistant** in the header (top right, after Settings). It knows the run and table you have open.
+- Click **Assistant** in the header (top right, after Settings). It sees what's on the page behind it (the run, the reports on a dashboard tab with their totals, the table you have open), so you can ask "what does this show?" directly. The panel names what it's looking at above the question box.
+- Click anywhere outside the panel, or press Escape, to close it. Your conversation is still there when you reopen it.
 - Ask, for example:
   - *"Why can't Abel update incidents?"*
   - *"Review the ACLs on incident against best practices."*

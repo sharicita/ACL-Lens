@@ -4,7 +4,11 @@
 export interface Tile {
     report: string
     size: 1 | 2
+    /** how this card shows the report; without it, the report's own chart */
+    chart?: string
 }
+
+const CHARTS = ['tile', 'bar', 'overlay', 'pie', 'donut', 'list']
 
 export interface DashTab {
     id: string
@@ -33,7 +37,9 @@ function cleanTiles(value: unknown): Tile[] {
         const id = t ? String(t.report) : ''
         if (!SYS_ID.test(id) || seen[id] || out.length >= MAX_TILES) continue
         seen[id] = true
-        out.push({ report: id, size: t.size === 2 ? 2 : 1 })
+        const tile: Tile = { report: id, size: t.size === 2 ? 2 : 1 }
+        if (CHARTS.indexOf(t.chart) >= 0) tile.chart = t.chart
+        out.push(tile)
     }
     return out
 }

@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useAssistant } from '../assistant/AssistantContext'
+import { workspaceContext } from '../assistant/screenContext'
 import { WorkspaceDraft } from '../app'
 import { LensApi } from '../services/LensApi'
 import { RunPayload } from '../types'
@@ -21,6 +23,11 @@ const MAX_SUBJECTS = 8
 export default function Workspace({ draft, historyEnabled, onDraftChange, onRunComplete, onOpenDashboard }: Props) {
     const [busy, setBusy] = useState<'' | 'analyze' | 'compare'>('')
     const [error, setError] = useState('')
+    const assistant = useAssistant()
+    useEffect(() => {
+        assistant.setContext(workspaceContext(draft))
+        return () => assistant.setContext({})
+    }, [draft])
 
     const run = async (runType: 'analyze' | 'compare') => {
         setBusy(runType)

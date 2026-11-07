@@ -2,16 +2,21 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { LensApi } from '../services/LensApi'
 import { RunRecord } from '../types'
 import Icon from '../components/Icon'
+import CopyButton from '../components/CopyButton'
+import { useAssistant } from '../assistant/AssistantContext'
+import { dashboardContext } from '../assistant/screenContext'
 import HelpTip from '../components/HelpTip'
 import Tip from '../components/Tip'
-import { ViewName } from '../utils/nav'
-import ReportChart from './ReportChart'
+import { ViewName, viewHref } from '../utils/nav'
+import ReportChart, { canOverlay, hasGroups } from './ReportChart'
 import ReportDetail from './ReportDetail'
 import ReportEditor from './ReportEditor'
 import ReportPicker from './ReportPicker'
 import DashTabs from './DashTabs'
 import { addTileToTab, moveItem, moveTileToTab, readActiveTab, runReportDef, writeActiveTab } from './layout'
-import { Catalog, CATEGORY_LABEL, DashTab, Dashboard, Report, ReportData, ReportGroup, Tile } from './types'
+import { Catalog, CATEGORY_LABEL, CHART_LABEL, CHART_TYPES, ChartType, DashTab, Dashboard, Report, ReportData, ReportGroup, Tile } from './types'
+
+const CHART_ICON: { [c: string]: string } = { bar: 'chartBar', overlay: 'chartOverlay', pie: 'chartPie', donut: 'chartDonut', tile: 'chartNumber', list: 'table' }
 
 interface Props {
     isAdmin: boolean
@@ -22,6 +27,23 @@ interface Props {
 function runLabel(r: RunRecord | null) {
     if (!r) return 'no run'
     return `${r.number}${r.name ? ` ${r.name}` : ''} · ${r.subject_summary || ''} · ${r.created}`
+}
+
+/**
+ * A title bar can be dragged, which stops text in it being selected. Pressing on the text lets the
+ * bar stop being draggable until the mouse is released, so the text can be highlighted.
+ */
+const selectableText = {
+    onMouseDown: (e: React.MouseEvent) => {
+        const bar = (e.currentTarget as HTMLElement).closest('[draggable="true"]')
+        if (!bar) return
+        bar.setAttribute('draggable', 'false')
+        const restore = () => {
+            bar.setAttribute('draggable', 'true')
+            document.removeEventListener('mouseup', restore)
+        }
+        document.addEventListener('mouseup', restore)
+    },
 }
 
 /** Gateway errors on a large run mean "slow", not "broken". */
@@ -54,6 +76,8 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     const [retry, setRetry] = useState(0)
     const [adding, setAdding] = useState(false)
     const [picking, setPicking] = useState(false)
+    const [newTabRequest, setNewTabRequest] = useState(0)
+    const pickerSlot = useRef<HTMLDivElement>(null)
     const [pickBusy, setPickBusy] = useState(false)
     const [editing, setEditing] = useState<{ report: Report | null } | null>(null)
     const [detail, setDetail] = useState<{ report: Report; group: ReportGroup | null } | null>(null)
@@ -93,6 +117,26 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
             }
         })()
     }, [])
+
+    // tell the Security Assistant what this tab shows
+    const assistant = useAssistant()
+    useEffect(() => {
+        if (!dash) return
+        assistant.setContext(
+            dashboardContext({
+                tab: activeTab,
+                shownRun: run,
+                reports: tiles.map((t) => ({ name: byId[t.report].name, data: data[t.report] })),
+                detail: detail ? `The rows behind report "${detail.report.name}"${detail.group ? `, group "${detail.group.label}"` : ''} are open.` : undefined,
+            })
+        )
+    }, [activeTab?.id, activeTab?.title, activeTab?.description, tiles.map((t) => t.report).join(','), data, run?.sys_id, detail])
+    useEffect(() => () => assistant.setContext({}), [])
+
+    // the picker opens after the last report, which can be well below the button that asked for it
+    useEffect(() => {
+        if (picking) pickerSlot.current?.scrollIntoView({ block: 'nearest' })
+    }, [picking])
 
     // what a tile's numbers depend on: its run and its definition
     const keyOf = (t: Tile) => {
@@ -191,6 +235,17 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
         if (j < 0 || j >= tiles.length) return
         saveTiles(moveItem(tiles, i, d > 0 ? j + 1 : j))
     }
+    // how a card shows its report: its own choice, or the report's chart. It only changes how the
+    // same numbers are drawn, so nothing is recalculated.
+    const chartOf = (t: Tile): ChartType => t.chart || byId[t.report].chart
+    const setChart = (report: string, chart: ChartType) =>
+        saveTiles(
+            tiles.map((t) => {
+                if (t.report !== report) return t
+                const { chart: _old, ...rest } = t
+                return chart === byId[report].chart ? rest : { ...rest, chart }
+            })
+        )
     const resize = (i: number) => saveTiles(tiles.map((t, k) => (k === i ? { ...t, size: t.size === 2 ? 1 : 2 } : t)))
     const remove = (i: number) => saveTiles(tiles.filter((_t, k) => k !== i))
     const add = (id: string) => {
@@ -256,7 +311,10 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     const onSaved = (r: Report, replaced: string | null) => {
         setReports((list) => (list.some((x) => x.sys_id === r.sys_id) ? list.map((x) => (x.sys_id === r.sys_id ? r : x)) : list.concat([r])))
         setEditing(null)
-        if (replaced) save(tabs.map((tab) => ({ ...tab, tiles: tab.tiles.map((t) => (t.report === replaced ? { ...t, report: r.sys_id } : t)) })))
+        // the chart just chosen in the editor replaces any choice made on the card
+        const fresh = ({ chart: _old, ...t }: Tile, report: string): Tile => ({ ...t, report })
+        if (replaced) save(tabs.map((tab) => ({ ...tab, tiles: tab.tiles.map((t) => (t.report === replaced ? fresh(t, r.sys_id) : t)) })))
+        else if (tabs.some((tab) => tab.tiles.some((t) => t.report === r.sys_id && t.chart))) save(tabs.map((tab) => ({ ...tab, tiles: tab.tiles.map((t) => (t.report === r.sys_id ? fresh(t, r.sys_id) : t)) })))
         else if (!tabs.some((tab) => tab.tiles.some((t) => t.report === r.sys_id))) save(addTileToTab(tabs, r.sys_id, activeTab.id))
     }
     const onDeleted = (id: string) => {
@@ -293,6 +351,7 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                             ))}
                         </select>
                     </label>
+                    {run && <CopyButton text={`${run.number}${run.name ? ` ${run.name}` : ''}`} label={`the name of run ${run.number}`} />}
                     <HelpTip label="Which run do reports use?">
                         <span>
                             Reports use the run chosen under Data from, on every tab. A report made with <strong>Save as report</strong> on a run page, or added from a previous run, keeps showing that run
@@ -410,6 +469,7 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                         onSelect={selectTab}
                         onChange={(next) => save(next)}
                         tileDragging={!!dragReport}
+                        newTabRequest={newTabRequest}
                         onTileDrop={(tabId) => {
                             moveToTab(dragReport, tabId)
                             endDrag()
@@ -420,7 +480,6 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                             Calculating reports… A large run can take a minute the first time. After that its reports open right away.
                         </p>
                     )}
-                    {picking && tiles.length > 0 && picker(() => setPicking(false))}
                     <div
                         id="dash-tabpanel"
                         role="tabpanel"
@@ -481,12 +540,46 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                                             <Icon name="grip" size={14} />
                                         </span>
                                         <span className={`lens-dash__cat lens-dash__cat--${r.category}`}>{CATEGORY_LABEL[r.category]}</span>
-                                        <h3 data-tip={r.description}>{r.name}</h3>
+                                        <span className="lens-dash__name">
+                                            <h3 data-tip={r.description} {...selectableText}>
+                                                {r.name}
+                                            </h3>
+                                            <CopyButton text={d && d.source && r.name.indexOf(d.source.number) < 0 ? `${d.source.number} ${r.name}` : r.name} label={`the name of ${r.name}`} />
+                                        </span>
                                         {d && d.source && (
-                                            <button type="button" className="lens-link lens-dash__source" onClick={() => onOpenRun((d.source as NonNullable<ReportData['source']>).sys_id)} data-tip={`This report always shows ${d.source.number} (${d.source.created}). Click to open the run.`}>
+                                            <a
+                                                className="lens-link lens-dash__source"
+                                                {...selectableText}
+                                                href={viewHref('run', d.source.sys_id)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                draggable={false}
+                                                aria-label={`Open run ${d.source.number} (opens in a new window)`}
+                                                data-tip={`This report always shows ${d.source.number} (${d.source.created}). Click to open the run in a new window.`}
+                                            >
                                                 {d.source.number}
-                                            </button>
+                                                <Icon name="external" size={12} />
+                                            </a>
                                         )}
+                                        <span className="lens-dash__views" role="group" aria-label={`Show ${r.name} as`}>
+                                            {CHART_TYPES.map((c) => {
+                                                const unavailable = !!d && !d.error && (c === 'overlay' ? !canOverlay(d) : c !== 'tile' && c !== 'list' && !hasGroups(d))
+                                                return (
+                                                    <button
+                                                        key={c}
+                                                        type="button"
+                                                        className={`lens-icon-btn lens-dash__view${chartOf(t) === c ? ' lens-dash__view--on' : ''}`}
+                                                        aria-pressed={chartOf(t) === c}
+                                                        aria-label={CHART_LABEL[c]}
+                                                        disabled={unavailable}
+                                                        data-tip={unavailable ? (c === 'overlay' ? 'Overlay bars need a report whose groups are broken down, and this one isn\'t.' : 'This report has no groups to chart. Choose a Group by to use this.') : `Show as: ${CHART_LABEL[c]}`}
+                                                        onClick={() => setChart(t.report, c)}
+                                                    >
+                                                        <Icon name={CHART_ICON[c]} size={14} />
+                                                    </button>
+                                                )
+                                            })}
+                                        </span>
                                         <span className="lens-dash__tools">
                                             <button type="button" className="lens-icon-btn" onClick={() => d && setDetail({ report: r, group: null })} disabled={!d} aria-label={`Show all rows for ${r.name}`} data-tip="Show all rows">
                                                 <Icon name="list" size={14} />
@@ -529,12 +622,38 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                                         </span>
                                     </div>
                                     <div className="lens-card__body">
-                                        {!d ? <p className="lens-muted">{pending > 0 ? 'Calculating…' : 'No data.'}</p> : <ReportChart chart={r.chart} data={d} compact onPick={(g) => setDetail({ report: r, group: g })} />}
+                                        {!d ? <p className="lens-muted">{pending > 0 ? 'Calculating…' : 'No data.'}</p> : <ReportChart chart={chartOf(t)} data={d} compact onPick={(g) => setDetail({ report: r, group: g })} />}
                                     </div>
                                 </section>
                             )
                         })}
                         {!tiles.length && <div className="lens-dash__empty">{picker()}</div>}
+                        {tiles.length > 0 && picking && (
+                            <div className="lens-dash__tile--wide" ref={pickerSlot}>
+                                {picker(() => setPicking(false))}
+                            </div>
+                        )}
+                        {tiles.length > 0 && !picking && (
+                            <div className="lens-dash__addcard">
+                                <span className="lens-subject__plus" aria-hidden="true">
+                                    +
+                                </span>
+                                <span className="lens-muted">Add a report</span>
+                                <span className="lens-dash__addactions">
+                                    <button type="button" className="lens-btn lens-btn--secondary" onClick={() => setPicking(true)} data-tip={`Choose runs or reports to add to ${activeTab.title}`}>
+                                        To this tab
+                                    </button>
+                                    {tabs.length < 20 && (
+                                        <button type="button" className="lens-btn lens-btn--secondary" onClick={() => setNewTabRequest((n) => n + 1)} data-tip="Name a new tab, then choose what to put on it">
+                                            To a new tab
+                                        </button>
+                                    )}
+                                    <button type="button" className="lens-btn lens-btn--tertiary" onClick={() => setEditing({ report: null })} data-tip={`Build a report from scratch. It's added to ${activeTab.title}.`}>
+                                        Build a new report
+                                    </button>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

@@ -47,7 +47,7 @@ export interface ReportOptions {
 
 export interface ReportDef {
     measure: string
-    chart: 'tile' | 'bar' | 'donut' | 'list'
+    chart: 'tile' | 'bar' | 'overlay' | 'pie' | 'donut' | 'list'
     options: ReportOptions
 }
 
@@ -190,6 +190,8 @@ export interface MeasureDef {
     facts: (ctx: Ctx) => void
     /** the result needs a comparison (2+ subjects) or a rerun */
     needs?: 'comparison' | 'drift'
+    /** what to break each group down by when its facts have no result: the first of these that isn't the grouping */
+    partsBy?: Dim[]
 }
 
 export const MEASURES: MeasureDef[] = [
@@ -212,6 +214,7 @@ export const MEASURES: MeasureDef[] = [
         dims: ['table', 'operation', 'level', 'subject'],
         groupBy: 'table',
         needs: 'comparison',
+        partsBy: ['subject', 'level'],
         facts: (ctx) => {
             const r = ctx.payload.results
             let cmp = ctx.payload.comparison
@@ -446,9 +449,11 @@ export function runReport(def: ReportDef, payload: RunPayload): ReportData {
         const key = String((f as any)[groupBy] || '(none)')
         const g = groups[key] || (groups[key] = { key, label: groupBy === 'table' && f.tableLabel ? `${f.tableLabel} (${key})` : key, value: 0 })
         g.value++
-        if (f.status && groupBy !== 'status') {
+        const by = (m.partsBy || []).filter((d) => d !== groupBy)[0]
+        const part = f.status && groupBy !== 'status' ? f.status : by ? String((f as any)[by] || '') : ''
+        if (part) {
             g.parts = g.parts || {}
-            g.parts[f.status] = (g.parts[f.status] || 0) + 1
+            g.parts[part] = (g.parts[part] || 0) + 1
         }
     }
     m.facts({ payload, opts: o, emit })
@@ -456,7 +461,7 @@ export function runReport(def: ReportDef, payload: RunPayload): ReportData {
     let list = Object.keys(groups)
         .map((k) => groups[k])
         .sort((a, b) => b.value - a.value || (a.label < b.label ? -1 : 1))
-    const limit = o.limit && o.limit > 0 ? Math.floor(o.limit) : def.chart === 'donut' ? 6 : 10
+    const limit = o.limit && o.limit > 0 ? Math.floor(o.limit) : def.chart === 'donut' || def.chart === 'pie' ? 6 : 10
     if (list.length > limit) {
         const rest = list.slice(limit)
         const other: ReportGroup = { key: '__other', label: `Other (${rest.length})`, value: 0 }

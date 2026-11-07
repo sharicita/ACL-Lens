@@ -13,6 +13,8 @@ interface Props {
     /** a report tile is being dragged, so tabs accept it */
     tileDragging: boolean
     onTileDrop: (tabId: string) => void
+    /** goes up each time something outside asks for the new-tab form */
+    newTabRequest?: number
 }
 
 const MAX_TABS = 20
@@ -50,11 +52,14 @@ function TabForm({ tab, onSave, onCancel }: { tab?: DashTab; onSave: (title: str
 }
 
 /** The dashboard's tabs: choose, add, rename, describe, remove and drag to reorder. */
-export default function DashTabs({ tabs, active, onSelect, onChange, tileDragging, onTileDrop }: Props) {
+export default function DashTabs({ tabs, active, onSelect, onChange, tileDragging, onTileDrop, newTabRequest }: Props) {
     const [form, setForm] = useState<'' | 'new' | 'edit'>('')
     const [dragId, setDragId] = useState('')
     const [dropAt, setDropAt] = useState<{ id: string; after: boolean } | null>(null)
     const [tileOver, setTileOver] = useState('')
+    useEffect(() => {
+        if (newTabRequest) setForm('new')
+    }, [newTabRequest])
     const refs = useRef<{ [id: string]: HTMLDivElement | null }>({})
     const index = tabs.findIndex((t) => t.id === active)
     const current = tabs[index]

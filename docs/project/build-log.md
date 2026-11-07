@@ -742,3 +742,14 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 | **Status** | Offline tests and SDK build pass; not on a PDI |
 
 - **Changed:** the tag is blue because it names the rule type; the rule's own result sits beside it. `styles.generated.ts` regenerated from the current `app.css`.
+
+## 1.37 Assistant page context, copy buttons, chart icons (v1.9.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass, and the UI was checked with sample data; not on a PDI, and not tried with a real AI provider |
+
+- **Added:** each page describes itself to the Security Assistant in short lines of plain facts (`src/client/assistant/screenContext.ts`), sent with every question. Totals and top groups only, no row data, capped at 40 lines and 6,000 characters, and marked as data rather than instructions.
+- **Added:** copy buttons beside report and run names, chart icons and an Add a report card on the dashboard.
+- **Changed:** a report's title bar stops being draggable while its name is pressed, so the name can be highlighted. Clicking outside the assistant closes it.

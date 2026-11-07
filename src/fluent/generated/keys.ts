@@ -1379,6 +1379,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '4aa447275882438eb16f3473f0e11f22'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'overlay'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '4aa6c86b9931415d849a4c2295b1f826'
                         key: {
@@ -2038,6 +2049,17 @@ declare global {
                                     name: 'x_acllens.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '881766a4f30c4df493be57dbc399963d'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'pie'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {

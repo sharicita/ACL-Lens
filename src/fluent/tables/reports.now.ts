@@ -22,7 +22,7 @@ export const x_acllens_report = Table({
             label: 'Chart',
             maxLength: 20,
             dropdown: 'dropdown_without_none',
-            choices: { tile: 'Number', bar: 'Bar chart', donut: 'Donut', list: 'List' },
+            choices: { tile: 'Number', bar: 'Bar chart', overlay: 'Overlay bars', pie: 'Pie chart', donut: 'Donut', list: 'List' },
             default: 'bar',
         }),
         options: StringColumn({ label: 'Options (JSON)', maxLength: 4000 }),

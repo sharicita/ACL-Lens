@@ -5,7 +5,7 @@ import Header from './components/Header'
 import Workspace from './components/Workspace'
 import HistoryView from './components/HistoryView'
 import RunView from './components/RunView'
-import { AssistantProvider } from './assistant/AssistantContext'
+import { AssistantProvider, useAssistant } from './assistant/AssistantContext'
 import DashboardView from './dashboard/DashboardView'
 import AssistantPanel from './assistant/AssistantPanel'
 import SettingsView from './components/SettingsView'
@@ -51,6 +51,15 @@ function Shell() {
     // e.g. "External User Not Authorized" when the Explicit Roles plugin is active and the user lacks snc_internal
     const [accessProblem, setAccessProblem] = useState('')
     const [me, setMe] = useState<{ is_admin: boolean; can_live_check?: boolean; history_enabled: boolean; instance_theme?: boolean }>({ is_admin: false, history_enabled: true })
+
+    // these pages have nothing more to say than which page they are; the others describe themselves
+    const assistant = useAssistant()
+    useEffect(() => {
+        const page: { [v: string]: string } = { settings: 'Settings', mcp: 'MCP server setup', list: 'Report list' }
+        if (!page[view.view]) return
+        assistant.setContext({ view: view.view, page: page[view.view], run_id: view.view === 'list' ? view.id || undefined : undefined, summary: [`The ${page[view.view]} page is open.`] })
+        return () => assistant.setContext({})
+    }, [view.view, view.id])
 
     useEffect(() => {
         LensApi.me()

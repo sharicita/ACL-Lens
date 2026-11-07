@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { RunRecord } from '../types'
 import Icon from './Icon'
+import CopyButton from './CopyButton'
 
 interface Props {
     run: RunRecord
@@ -63,7 +64,9 @@ export default function RunHeader(p: Props) {
                             {run.created} · {run.run_by} · {run.table_count} tables · {(run.duration_ms / 1000).toFixed(1)}s
                         </span>
                     </p>
-                    <h2 className="lens-runhead__title">{run.name || run.subject_summary || 'Untitled run'}</h2>
+                    <h2 className="lens-runhead__title">
+                        {run.name || run.subject_summary || 'Untitled run'} <CopyButton text={`${run.number} ${run.name || run.subject_summary || ''}`.trim()} label={`the name of run ${run.number}`} />
+                    </h2>
                     <p className="lens-muted" data-tip="Which tables this run analyzed. Use Edit in workspace to change it and run again.">
                         {FILTER_TEXT[filter.mode] || filter.mode}
                         {filter.value ? `: ${filter.value}` : ''}

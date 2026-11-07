@@ -3537,6 +3537,26 @@ tr.lens-group > th {
 .lens-dash__tile--wide {
     grid-column: 1 / -1;
 }
+/* the plus at the end of a tab: add a report here or on a new tab */
+.lens-dash__addcard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lx-space-sm);
+    min-height: 12rem;
+    padding: var(--lx-space);
+    text-align: center;
+    color: var(--lx-muted);
+    border: 1.5px dashed var(--lx-border-strong);
+    border-radius: var(--lx-radius);
+}
+.lens-dash__addactions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--lx-space-sm);
+}
 @media (max-width: 900px) {
     .lens-dash__grid {
         grid-template-columns: minmax(0, 1fr);
@@ -3550,9 +3570,30 @@ tr.lens-group > th {
     font-size: 0.95rem;
     font-weight: 600;
 }
-.lens-dash__tools {
+.lens-dash__tools,
+.lens-dash__views {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 0.15rem;
+}
+.lens-dash__views {
+    padding-right: 0.45rem;
+    border-right: 1px solid var(--lx-border);
+}
+.lens-dash__views .lens-icon-btn {
+    min-width: 1.8rem;
+    min-height: 1.8rem;
+    justify-content: center;
+    color: var(--lx-muted);
+}
+.lens-dash__views .lens-dash__view--on {
+    background: var(--lx-accent-soft);
+    color: var(--lx-accent);
+}
+.lens-dash__source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 .lens-dash__tools .lens-icon-btn {
     min-width: 1.8rem;
@@ -3694,6 +3735,15 @@ tr.lens-group > th {
 .lens-chart-bars__bar {
     height: 100%;
     min-width: 2px;
+}
+.lens-chart-bars__track--overlay {
+    position: relative;
+}
+.lens-chart-bars__bar--overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-right: 1px solid var(--lx-surface);
 }
 .lens-chart-bars__value {
     font-size: 0.82rem;
@@ -4214,4 +4264,29 @@ tr.lens-group > th {
 }
 .lens-picker__more .lens-picker__groups {
     margin-top: var(--lx-block-gap);
+}
+
+/* report and run names can be highlighted and copied */
+.lens-dash__name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-width: 0;
+    margin-right: auto;
+}
+.lens-dash__tilehead .lens-dash__name h3 {
+    margin: 0;
+    cursor: text;
+    user-select: text;
+}
+.lens-dash__tilehead .lens-dash__source {
+    user-select: text;
+}
+.lens-copy {
+    flex: none;
+    min-width: 1.6rem;
+    min-height: 1.6rem;
+    justify-content: center;
+    color: var(--lx-muted);
+    vertical-align: middle;
 }

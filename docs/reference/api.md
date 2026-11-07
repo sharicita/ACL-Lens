@@ -61,7 +61,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | Method | Path | Body | Returns |
 |---|---|---|---|
 | GET | `/ai/status` | — | `{active: {name, type, model} \| null, providers: [{name, type, available, reason}], is_admin}` |
-| POST | `/ai/chat` | `{conversation_id?, message, context?: {run_id, run_number, subjects, table}}` | `{conversation_id, title, answer, tools_used, provider}` |
+| POST | `/ai/chat` | `{conversation_id?, message, context?: {run_id, run_number, subjects, table, page, summary: [string]}}` (`summary` is cut to 40 lines and 6,000 characters) | `{conversation_id, title, answer, tools_used, provider}` |
 | GET | `/ai/conversations` | — | The caller's conversations |
 | GET | `/ai/conversations/{id}` | — | Messages (caller's own only) |
 

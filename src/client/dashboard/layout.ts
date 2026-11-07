@@ -1,5 +1,19 @@
 // Pure helpers for arranging dashboard tabs and tiles (tested offline).
-import type { DashTab, ReportOptions, Tile } from './types'
+import type { DashTab, ReportGroup, ReportOptions, Tile } from './types'
+
+/** Most named slices in a pie or donut; the rest join "Other" so the colors stay readable. */
+export const MAX_SLICES = 6
+
+/** A report calculated for bars can have more groups than a pie can show. Keeps the total the same. */
+export function sliceGroups(groups: ReportGroup[], max = MAX_SLICES): ReportGroup[] {
+    const named = groups.filter((g) => g.key !== '__other')
+    if (named.length <= max) return groups
+    const rest = named.slice(max)
+    const old = groups.filter((g) => g.key === '__other')[0]
+    const count = rest.length + (old ? parseInt((/\d+/.exec(old.label) || ['0'])[0], 10) : 0)
+    const value = rest.reduce((n, g) => n + g.value, old ? old.value : 0)
+    return named.slice(0, max).concat([{ key: '__other', label: `Other (${count})`, value }])
+}
 
 /** Moves one item so it sits before the item now at `before` (list length = the end). */
 export function moveItem<T>(list: T[], from: number, before: number): T[] {

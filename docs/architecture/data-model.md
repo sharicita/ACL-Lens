@@ -79,7 +79,7 @@ One per user who changed their dashboard (without one, the default applies).
 | Column | Type | Notes |
 |---|---|---|
 | `owner` | reference → `sys_user`, mandatory | |
-| `layout` | string(65000) | JSON `{tabs: [{id, title, description, tiles: [{report, size: 1\|2}]}]}`. Layouts saved before tabs (a plain list of tiles) are read as one tab |
+| `layout` | string(65000) | JSON `{tabs: [{id, title, description, tiles: [{report, size: 1\|2, chart?}]}]}`. Layouts saved before tabs (a plain list of tiles) are read as one tab |
 | `run` | reference → run, cascade clear | Run the reports use; empty = latest complete, non-archived run |
 
 ACLs: each user reads and changes only their own.

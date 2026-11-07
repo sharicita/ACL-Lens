@@ -1,7 +1,7 @@
 // Reporting dashboard shapes (mirror src/server/engine/report-measures.ts and src/server/reports/reports.ts).
 
 export type Dim = 'subject' | 'kind' | 'table' | 'operation' | 'status' | 'role' | 'acl' | 'level' | 'change' | 'filter'
-export type ChartType = 'tile' | 'bar' | 'donut' | 'list'
+export type ChartType = 'tile' | 'bar' | 'overlay' | 'pie' | 'donut' | 'list'
 export type Category = 'overview' | 'high_risk' | 'vulnerability' | 'comparison'
 
 export interface ReportOptions {
@@ -93,6 +93,8 @@ export interface ReportData {
 export interface Tile {
     report: string
     size: 1 | 2
+    /** how this card shows the report; without it, the report's own chart */
+    chart?: ChartType
 }
 
 export interface DashTab {
@@ -128,7 +130,10 @@ export const DIM_LABEL: { [d: string]: string } = {
     filter: 'Data filter',
 }
 
-export const CHART_LABEL: { [c: string]: string } = { tile: 'Number', bar: 'Bar chart', donut: 'Donut', list: 'List' }
+export const CHART_LABEL: { [c: string]: string } = { tile: 'Number', bar: 'Bar chart', overlay: 'Overlay bars', pie: 'Pie chart', donut: 'Donut', list: 'List' }
+
+/** The ways to show a report, in the order they are offered. */
+export const CHART_TYPES: ChartType[] = ['bar', 'overlay', 'pie', 'donut', 'tile', 'list']
 
 /** Colour token for a result or category label (falls back to the series palette). */
 export const TONE: { [label: string]: string } = {

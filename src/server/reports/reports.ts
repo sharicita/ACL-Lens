@@ -87,7 +87,7 @@ function getReport(id: string): any {
 function clean(def: any): { name: string; description: string; category: string; measure: string; chart: string; options: ReportOptions } {
     const m = measure(String(def.measure || ''))
     if (!m) throw new Error('Choose what the report measures')
-    const chart = ['tile', 'bar', 'donut', 'list'].indexOf(def.chart) >= 0 ? def.chart : 'bar'
+    const chart = ['tile', 'bar', 'overlay', 'pie', 'donut', 'list'].indexOf(def.chart) >= 0 ? def.chart : 'bar'
     const o = def.options || {}
     const strings = (v: unknown) => (Array.isArray(v) ? v.map((x) => String(x)).filter((x) => !!x).slice(0, 200) : undefined)
     const options: ReportOptions = {
