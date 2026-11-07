@@ -67,8 +67,8 @@ export function cleanTabs(value: unknown): DashTab[] {
 }
 
 /** The JSON to store. Throws rather than letting the column cut the JSON off. */
-export function layoutJson(tabs: DashTab[]): string {
-    const text = JSON.stringify({ tabs })
+export function layoutJson(tabs: DashTab[], unreadable: unknown[] = []): string {
+    const text = JSON.stringify(unreadable.length ? { tabs, unreadable } : { tabs })
     if (text.length > MAX_JSON) throw new Error('This dashboard is too large to save. Remove some reports or tabs.')
     return text
 }
@@ -77,17 +77,44 @@ export function defaultTabs(tiles: Tile[]): DashTab[] {
     return [{ id: DEFAULT_TAB_ID, title: DEFAULT_TAB_TITLE, description: '', tiles }]
 }
 
+export interface LayoutRead {
+    tabs: DashTab[]
+    custom: boolean
+    /** titles of saved tabs that couldn't be shown */
+    skipped: string[]
+    /** those tabs as saved, kept so the next save doesn't lose them */
+    unreadable: unknown[]
+}
+
+function title(raw: any): string {
+    return raw && raw.title ? String(raw.title).substring(0, MAX_TITLE) : 'Untitled tab'
+}
+
 /**
- * Reads a stored layout. Dashboards saved before tabs existed hold a plain list of tiles, which
- * becomes one tab. Anything unreadable falls back to the default.
+ * Reads a stored layout one tab at a time: a tab that can't be read is left out and kept aside
+ * rather than costing the whole dashboard. Dashboards saved before tabs existed hold a plain list
+ * of tiles, which becomes one tab.
  */
-export function readLayout(text: string, fallback: Tile[]): { tabs: DashTab[]; custom: boolean } {
+export function readLayout(text: string, fallback: Tile[]): LayoutRead {
+    let saved: any = null
     try {
-        const saved = JSON.parse(text || 'null')
-        if (Array.isArray(saved)) return { tabs: defaultTabs(cleanTiles(saved)), custom: true }
-        if (saved && Array.isArray(saved.tabs)) return { tabs: cleanTabs(saved.tabs), custom: true }
+        saved = JSON.parse(text || 'null')
     } catch (e) {
-        /* keep the default */
+        return { tabs: defaultTabs(fallback), custom: !!text, skipped: text ? ['the saved layout'] : [], unreadable: [] }
     }
-    return { tabs: defaultTabs(fallback), custom: false }
+    if (Array.isArray(saved)) return { tabs: defaultTabs(cleanTiles(saved)), custom: true, skipped: [], unreadable: [] }
+    if (!saved || !Array.isArray(saved.tabs)) return { tabs: defaultTabs(fallback), custom: false, skipped: [], unreadable: [] }
+    const tabs: DashTab[] = []
+    const unreadable: unknown[] = Array.isArray(saved.unreadable) ? saved.unreadable.slice() : []
+    for (const raw of saved.tabs) {
+        let tab: DashTab | null = null
+        try {
+            tab = cleanTabs([raw])[0]
+        } catch (e) {
+            tab = null
+        }
+        if (tab && !tabs.some((x) => x.id === tab!.id) && tabs.length < MAX_TABS) tabs.push(tab)
+        else unreadable.push(raw)
+    }
+    return { tabs: tabs.length ? tabs : defaultTabs(fallback), custom: true, skipped: unreadable.map(title), unreadable }
 }

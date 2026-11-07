@@ -90,6 +90,9 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     const inflight = useRef<{ [key: string]: boolean }>({})
     const nextSave = useRef<{ tabs: DashTab[]; run: string } | null>(null)
     const saving = useRef(false)
+    // the dashboard version this page last saw; every save names it
+    const version = useRef<number | undefined>(undefined)
+    const [conflict, setConflict] = useState(false)
 
     const byId = useMemo(() => {
         const m: { [id: string]: Report } = {}
@@ -111,6 +114,7 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                 const [rep, d, rs] = await Promise.all([LensApi.reports(), LensApi.dashboard(), LensApi.listRuns({ limit: 30 })])
                 setReports(rep.reports)
                 setCatalog(rep.catalog)
+                version.current = d.version
                 setDash(d)
                 setRuns(rs.filter((r) => r.status === 'complete'))
                 setRunsLoaded(true)
@@ -203,7 +207,17 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
             while (nextSave.current) {
                 body = nextSave.current
                 nextSave.current = null
-                const saved = await LensApi.saveDashboard(body)
+                const saved = await LensApi.saveDashboard({ ...body, version: version.current })
+                if (saved.conflict && saved.dashboard) {
+                    // changed in another window or device: show that version rather than overwrite it
+                    nextSave.current = null
+                    version.current = saved.dashboard.version
+                    setDash(saved.dashboard)
+                    setConflict(true)
+                    break
+                }
+                version.current = saved.version
+                setConflict(false)
                 if (!nextSave.current) setDash(saved)
             }
             setSaveError('')
@@ -230,7 +244,10 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
         if (!window.confirm('Reset your dashboard to the default reports? Your tabs are removed. Your own reports are kept and can be added again.')) return
         nextSave.current = null
         setSaveError('')
-        setDash(await LensApi.resetDashboard())
+        setConflict(false)
+        const fresh = await LensApi.resetDashboard()
+        version.current = fresh.version
+        setDash(fresh)
     }
     // how a card shows its report: its own choice, or the report's chart. It only changes how the
     // same numbers are drawn, so nothing is recalculated.
@@ -273,6 +290,23 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     }
     // where a dragged card would land: beside this one, or under its row near the bottom edge
     const sideAt = (e: React.DragEvent, box: DOMRect): DropSide => (e.clientY > box.top + box.height * 0.72 ? 'below' : e.clientX > box.left + box.width / 2 ? 'after' : 'before')
+
+    // Coming back to this window: pick up changes made in another window or device first, so a
+    // change made here starts from the latest dashboard.
+    useEffect(() => {
+        const onShow = () => {
+            if (document.visibilityState !== 'visible' || saving.current || nextSave.current) return
+            LensApi.dashboard()
+                .then((fresh) => {
+                    if (saving.current || nextSave.current || fresh.version === version.current) return
+                    version.current = fresh.version
+                    setDash(fresh)
+                })
+                .catch(() => undefined)
+        }
+        document.addEventListener('visibilitychange', onShow)
+        return () => document.removeEventListener('visibilitychange', onShow)
+    }, [])
 
     // a card's menus close on a click anywhere else
     useEffect(() => {
@@ -461,6 +495,21 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                         </p>
                     )}
                     {error && <p className="lens-alert lens-alert--critical">{error}</p>}
+                    {conflict && (
+                        <p className="lens-alert lens-alert--warning" role="status">
+                            This dashboard was changed in another window or on another device, so that version is shown now. Your last change here wasn't saved; make it again if you still
+                            want it.{' '}
+                            <button type="button" className="lens-link" onClick={() => setConflict(false)}>
+                                OK
+                            </button>
+                        </p>
+                    )}
+                    {dash.skipped && dash.skipped.length > 0 && (
+                        <p className="lens-alert lens-alert--warning" role="status">
+                            {dash.skipped.length === 1 ? 'A saved tab' : `${dash.skipped.length} saved tabs`} couldn't be shown ({dash.skipped.join(', ')}). {dash.skipped.length === 1 ? "It's" : "They're"} kept
+                            unchanged, so nothing is lost; an ACL Lens admin can look at your dashboard record.
+                        </p>
+                    )}
                     {saveError && (
                         <p className="lens-alert lens-alert--critical" role="alert">
                             Your last dashboard change isn't saved yet. {saveError}{' '}

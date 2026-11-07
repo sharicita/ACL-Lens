@@ -115,7 +115,14 @@ export interface Dashboard {
     tabs: DashTab[]
     custom: boolean
     run: string
+    /** goes up with every save; a save must name the version it started from */
+    version?: number
+    /** titles of saved tabs this page couldn't show; they're kept unchanged */
+    skipped?: string[]
 }
+
+/** A save answer: the saved dashboard, or the latest one when the page was showing an older version. */
+export type DashboardSave = Dashboard & { conflict?: boolean; dashboard?: Dashboard }
 
 export const CATEGORY_LABEL: { [c: string]: string } = {
     overview: 'Overview',

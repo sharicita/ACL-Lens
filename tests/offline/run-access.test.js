@@ -14,8 +14,8 @@ class FakeGR {
     constructor(t) { this.t = t; this.q = []; this.rows = null; this.i = -1; this.cur = null; this.lim = 1e9; this.ord = null }
     initialize() { this.cur = {} }
     setValue(k, v) { this.cur[k] = String(v) }
-    insert() { const id = sysId(); this.cur.sys_id = id; (DB[this.t] = DB[this.t] || []).push(this.cur); return id }
-    update() { return this.cur.sys_id }
+    insert() { const id = sysId(); this.cur.sys_id = id; this.cur.sys_mod_count = '0'; (DB[this.t] = DB[this.t] || []).push(this.cur); return id }
+    update() { this.cur.sys_mod_count = String(parseInt(this.cur.sys_mod_count || '0', 10) + 1); return this.cur.sys_id }
     get(id) { const r = (DB[this.t] || []).find((x) => x.sys_id === id); this.cur = r || null; return !!r }
     getValue(k) { return this.cur && this.cur[k] !== undefined ? this.cur[k] : '' }
     getDisplayValue(k) { return this.getValue(k) }
@@ -53,7 +53,7 @@ require.cache['@glide'] = { id: '@glide', filename: '@glide', loaded: true, expo
 const build = path.join(__dirname, '..', '..', '.test-build')
 const { getRun, listRuns, mayReadRun, saveBlob } = require(path.join(build, 'engine', 'storage.js'))
 const { loadRun, rerun } = require(path.join(build, 'engine', 'runs.js'))
-const { dashboardData, previewReport } = require(path.join(build, 'reports', 'reports.js'))
+const { dashboardData, previewReport, getDashboard, saveDashboard } = require(path.join(build, 'reports', 'reports.js'))
 const { reportCacheKey } = require(path.join(build, 'reports', 'report-cache.js'))
 
 // ---- the rule ---------------------------------------------------------------------
@@ -157,5 +157,31 @@ assert.deepStrictEqual(preview, { run: null, data: null }, 'not through a report
 res = as('carol', false, () => dashboardData({ reports: [plain] }))
 assert.equal(res.run, null)
 assert.deepStrictEqual(res.reports, {})
+
+// ---- saving a dashboard from two windows -------------------------------------------
+const tabsWith = (...titles) => titles.map((title, i) => ({ id: 'tab-' + i, title, description: '', tiles: [] }))
+as('dana', false, () => {
+    const start = getDashboard()
+    assert.equal(start.version, -1, 'no dashboard saved yet')
+    // two windows open at the same time
+    const windowA = start.version
+    const windowB = start.version
+    let saved = saveDashboard({ tabs: tabsWith('Overview', 'AI EDG'), version: windowA })
+    assert.deepStrictEqual(saved.tabs.map((x) => x.title), ['Overview', 'AI EDG'])
+    // window B still shows the old dashboard: its save is refused, and it gets the new one
+    const stale = saveDashboard({ tabs: tabsWith('Overview'), version: windowB })
+    assert.equal(stale.conflict, true)
+    assert.deepStrictEqual(stale.dashboard.tabs.map((x) => x.title), ['Overview', 'AI EDG'], 'the new tab survives')
+    // saving from the latest version works, and each save moves the version on
+    saved = saveDashboard({ tabs: tabsWith('Overview', 'AI EDG', 'Audit'), version: stale.dashboard.version })
+    assert.equal(saved.tabs.length, 3)
+    assert.ok(saved.version > stale.dashboard.version)
+    assert.equal(saveDashboard({ tabs: tabsWith('Overview'), version: stale.dashboard.version }).conflict, true, 'the older version again: refused')
+    // a page from before versions existed can't overwrite anything
+    assert.throws(() => saveDashboard({ tabs: tabsWith('Overview') }), /out of date/)
+    assert.equal(getDashboard().tabs.length, 3)
+})
+// another person's saves don't count against yours
+as('erin', false, () => assert.equal(saveDashboard({ tabs: tabsWith('Mine'), version: -1 }).tabs[0].title, 'Mine'))
 
 console.log('run access tests passed')

@@ -72,8 +72,8 @@ const tile = (c, size) => ({ report: id(c), size: size || 1 })
 const fallback = [tile('a')]
 
 // no dashboard yet, or an unreadable one: the default tab
-assert.deepStrictEqual(readLayout('', fallback), { tabs: [{ id: 'main', title: 'Overview', description: '', tiles: fallback }], custom: false })
-assert.equal(readLayout('{broken', fallback).custom, false)
+assert.deepStrictEqual(readLayout('', fallback), { tabs: [{ id: 'main', title: 'Overview', description: '', tiles: fallback }], custom: false, skipped: [], unreadable: [] })
+assert.equal(readLayout('{broken', fallback).custom, true, 'a saved but unreadable layout still offers Reset')
 
 // a dashboard saved before tabs existed becomes one tab
 const old = readLayout(JSON.stringify([tile('b', 2), tile('c')]), fallback)
@@ -88,7 +88,7 @@ const tabs = [
 ]
 const clean = cleanTabs(tabs)
 assert.equal(clean[0].title, 'Overview')
-assert.deepStrictEqual(readLayout(layoutJson(clean), fallback), { tabs: clean, custom: true })
+assert.deepStrictEqual(readLayout(layoutJson(clean), fallback), { tabs: clean, custom: true, skipped: [], unreadable: [] })
 
 // tiles: bad IDs and repeats on one tab are dropped; a report may be on several tabs
 const t2 = cleanTabs([
@@ -140,6 +140,21 @@ assert.notEqual(reportCacheKey({ ...def, chart: 'donut' }).key, k.key)
 assert.notEqual(reportCacheKey({ ...def, measure: 'privileged' }).key, k.key)
 assert.notEqual(reportCacheKey({ ...def, options: { ops: ['write'] } }).key, k.key)
 assert.deepStrictEqual(reportCacheKey({ ...def, options: { ops: ['read'], limit: undefined } }), k, 'an unset option is no different')
+
+// one tab that can't be read doesn't cost the others, and is kept for the next save
+const good = { id: 'main', title: 'Overview', description: '', tiles: [tile('a')] }
+const broken = { id: 'BAD ID', title: 'AI EDG', tiles: [tile('b')] }
+let read = readLayout(JSON.stringify({ tabs: [good, broken, { ...good, title: 'Copy' }] }), fallback)
+assert.deepStrictEqual(read.tabs.map((x) => x.title), ['Overview'], 'the readable tab is shown; a repeated ID is not')
+assert.deepStrictEqual(read.skipped, ['AI EDG', 'Copy'])
+const resaved = readLayout(layoutJson(read.tabs, read.unreadable), fallback)
+assert.deepStrictEqual(resaved.skipped, ['AI EDG', 'Copy'], 'still kept after saving again')
+assert.deepStrictEqual(resaved.unreadable[0], broken, 'kept exactly as saved')
+read = readLayout(JSON.stringify({ tabs: [broken] }), fallback)
+assert.equal(read.tabs[0].title, 'Overview', 'nothing readable: the default shows')
+assert.equal(read.custom, true, 'but it still counts as the user\'s own dashboard')
+read = readLayout('{not json', fallback)
+assert.deepStrictEqual(read.skipped, ['the saved layout'], 'an unreadable layout says so')
 
 // ---- arranging -----------------------------------------------------------------
 const l = ['a', 'b', 'c', 'd']

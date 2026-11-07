@@ -167,15 +167,31 @@ function myDashboard(): any {
     return d.next() ? d : null
 }
 
-export function getDashboard() {
-    const d = myDashboard()
-    const { tabs, custom } = readLayout(d ? d.getValue('layout') : '', defaultLayout())
-    return { tabs, custom, run: d ? d.getValue('run') || '' : '' }
+/** Each save of a dashboard raises this, so a page can tell whether it's showing the latest one. */
+function versionOf(d: any): number {
+    return d ? parseInt(d.getValue('sys_mod_count') || '0', 10) : -1
 }
 
+export function getDashboard() {
+    const d = myDashboard()
+    const { tabs, custom, skipped } = readLayout(d ? d.getValue('layout') : '', defaultLayout())
+    return { tabs, custom, run: d ? d.getValue('run') || '' : '', version: versionOf(d), skipped }
+}
+
+/**
+ * Saves the caller's dashboard, but only over the version their page started from. A page left
+ * open in another window or device would otherwise write back its older tabs; it gets the latest
+ * dashboard instead, and says so.
+ */
 export function saveDashboard(body: any) {
-    const layout = layoutJson(cleanTabs(body.tabs))
+    const tabs = cleanTabs(body.tabs)
+    if (body.version === undefined || body.version === null)
+        throw new Error("This page is out of date, so your dashboard change wasn't saved. Refresh the page and make the change again.")
     let d = myDashboard()
+    if (parseInt(String(body.version), 10) !== versionOf(d)) return { conflict: true, dashboard: getDashboard() }
+    // tabs this version couldn't read stay as they were
+    const kept = d ? readLayout(d.getValue('layout'), []).unreadable : []
+    const layout = layoutJson(tabs, kept)
     if (!d) {
         d = gr(DASHBOARD)
         d.initialize()

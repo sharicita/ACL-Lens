@@ -11,6 +11,10 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Fixed
+- **Dashboard tabs can't be lost to an older window.** Each save names the version of the dashboard it started from. A page left open in another window or on another device can no longer save its older tabs over newer ones: it shows the latest dashboard and says the change wasn't saved. Pages also pick up changes when you come back to them.
+- **One unreadable tab no longer resets the dashboard.** The other tabs still show, and the unreadable one is kept unchanged instead of being lost on the next save.
+
 ### Changed
 - **Report cards:** the report's title opens its run in a new window, with a pop-out icon and the copy button beside it, replacing the separate run link. The chart icons moved to the top right and the report's tools to the left under the title.
 - **Card layout:** cards can be a full row, half, two thirds or a third of a row, chosen from the width button. Drag a card beside another to place it in that row, or near a card's bottom edge to start a new row under it. The up and down arrows are gone; the Move button offers Earlier, Later, a new row and other tabs for keyboards and touch screens.

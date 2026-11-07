@@ -40,9 +40,17 @@ export default function SaveRunReport({ run, isAdmin, onSaved, onClose }: Props)
         const creating = tabId === NEW_TAB
         const id = creating ? newTabId() : tabId
         const title = creating ? newTitle.trim() || report.name.substring(0, 60) : dash.tabs.filter((t) => t.id === id)[0].title
-        const tabs = creating ? dash.tabs.concat([{ id, title, description: '', tiles: [] }]) : dash.tabs
+        // adds to whatever version is saved now: if the dashboard changed since this opened, try once more on the latest
+        const place = (d: Dashboard) => {
+            const tabs = d.tabs.some((t) => t.id === id) ? d.tabs : d.tabs.concat([{ id, title, description: '', tiles: [] }])
+            return LensApi.saveDashboard({ tabs: addTileToTab(tabs, report.sys_id, id), run: d.run, version: d.version })
+        }
         try {
-            await LensApi.saveDashboard({ tabs: addTileToTab(tabs, report.sys_id, id), run: dash.run })
+            const first = await place(dash)
+            if (first.conflict && first.dashboard) {
+                const second = await place(first.dashboard)
+                if (second.conflict) throw new Error('the dashboard keeps changing in another window')
+            }
             writeActiveTab(id)
             onSaved(`Saved "${report.name}" to the "${title}" dashboard tab.`)
         } catch (e: any) {
