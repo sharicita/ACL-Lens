@@ -13,6 +13,7 @@ import {
 export const x_acllens_ai_provider = Table({
     name: 'x_acllens_ai_provider',
     label: 'ACL Lens AI Provider',
+    audit: true,
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
     display: 'name',
