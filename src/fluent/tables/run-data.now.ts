@@ -5,6 +5,8 @@ import { Table, StringColumn, ReferenceColumn, IntegerColumn } from '@servicenow
 export const x_acllens_run_data = Table({
     name: 'x_acllens_run_data',
     label: 'ACL Lens Run Data',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     schema: {
         run: ReferenceColumn({
             label: 'Run',

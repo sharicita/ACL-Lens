@@ -13,6 +13,8 @@ import {
 export const x_acllens_ai_provider = Table({
     name: 'x_acllens_ai_provider',
     label: 'ACL Lens AI Provider',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     display: 'name',
     schema: {
         name: StringColumn({ label: 'Name', maxLength: 100, mandatory: true }),
@@ -70,6 +72,8 @@ export const x_acllens_ai_provider = Table({
 export const x_acllens_ai_conversation = Table({
     name: 'x_acllens_ai_conversation',
     label: 'ACL Lens AI Conversation',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     display: 'title',
     schema: {
         title: StringColumn({ label: 'Title', maxLength: 200 }),
@@ -83,6 +87,8 @@ export const x_acllens_ai_conversation = Table({
 export const x_acllens_ai_message = Table({
     name: 'x_acllens_ai_message',
     label: 'ACL Lens AI Message',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     schema: {
         conversation: ReferenceColumn({
             label: 'Conversation',

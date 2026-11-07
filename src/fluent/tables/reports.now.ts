@@ -6,6 +6,8 @@ import { Table, StringColumn, ReferenceColumn, IntegerColumn, BooleanColumn } fr
 export const x_acllens_report = Table({
     name: 'x_acllens_report',
     label: 'ACL Lens Report',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     display: 'name',
     schema: {
         name: StringColumn({ label: 'Name', maxLength: 100, mandatory: true }),
@@ -39,6 +41,8 @@ export const x_acllens_report = Table({
 export const x_acllens_dashboard = Table({
     name: 'x_acllens_dashboard',
     label: 'ACL Lens Dashboard',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
     display: 'owner',
     schema: {
         owner: ReferenceColumn({ label: 'Owner', referenceTable: 'sys_user', mandatory: true }),
