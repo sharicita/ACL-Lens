@@ -14,7 +14,7 @@ const { tableWindow, coverageWarning } = require(path.join(build, 'engine', 'tab
 const { cleanTabs, layoutJson, readLayout } = require(path.join(build, 'reports', 'dashboard-layout.js'))
 const { reportCacheKey } = require(path.join(build, 'reports', 'report-cache.js'))
 const { reportLine, dashboardContext, runContext, tableLine, workspaceContext, historyContext } = require(path.join(build, 'client', 'assistant', 'screenContext.js'))
-const { moveItem, moveTileToTab, addTileToTab, runReportDef, sliceGroups } = require(path.join(build, 'client', 'dashboard', 'layout.js'))
+const { moveItem, moveTileToTab, addTileToTab, runReportDef, sliceGroups, spanOf, withSpan, rowsOf, dropTile, dropAtEnd, toggleRow } = require(path.join(build, 'client', 'dashboard', 'layout.js'))
 
 const id = (c) => c.repeat(32)
 
@@ -107,9 +107,13 @@ assert.throws(() => cleanTabs([{ id: 'a', title: 'x' }, { id: 'a', title: 'y' }]
 assert.throws(() => cleanTabs(Array.from({ length: 21 }, (_, i) => ({ id: 't' + i, title: 'x' }))), /up to 20/)
 
 // the largest allowed dashboard still fits the column, so JSON is never cut off
-const fullTiles = Array.from({ length: 40 }, (_, i) => ({ report: i.toString(16).padStart(32, '0'), size: 2 }))
+// the largest allowed dashboard with every card given a width still fits the column
+const fullTiles = Array.from({ length: 40 }, (_, i) => ({ report: i.toString(16).padStart(32, '0'), size: 2, span: 6 }))
 const full = cleanTabs(Array.from({ length: 20 }, (_, i) => ({ id: 't' + i, title: 'T'.repeat(60), description: 'D'.repeat(300), tiles: fullTiles })))
-assert.ok(layoutJson(full).length < 60000)
+assert.ok(layoutJson(full).length < 60000, String(layoutJson(full).length))
+// with every card also choosing a chart and starting a row it doesn't, and says so rather than being cut off
+const extreme = cleanTabs(Array.from({ length: 20 }, (_, i) => ({ id: 't' + i, title: 'T'.repeat(60), description: 'D'.repeat(300), tiles: fullTiles.map((t) => ({ ...t, row: true, chart: 'overlay' })) })))
+assert.throws(() => layoutJson(extreme), /too large to save/)
 
 // a card's chart choice is kept, and anything unknown is dropped
 const charted = cleanTabs([{ id: 'a', title: 'A', tiles: [{ report: id('a'), size: 1, chart: 'pie' }, { report: id('b'), size: 1, chart: 'hologram' }] }])[0].tiles
@@ -206,5 +210,36 @@ assert.ok(['1 to 1,500 of 4,166', 'read: 1 granted, 2 conditional, 3 denied', '1
 assert.equal(tableLine('incident', [{ label: 'Bot', ops: { read: { s: 'G' }, write: { s: 'D' } } }]), 'Table details are open for incident. Bot: read Granted, write Denied.')
 assert.ok(workspaceContext({ subjects: [{ label: 'Bot', type: 'user' }], filter: { mode: 'tables', value: 'incident' } }).summary.join().includes('Bot (user)'))
 assert.equal(historyContext(Array.from({ length: 30 }, () => ({ number: 'A', run_type: 'analyze', status: 'complete' })), false).summary.length, 16, 'a long list is cut down')
+
+// ---- widths and rows -----------------------------------------------------------------
+const card = (c, span, row) => Object.assign({ report: id(c), size: span === 6 ? 2 : 1, span }, row ? { row: true } : {})
+const order = (list) => list.map((x) => x.report[0] + (x.row ? '|' : '')).join(' ')
+assert.equal(spanOf({ report: id('a'), size: 1 }), 3, 'older half card')
+assert.equal(spanOf({ report: id('a'), size: 2 }), 6, 'older full card')
+assert.deepStrictEqual(withSpan({ report: id('a'), size: 1 }, 6), { report: id('a'), size: 2, span: 6 }, 'older pages still see it as full')
+assert.equal(withSpan({ report: id('a'), size: 2 }, 2).size, 1)
+// a, b, c are thirds: one row; d is two thirds: wraps; e starts a row by choice
+let g = [card('a', 2), card('b', 2), card('c', 2), card('d', 4), card('e', 2, true)]
+assert.deepStrictEqual(rowsOf(g), [[0, 1, 2], [3], [4]])
+assert.deepStrictEqual(rowsOf([card('a', 3), card('b', 2), card('c', 2)]), [[0, 1], [2]], 'overflow wraps')
+// beside
+assert.equal(order(dropTile(g, id('e'), id('b'), 'before')), 'a e b c d', 'before b, in its row')
+assert.equal(order(dropTile(g, id('a'), id('c'), 'after')), 'b c a d e|')
+assert.equal(order(dropTile(g, id('e'), id('a'), 'before')), 'e a b c d', 'taking the row start keeps it a row start')
+assert.equal(order(dropTile([card('a', 2, true), card('b', 2)], id('b'), id('a'), 'before')), 'b| a', 'before a row start: becomes the row start')
+// below: a new row under that row, and what was under it stays separate
+assert.equal(order(dropTile(g, id('e'), id('a'), 'below')), 'a b c e| d|')
+assert.equal(order(dropTile(g, id('a'), id('d'), 'below')), 'b c d a| e|')
+// moving a row start lets the next card start the row instead
+assert.equal(order(dropTile([card('a', 3), card('b', 3, true), card('c', 3)], id('b'), id('a'), 'before')), 'b a c|')
+assert.equal(order(dropAtEnd(g, id('a'))), 'b c d e| a|')
+assert.strictEqual(dropTile(g, id('a'), id('a'), 'after'), g, 'onto itself: no change')
+assert.strictEqual(dropTile(g, id('z'), id('a'), 'after'), g, 'unknown card: no change')
+assert.equal(order(toggleRow(g, id('e'))), 'a b c d e')
+assert.equal(order(toggleRow(g, id('b'))), 'a b| c d e|')
+assert.equal(g.map((x) => x.span).join(), '2,2,2,4,2', 'widths kept; input not changed')
+// the server keeps widths and row starts, and drops anything else
+const kept = cleanTabs([{ id: 'a', title: 'A', tiles: [card('a', 4, true), { report: id('b'), size: 1, span: 5, row: 'yes' }] }])[0].tiles
+assert.deepStrictEqual(kept, [{ report: id('a'), span: 4, row: true }, { report: id('b'), size: 1 }])
 
 console.log('dashboard tests passed')

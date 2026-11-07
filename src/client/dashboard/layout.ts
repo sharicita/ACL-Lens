@@ -1,5 +1,5 @@
 // Pure helpers for arranging dashboard tabs and tiles (tested offline).
-import type { DashTab, ReportGroup, ReportOptions, Tile } from './types'
+import type { DashTab, ReportGroup, ReportOptions, Span, Tile } from './types'
 
 /** Most named slices in a pie or donut; the rest join "Other" so the colors stay readable. */
 export const MAX_SLICES = 6
@@ -45,6 +45,91 @@ export function moveTileToTab(tabs: DashTab[], report: string, fromTab: string, 
 export function addTileToTab(tabs: DashTab[], report: string, toTab: string): DashTab[] {
     const tile: Tile = { report, size: 1 }
     return tabs.map((t) => (t.id === toTab && !t.tiles.some((x) => x.report === report) ? { ...t, tiles: t.tiles.concat([tile]) } : t))
+}
+
+// ---- card widths and rows: a 6-column grid -----------------------------------------------
+
+export const COLUMNS = 6
+export const SPANS: { span: Span; label: string }[] = [
+    { span: 6, label: 'Full row' },
+    { span: 3, label: 'Half' },
+    { span: 4, label: 'Two thirds' },
+    { span: 2, label: 'One third' },
+]
+
+/** A card's width in columns. Cards saved before widths could be chosen are half or full. */
+export function spanOf(t: Tile): Span {
+    return t.span || (t.size === 2 ? 6 : 3)
+}
+
+/** A card with this width, still readable by pages from before widths could be chosen. */
+export function withSpan(t: Tile, span: Span): Tile {
+    return { ...t, span, size: span === COLUMNS ? 2 : 1 }
+}
+
+/** Which cards share a row, the way the grid lays them out: a row ends when it's full or a card starts a new one. */
+export function rowsOf(tiles: Tile[]): number[][] {
+    const rows: number[][] = []
+    let used = COLUMNS
+    tiles.forEach((t, i) => {
+        const span = spanOf(t)
+        if (t.row || used + span > COLUMNS) {
+            rows.push([])
+            used = 0
+        }
+        rows[rows.length - 1].push(i)
+        used += span
+    })
+    return rows
+}
+
+export type DropSide = 'before' | 'after' | 'below'
+
+function setRow(t: Tile, row: boolean): Tile {
+    const { row: _old, ...rest } = t
+    return row ? { ...rest, row: true } : rest
+}
+
+/**
+ * Moves a card next to another: beside it (before or after, in the same row) or below it, as the
+ * first card of a new row under that row. The card keeps its width and chart.
+ */
+export function dropTile(tiles: Tile[], dragged: string, target: string, side: DropSide): Tile[] {
+    const from = tiles.findIndex((t) => t.report === dragged)
+    if (from < 0 || dragged === target || tiles.findIndex((t) => t.report === target) < 0) return tiles
+    let list = tiles.slice()
+    const [card] = list.splice(from, 1)
+    // the card after it would otherwise join the row above
+    if (card.row && list[from]) list[from] = setRow(list[from], true)
+    const at = list.findIndex((t) => t.report === target)
+    if (side === 'before') {
+        list.splice(at, 0, setRow(card, !!list[at].row))
+        list[at + 1] = setRow(list[at + 1], false)
+    } else if (side === 'after') {
+        list.splice(at + 1, 0, setRow(card, false))
+    } else {
+        const row = rowsOf(list).filter((r) => r.indexOf(at) >= 0)[0]
+        const end = row[row.length - 1] + 1
+        list.splice(end, 0, setRow(card, true))
+        // what was under that row stays a row of its own
+        if (list[end + 1]) list[end + 1] = setRow(list[end + 1], true)
+    }
+    return list
+}
+
+/** Moves a card to the end, on a row of its own. */
+export function dropAtEnd(tiles: Tile[], dragged: string): Tile[] {
+    const from = tiles.findIndex((t) => t.report === dragged)
+    if (from < 0) return tiles
+    const list = tiles.slice()
+    const [card] = list.splice(from, 1)
+    if (card.row && list[from]) list[from] = setRow(list[from], true)
+    return list.concat([setRow(card, true)])
+}
+
+/** Starts a new row with this card, or lets it join the row above when there's room. */
+export function toggleRow(tiles: Tile[], report: string): Tile[] {
+    return tiles.map((t) => (t.report === report ? setRow(t, !t.row) : t))
 }
 
 /** What a run looks like as a report: its access, or its differences for a comparison run. */

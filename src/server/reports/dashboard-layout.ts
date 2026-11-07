@@ -3,9 +3,14 @@
 
 export interface Tile {
     report: string
-    size: 1 | 2
+    /** width before columns could be chosen (2 full, 1 half); only kept when there's no span */
+    size?: 1 | 2
     /** how this card shows the report; without it, the report's own chart */
     chart?: string
+    /** width out of 6 columns (6, 3, 2 or 4); without it, size decides: 2 full, 1 half */
+    span?: number
+    /** starts a new row */
+    row?: boolean
 }
 
 const CHARTS = ['tile', 'bar', 'overlay', 'pie', 'donut', 'list']
@@ -37,7 +42,9 @@ function cleanTiles(value: unknown): Tile[] {
         const id = t ? String(t.report) : ''
         if (!SYS_ID.test(id) || seen[id] || out.length >= MAX_TILES) continue
         seen[id] = true
-        const tile: Tile = { report: id, size: t.size === 2 ? 2 : 1 }
+        // a span says it all, so size is only kept without one: that keeps the largest dashboard within the column
+        const tile: Tile = [2, 3, 4, 6].indexOf(t.span) >= 0 ? { report: id, span: t.span } : { report: id, size: t.size === 2 ? 2 : 1 }
+        if (t.row === true) tile.row = true
         if (CHARTS.indexOf(t.chart) >= 0) tile.chart = t.chart
         out.push(tile)
     }

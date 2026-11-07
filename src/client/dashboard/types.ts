@@ -90,9 +90,16 @@ export interface ReportData {
     source?: { sys_id: string; number: string; name: string; created: string }
 }
 
+export type Span = 2 | 3 | 4 | 6
+
 export interface Tile {
     report: string
-    size: 1 | 2
+    /** width before columns could be chosen: 1 half, 2 full. Still written for older pages. */
+    size?: 1 | 2
+    /** width out of 6 columns: 6 full row, 3 half, 2 a third, 4 two thirds */
+    span?: Span
+    /** starts a new row, even if there's room beside the card before it */
+    row?: boolean
     /** how this card shows the report; without it, the report's own chart */
     chart?: ChartType
 }

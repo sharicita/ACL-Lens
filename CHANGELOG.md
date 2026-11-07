@@ -12,6 +12,9 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 ## [Unreleased]
 
 ### Changed
+- **Report cards:** the report's title opens its run in a new window, with a pop-out icon and the copy button beside it, replacing the separate run link. The chart icons moved to the top right and the report's tools to the left under the title.
+- **Card layout:** cards can be a full row, half, two thirds or a third of a row, chosen from the width button. Drag a card beside another to place it in that row, or near a card's bottom edge to start a new row under it. The up and down arrows are gone; the Move button offers Earlier, Later, a new row and other tabs for keyboards and touch screens.
+- The **Add a report** buttons are light gray, with text that still meets 4.5:1 contrast.
 - **Saved runs are now private.** Only the person who ran a run and ACL Lens admins can see it, in History, when opening or rerunning it, on the dashboard and through the assistant. Before this, every ACL Lens user could open every run. A shared report tied to someone else's run says so instead of showing its data.
 - Brought the fixes made directly on an instance during the Opus 5 review into the source, so a deploy keeps them: mandatory run and message fields, other scopes can only read ACL Lens tables, AI provider changes are audited, 6 indexes replace the run/kind/seq index, data policies require an API key and endpoint, and Run Records shows to platform admins. Compared with the instance's settings but not yet deployed.
 
