@@ -7,6 +7,7 @@ export const x_acllens_run = Table({
     label: 'ACL Lens Run',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     display: 'number',
     autoNumber: { prefix: 'ALR', number: 1000, numberOfDigits: 7 },
     schema: {

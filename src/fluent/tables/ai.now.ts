@@ -16,6 +16,7 @@ export const x_acllens_ai_provider = Table({
     audit: true,
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     display: 'name',
     schema: {
         name: StringColumn({ label: 'Name', maxLength: 100, mandatory: true }),
@@ -75,6 +76,7 @@ export const x_acllens_ai_conversation = Table({
     label: 'ACL Lens AI Conversation',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     display: 'title',
     schema: {
         title: StringColumn({ label: 'Title', maxLength: 200 }),
@@ -90,6 +92,7 @@ export const x_acllens_ai_message = Table({
     label: 'ACL Lens AI Message',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     schema: {
         conversation: ReferenceColumn({
             label: 'Conversation',

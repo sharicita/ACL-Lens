@@ -7,6 +7,7 @@ export const x_acllens_run_data = Table({
     label: 'ACL Lens Run Data',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     schema: {
         run: ReferenceColumn({
             label: 'Run',

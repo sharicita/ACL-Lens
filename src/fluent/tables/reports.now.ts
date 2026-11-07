@@ -8,6 +8,7 @@ export const x_acllens_report = Table({
     label: 'ACL Lens Report',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     display: 'name',
     schema: {
         name: StringColumn({ label: 'Name', maxLength: 100, mandatory: true }),
@@ -44,6 +45,7 @@ export const x_acllens_dashboard = Table({
     label: 'ACL Lens Dashboard',
     actions: { read: true, create: false, update: false, delete: false },
     allowConfiguration: false,
+    allowNewFields: false,
     display: 'owner',
     schema: {
         owner: ReferenceColumn({ label: 'Owner', referenceTable: 'sys_user', mandatory: true }),
