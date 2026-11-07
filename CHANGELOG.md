@@ -11,6 +11,14 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-06
+
+### Added
+- **Evaluate as API access** now includes Machine Identity Access Control (MIAC). A table the user's MIAC doesn't list, or a request none of its referenced policies cover, shows as Denied with the reason. Machine accounts show Conditional when no MIAC names them, when several disagree, or when the records can't be read or recognized on the instance. Human accounts no MIAC names are unaffected. Checked with offline tests only: not yet run on an instance that has MIAC records, and its column names are unconfirmed.
+
+### Documentation
+- The user guide and engine document no longer say REST API access policies, OAuth scopes and API-level ACLs are "not evaluated"; that has been out of date since 1.2.0.
+
 ## [1.6.0] - 2026-11-06
 
 ### Added

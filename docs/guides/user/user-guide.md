@@ -91,7 +91,14 @@ Shown to people with the `admin`, `user_admin` or `access_analyzer_admin` role (
 - The check is for the table, not a particular record: conditions and scripts are not run. *Export* downloads every operation checked as CSV. Nothing is saved or changed, and changing the baseline clears the results.
 
 ### Machine and API-only accounts
-When a user is a machine identity, an AI agent identity, *Web service access only*, or an internal integration user, the run shows a warning. ACL Lens (and the live check) evaluate record ACLs and security data filters. **OAuth scopes on the token, REST API access policies and API-level ACLs are not evaluated** and can narrow that account's real access further. Test those through the integration itself.
+When a user is a machine identity, an AI agent identity, *Web service access only*, or an internal integration user, the run shows a warning. Without API access turned on, ACL Lens evaluates only record ACLs and security data filters.
+
+Tick **Evaluate as API access** on the run form (the section opens for these users) to also check the OAuth auth scope, the REST API access policy, Machine Identity Access Control (MIAC), the API's own ACLs and the table's web-service access:
+
+- **MIAC:** a table the user's MIAC doesn't list is Denied, and so is a request none of its referenced policies cover, whatever roles the user holds.
+- **Conditional:** a machine account shows Conditional when no MIAC names it, when several MIACs disagree, or when MIAC records can't be read or recognized on your instance. Adaptive authentication conditions and tokens from an external identity provider are also Conditional.
+
+The live check and Access Analyzer don't apply MIAC, so they can show a pass that a real REST call refuses. Test important results through the integration itself.
 
 ### Matrix
 - **Click any C (Conditional) cell** (table or field row) to see right there **why it's Conditional**: the rule(s) that decide record by record, with the condition, the script (if you can read ACL scripts) and the description already open. *Open full details* goes to the table panel. Esc closes it.

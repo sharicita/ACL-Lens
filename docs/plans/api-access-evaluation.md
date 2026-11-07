@@ -77,6 +77,16 @@ New module `src/server/engine/api-access.ts` (pure logic + a loader in the same 
 - [ ] Docs: ADR-0008 (static API-gate evaluation), update `03-access-evaluation-engine.md` §1/§4/§7, `user-guide.md` ("Machine and API-only accounts"), `data-dictionary.md`, `api-reference.md`, `build-log.md`, `lessons-learned.md`.
 - [ ] Before push: `npm test`, build type-checks, `git grep` for instance identifiers.
 
+## Machine Identity Access Control, identity map and outside test
+
+Added 2026-11-06, to test an outside AI's real access. Phases are numbered separately from the phases above.
+
+- [x] **Phase 1: MIAC evaluation** (v1.7.0). `miacDecision`, `matchMiacColumns`, `loadMiac`, the cross-scope read and five reason codes. See `03-access-evaluation-engine.md` §10. Offline tests only.
+- [ ] **Confirm MIAC on an instance that has it** (§10 lists what to confirm), then replace label matching if the schema calls for it.
+- [ ] **Phase 2: identity map and page.** Start from a `sys_user`: roles → ACLs → REST resources; MIAC → policies and tables; `oauth_entity.user` → scopes, policies and profiles. `GET /identity/{id}/access` and an "AI and Machine Access" page with findings.
+- [ ] **Phase 3: outside probe.** A generated pack of read-only GETs with predicted results, run outside the instance with the integration's own token; results pasted back and compared with the prediction. The app never holds the token.
+- [ ] **Phase 4: walkthrough and docs.** Guided steps, ⓘ hints, optional `/ping`, ADR-0008.
+
 ## Out of scope
 
 Domain separation, SOAP / GraphQL / JSONv2 processors, outbound OAuth, rate limits, IP access controls (`ip_access`), and replaying real tokens.

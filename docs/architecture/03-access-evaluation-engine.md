@@ -72,7 +72,7 @@ Each cell stores the matched level (`lvl`), the deny-unless level (`dlvl`) and e
 | Query business rules, before-query rules | Rows may be hidden even when ACLs allow | Assistant troubleshooting guidance; live check with a record |
 | Security data filters | Folded in: Granted becomes Conditional where a filter applies (§4) | Data filters tab; live check |
 | Access handlers, data filtration | Not readable as records: they only appear in the platform's live evaluation | **Verify live** (whole run, as the baseline) or the **Live** tab (one table) |
-| OAuth token scopes, REST API access policies, API-level ACLs | Not evaluated, statically or live; machine, AI agent, web-service-only and integration users get a run warning (`account.ts`) | Test through the integration |
+| OAuth token scopes, REST API access policies, MIAC, API-level ACLs | Evaluated statically only when the run has an API context (§9, §10). Not covered by the live check. Machine, AI agent, web-service-only and integration users get a run warning (`account.ts`) | Test through the integration |
 | Domain separation | Not modelled | Test in the domain |
 | UI policies / client scripts | Fields may be hidden or read-only on forms | Form testing |
 | Non-record ACL types (REST, UI page, client-callable…) | Not shown | Platform ACL list |
@@ -156,3 +156,21 @@ A role-only ACL Lens user will see little or nothing here. Reads use `GlideRecor
 ### Release guards
 
 Queried on the Australia release (`glide-australia-02-11-2026__patch1`); older releases were not available to test. Guard with `isValid()` on each table and `isValidField()` on `sys_ws_operation.requires_snc_internal_role`, `oauth_entity.scope_restriction_status`, `sys_api_access_policy.apply_global` / `api_tablename`, `sys_api_access_scope.disable_client_restriction` and `sys_db_object.ws_access`. When a table or column is missing, the gate result is "not available on this release" (Conditional), never Denied.
+
+## 10. Machine Identity Access Control (MIAC)
+
+Table: `sys_security_machine_identity_access_control`. **Not confirmed on an instance by this project.** The behavior below comes from setup notes on another instance, and the development instance has no MIAC configured. Form fields known: Name, REST API Access Policies, Tables, Applies to child tables, Users.
+
+| Rule | Evidence | Result in the gate |
+|---|---|---|
+| A table the user's MIAC doesn't list is refused, whatever the roles | Observed (403 "Failed Machine Identity access validation") | Denied, `miactable` |
+| A listed table no referenced policy covers is refused | Observed | Denied, `miacpolicy` |
+| An API no referenced policy covers is refused | Stated in the notes for APIs; only the Table API was observed | Denied, `miacpolicy` |
+| A machine account no MIAC names | Unknown | Conditional, `miacnone` |
+| Several MIACs name one user | Unknown | Pass if all pass, Denied if all refuse, otherwise Conditional, `miacmulti` |
+| Table missing, unreadable or columns not recognized | Fails safe by design | Conditional for non-human accounts, `miacunknown` |
+| Human account no MIAC names, role and group subjects | Assumption: MIAC names users, and the notes only describe machine users | Not affected |
+
+**Column discovery.** `matchMiacColumns` finds columns by form label rather than assuming names. If users or policies live in a many-to-many table (as a design diagram suggests), no column matches, the state is `unverified` and the result is Conditional. Reading such a table would also need its own cross-scope privilege.
+
+**To confirm on an instance that has MIAC:** the column names and types, any join tables, the read roles, whether the Tables list holds names or sys_ids, whether a machine account with no MIAC is refused, and how several MIACs combine.

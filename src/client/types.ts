@@ -94,7 +94,7 @@ export interface Cell {
     acl?: Status
 }
 
-export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden'
+export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden' | 'miactable' | 'miacpolicy' | 'miacnone' | 'miacmulti' | 'miacunknown'
 
 /** What an API run is evaluated as; `api` is `now/table` or `<namespace>/<service_id>` */
 export interface ApiContext {

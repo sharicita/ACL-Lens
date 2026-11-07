@@ -92,12 +92,42 @@ export interface ApiInputs {
     order?: string[]
     /** API configuration tables the signed-in user can't read: the gate can't be fully evaluated */
     hidden?: string[]
+    /** Machine Identity Access Control records; absent means the check is not part of this evaluation */
+    miac?: MiacInputs
+}
+
+/** One Machine Identity Access Control record: which users may use which policies and tables. */
+export interface MiacRecord {
+    id: string
+    /** sys_user sys_ids */
+    users: string[]
+    /** sys_api_access_policy sys_ids */
+    policies: string[]
+    /** table names */
+    tables: string[]
+    /** "Applies to child tables": a listed table also covers the tables that extend it */
+    childTables: boolean
+}
+
+export interface MiacInputs {
+    /**
+     * ok         - the records were read
+     * absent     - the table doesn't exist on this instance
+     * hidden     - the signed-in user can't read the records
+     * unverified - the table's columns aren't the ones expected, so the records can't be trusted
+     */
+    state: 'ok' | 'absent' | 'hidden' | 'unverified'
+    records: MiacRecord[]
 }
 
 export interface ApiSubject {
     /** how the subject fares against one ACL (the engine's Evaluator.evalAcl) */
     evalAcl(acl: AclInfo): { r: AclResult; c: Reason }
     hasRole(role: string): boolean
+    /** sys_user sys_id; empty for role and group subjects, which MIAC records don't name */
+    userId?: string
+    /** a machine, AI agent, web-service-only or integration account */
+    nonHuman?: boolean
 }
 
 const API_PATH = /^[A-Za-z0-9_\-./]{1,120}$/
@@ -276,14 +306,85 @@ export function endpointDecision(endpoint: RestEndpoint, inputs: ApiInputs, subj
     return { r: !res && r !== 'F' ? 'C' : r, out, acls }
 }
 
+export interface MiacColumns {
+    users: string
+    policies: string
+    tables: string
+    childTables: string
+}
+
+/**
+ * Finds the MIAC columns by their form labels. The column names haven't been confirmed on an instance,
+ * so they aren't assumed. Returns null unless each label matches exactly one column on the table itself,
+ * which is also the result when users or policies are held in a separate many-to-many table.
+ */
+export function matchMiacColumns(elements: { name: string; label: string }[]): MiacColumns | null {
+    const own = elements.filter((e) => e.name.indexOf('sys_') !== 0)
+    const one = (label: RegExp): string => {
+        const hits = own.filter((e) => label.test(e.label))
+        return hits.length === 1 ? hits[0].name : ''
+    }
+    const users = one(/^users?$/i)
+    const policies = one(/polic/i)
+    const tables = one(/^tables?$/i)
+    const childTables = one(/child/i)
+    return users && policies && tables && childTables ? { users, policies, tables, childTables } : null
+}
+
+export interface MiacDecision {
+    r: 'P' | 'F' | 'C'
+    why?: ApiReason
+}
+
+/** One MIAC record against one request: the table must be listed and a referenced policy must cover it. */
+function miacRecordDecision(rec: MiacRecord, ctx: ApiContext, chain: string[], method: string, inputs: ApiInputs): MiacDecision {
+    if (ctx.api === TABLE_API_PATH) {
+        const table = chain[0]
+        const names = rec.childTables ? chain : [table]
+        if (!names.some((n) => rec.tables.indexOf(n) >= 0)) return { r: 'F', why: 'miactable' }
+    }
+    const referenced = inputs.policies.filter((p) => rec.policies.indexOf(p.id) >= 0)
+    if (referenced.some((p) => policyLevel(p, ctx, chain[0], method) > 0)) return { r: 'P' }
+    if (referenced.some((p) => resourcePending(p, ctx, method))) return { r: 'C', why: 'ext' }
+    // the referenced policy may exist but be unreadable: that is not the same as not covered
+    if (inputs.hidden && inputs.hidden.indexOf('sys_api_access_policy') >= 0) return { r: 'C', why: 'miacunknown' }
+    return { r: 'F', why: 'miacpolicy' }
+}
+
+/**
+ * The MIAC check for one request. `chain` is the table followed by its parents.
+ *
+ * Observed on an instance: a MIAC refuses every API and table it doesn't list, whatever the roles, and
+ * a listed table that its referenced policies don't cover is still refused. Not confirmed, so reported
+ * as Conditional: whether a machine account with no MIAC at all is refused, and how several records
+ * naming one user combine. Returns null when the check says nothing about this subject: role and group
+ * subjects, and human accounts no record names.
+ */
+export function miacDecision(ctx: ApiContext, chain: string[], method: string, inputs: ApiInputs, subject: ApiSubject): MiacDecision | null {
+    const miac = inputs.miac
+    const userId = subject.userId
+    if (!miac || !userId) return null
+    const named = miac.state === 'ok' ? miac.records.filter((r) => r.users.indexOf(userId) >= 0) : []
+    if (!named.length) {
+        if (!subject.nonHuman) return null
+        return { r: 'C', why: miac.state === 'ok' ? 'miacnone' : 'miacunknown' }
+    }
+    const results = named.map((r) => miacRecordDecision(r, ctx, chain, method, inputs))
+    const failed = results.filter((d) => d.r === 'F')
+    if (failed.length === results.length) return failed[0]
+    if (failed.length) return { r: 'C', why: 'miacmulti' }
+    return results.find((d) => d.r === 'C') || { r: 'P' }
+}
+
 const worst = (a: Status, b: Status): Status => (a === 'D' || b === 'D' ? 'D' : a === 'C' || b === 'C' ? 'C' : 'G')
 const fromR = (r: 'P' | 'F' | 'C'): Status => (r === 'F' ? 'D' : r === 'C' ? 'C' : 'G')
 
 /**
  * The API gate for one table. `wsAccess` is sys_db_object.ws_access (Table API only). `inputs.endpoint`
- * is set for Scripted REST APIs. Operations are evaluated by the REST method(s) they use.
+ * is set for Scripted REST APIs. Operations are evaluated by the REST method(s) they use. `chain` is the
+ * table followed by its parents (used for MIAC's "Applies to child tables").
  */
-export function evalApiGate(ctx: ApiContext, table: string, wsAccess: boolean, ops: Op[], inputs: ApiInputs, subject: ApiSubject): ApiGate {
+export function evalApiGate(ctx: ApiContext, table: string, wsAccess: boolean, ops: Op[], inputs: ApiInputs, subject: ApiSubject, chain: string[] = [table]): ApiGate {
     const why: ApiReason[] = []
     const add = (w: ApiReason) => {
         if (why.indexOf(w) < 0) why.push(w)
@@ -337,6 +438,12 @@ export function evalApiGate(ctx: ApiContext, table: string, wsAccess: boolean, o
                 s = worst(s, 'C')
                 add('ext')
             }
+        }
+        for (const m of methods) {
+            const d = miacDecision(ctx, chain, m, inputs, subject)
+            if (!d || d.r === 'P') continue
+            s = worst(s, fromR(d.r))
+            if (d.why) add(d.why)
         }
         perOp[op] = s
     }

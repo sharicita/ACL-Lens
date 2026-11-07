@@ -713,3 +713,13 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 | **Status** | Offline tests and SDK build pass; not on a PDI |
 
 - **Changed:** `table-window.ts` picks the alphabetical slice of matched tables for a run, and `startAfter` lets the next run continue from it. `RunCoverage` shows what a capped run covers and offers **Run next set**.
+
+## 1.34 Machine Identity Access Control (v1.7.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** API access evaluation now includes MIAC, with a cross-scope read and five reason codes. See `03-access-evaluation-engine.md` §10.
+- **Not done:** not yet run on an instance that has MIAC records, and its column names are unconfirmed.

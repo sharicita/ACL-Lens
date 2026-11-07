@@ -646,6 +646,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '29947ea9d9ef46908aa8b76d8409781e'
                     }
+                    'xscope-read-sys_security_machine_identity_access_control': {
+                        table: 'sys_scope_privilege'
+                        id: '5048f5a54e054ba7b928e533362f7345'
+                    }
                     'xscope-read-sys_security_operation': {
                         table: 'sys_scope_privilege'
                         id: 'edb398d4a7a04c8a80732cb7ccc01631'

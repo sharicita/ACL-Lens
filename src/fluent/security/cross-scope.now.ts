@@ -123,6 +123,15 @@ CrossScopePrivilege({
 // Tables behind the API access gate (REST API access policies, auth scopes, Scripted REST ACLs).
 // sys_db_object.ws_access is already covered by the sys_db_object privilege above.
 CrossScopePrivilege({
+    $id: Now.ID['xscope-read-sys_security_machine_identity_access_control'],
+    status: 'allowed',
+    operation: 'read',
+    targetName: 'sys_security_machine_identity_access_control',
+    targetScope: 'global',
+    targetType: 'sys_db_object',
+})
+
+CrossScopePrivilege({
     $id: Now.ID['xscope-read-sys_api_access_policy'],
     status: 'allowed',
     operation: 'read',

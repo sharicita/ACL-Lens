@@ -1,6 +1,6 @@
 import { GlideRecordSecure } from '@servicenow/glide'
 import { aclInfoFromRow } from './acl-index.ts'
-import { AccessPolicy, ApiInputs, ApiScopeRow, InboundProfile, OauthEntityInfo, RestEndpoint, RestResource, TABLE_API_PATH } from './api-access.ts'
+import { AccessPolicy, ApiInputs, ApiScopeRow, InboundProfile, matchMiacColumns, MiacInputs, MiacRecord, OauthEntityInfo, RestEndpoint, RestResource, TABLE_API_PATH } from './api-access.ts'
 import { bool, chunk, gr } from './glide.ts'
 import { AclInfo, ApiContext } from './types.ts'
 
@@ -19,6 +19,7 @@ export interface ApiLoad {
 
 const API_PATH = /^[A-Za-z0-9_\-./]+$/
 const SYS_ID = /^[0-9a-f]{32}$/
+const MIAC_TABLE = 'sys_security_machine_identity_access_control'
 
 function open(table: string, hidden: string[]): any | null {
     const g = new GlideRecordSecure(table) as any
@@ -100,10 +101,63 @@ export function loadApiInputs(ctx: ApiContext): ApiLoad {
     })
 
     if (ctx.oauthEntity) loadScopes(ctx, inputs, hidden)
+    inputs.miac = loadMiac()
 
     const acls: AclInfo[] = []
     if (ctx.api !== TABLE_API_PATH) inputs.endpoint = loadEndpoint(ctx, inputs, acls, hidden)
     return { inputs, acls, attributeNames: () => acls.map((a) => a.securityAttribute).filter((n) => !!n) }
+}
+
+/**
+ * Reads the MIAC records. Not reported through `hidden`, because that would make the gate Conditional
+ * for human accounts too. Anything unexpected yields a state other than 'ok', which the gate treats as
+ * "couldn't be evaluated", never as allowed. Not yet run on an instance that has MIAC records.
+ */
+function loadMiac(): MiacInputs {
+    const none = (state: MiacInputs['state']): MiacInputs => ({ state, records: [] })
+    try {
+        const g = new GlideRecordSecure(MIAC_TABLE) as any
+        if (!g.isValid()) return none('absent')
+        if (!g.canRead()) return none('hidden')
+        const elements: { name: string; label: string }[] = []
+        const found = g.getElements()
+        for (let i = 0; i < found.length; i++) elements.push({ name: String(found[i].getName()), label: String(found[i].getLabel()) })
+        const columns = matchMiacColumns(elements)
+        if (!columns) return none('unverified')
+        if (g.isValidField('active')) g.addQuery('active', true)
+        g.query()
+        const records: MiacRecord[] = []
+        const lists = [columns.users, columns.policies, columns.tables]
+        while (g.next()) {
+            // a field the user can't read comes back empty, which must not look like "lists nothing"
+            if (lists.some((c) => !g.getElement(c).canRead())) return none('hidden')
+            records.push({
+                id: g.getUniqueValue(),
+                users: list(g.getValue(columns.users)),
+                policies: list(g.getValue(columns.policies)),
+                tables: list(g.getValue(columns.tables)),
+                childTables: bool(g.getValue(columns.childTables)),
+            })
+        }
+        resolveTableNames(records)
+        return { state: 'ok', records }
+    } catch (e) {
+        return none('unverified')
+    }
+}
+
+/** The Tables list may hold table names or sys_db_object sys_ids: turn sys_ids into names. */
+function resolveTableNames(records: MiacRecord[]) {
+    const ids: { [id: string]: boolean } = {}
+    for (const r of records) for (const t of r.tables) if (SYS_ID.test(t)) ids[t] = true
+    const names: { [id: string]: string } = {}
+    for (const part of chunk(Object.keys(ids), 200)) {
+        const d = gr('sys_db_object')
+        d.addQuery('sys_id', 'IN', part.join(','))
+        d.query()
+        while (d.next()) names[d.getUniqueValue()] = d.getValue('name')
+    }
+    for (const r of records) r.tables = r.tables.map((t) => names[t] || t)
 }
 
 function loadScopes(ctx: ApiContext, inputs: ApiInputs, hidden: string[]) {

@@ -284,6 +284,110 @@ test('gate: hidden configuration does not soften a denial', () => {
     assert.strictEqual(g.s, 'D')
 })
 
+// --- Machine Identity Access Control -----------------------------------------------------------
+const { miacDecision, matchMiacColumns } = require(path.join(BUILD, 'engine', 'api-access.js'))
+const miacRec = (extra = {}) => Object.assign({ id: 'm', users: ['u1'], policies: ['p'], tables: ['incident'], childTables: false }, extra)
+const miacInputs = (records = [miacRec()], extra = {}) => inputs(Object.assign({ policies: [pol()], miac: { state: 'ok', records } }, extra))
+const machine = (extra = {}) => Object.assign(subject(), { userId: 'u1', nonHuman: true }, extra)
+const miac = (i, s = machine(), chain = ['incident', 'task'], c = ctx()) => miacDecision(c, chain, 'GET', i, s)
+
+test('miac: a listed table covered by a referenced policy passes', () => assert.deepStrictEqual(miac(miacInputs()), { r: 'P' }))
+test('miac: a table not listed is refused whatever the roles', () => {
+    const s = Object.assign(subject(['admin']), { userId: 'u1', nonHuman: true })
+    assert.deepStrictEqual(miac(miacInputs([miacRec({ tables: ['pm_project'] })]), s), { r: 'F', why: 'miactable' })
+})
+test('miac: a listed table no referenced policy covers is still refused', () => {
+    const covered = pol({ allTables: false, tables: ['pm_project'] })
+    assert.deepStrictEqual(miac(miacInputs(undefined, { policies: [covered] })), { r: 'F', why: 'miacpolicy' })
+})
+test('miac: a policy the record does not reference gives no coverage', () => {
+    assert.deepStrictEqual(miac(miacInputs(undefined, { policies: [pol({ id: 'other' })] })), { r: 'F', why: 'miacpolicy' })
+})
+test('miac: an inactive referenced policy gives no coverage', () => {
+    assert.deepStrictEqual(miac(miacInputs(undefined, { policies: [pol({ active: false })] })), { r: 'F', why: 'miacpolicy' })
+})
+test('miac: a referenced policy the user cannot read is Conditional, not refused', () => {
+    assert.deepStrictEqual(miac(miacInputs(undefined, { policies: [], hidden: ['sys_api_access_policy'] })), { r: 'C', why: 'miacunknown' })
+})
+test('miac: a parent table covers a child only with "Applies to child tables"', () => {
+    const on = miacRec({ tables: ['task'], childTables: true })
+    const off = miacRec({ tables: ['task'], childTables: false })
+    assert.deepStrictEqual(miac(miacInputs([on])), { r: 'P' })
+    assert.deepStrictEqual(miac(miacInputs([off])), { r: 'F', why: 'miactable' })
+})
+test('miac: a Scripted REST API needs a covering policy, not a table', () => {
+    const c = { api: 'x/svc', version: 'v1', resource: '/x' }
+    const p = pol({ apiPath: 'x/svc' })
+    assert.deepStrictEqual(miac(miacInputs([miacRec({ tables: [] })], { policies: [p] }), machine(), ['incident'], c), { r: 'P' })
+    assert.deepStrictEqual(miac(miacInputs([miacRec({ tables: [] })], { policies: [] }), machine(), ['incident'], c), { r: 'F', why: 'miacpolicy' })
+})
+test('miac: a machine account no record names is Conditional', () => {
+    assert.deepStrictEqual(miac(miacInputs(), machine({ userId: 'u2' })), { r: 'C', why: 'miacnone' })
+})
+test('miac: a human account no record names is not affected', () => {
+    assert.strictEqual(miac(miacInputs(), machine({ userId: 'u2', nonHuman: false })), null)
+})
+test('miac: a human account a record names is evaluated', () => {
+    assert.deepStrictEqual(miac(miacInputs([miacRec({ tables: [] })]), machine({ nonHuman: false })), { r: 'F', why: 'miactable' })
+})
+test('miac: role and group subjects are not affected', () => assert.strictEqual(miac(miacInputs(), subject()), null))
+test('miac: several records that disagree are Conditional, several that pass are a pass', () => {
+    const a = miacRec({ id: 'a' })
+    const b = miacRec({ id: 'b', tables: ['pm_project'] })
+    assert.deepStrictEqual(miac(miacInputs([a, b])), { r: 'C', why: 'miacmulti' })
+    assert.deepStrictEqual(miac(miacInputs([a, miacRec({ id: 'c' })])), { r: 'P' })
+})
+for (const state of ['absent', 'hidden', 'unverified']) {
+    test(`miac: state ${state} is Conditional for a machine account and ignored for a human`, () => {
+        const i = inputs({ miac: { state, records: [] } })
+        assert.deepStrictEqual(miac(i), { r: 'C', why: 'miacunknown' })
+        assert.strictEqual(miac(i, machine({ nonHuman: false })), null)
+    })
+}
+test('miac: no MIAC input means no check', () => assert.strictEqual(miac(inputs()), null))
+test('gate: a table the MIAC does not list is denied and says why', () => {
+    const g = evalApiGate(ctx(), 'incident', true, OPS, miacInputs([miacRec({ tables: ['pm_project'] })]), machine())
+    assert.strictEqual(g.s, 'D')
+    assert.ok(g.why.includes('miactable'))
+})
+test('gate: MIAC can differ by operation through a method-specific policy', () => {
+    const get = pol({ allMethods: false, method: 'GET' })
+    const g = evalApiGate(ctx(), 'incident', true, ['read', 'write'], miacInputs(undefined, { policies: [get] }), machine())
+    assert.strictEqual(g.s, 'D')
+    assert.strictEqual(g.ops.read, 'G')
+})
+test('gate: an unreadable MIAC turns a passing gate Conditional for a machine account only', () => {
+    const i = inputs({ miac: { state: 'hidden', records: [] } })
+    assert.strictEqual(evalApiGate(ctx(), 'incident', true, OPS, i, machine()).s, 'C')
+    assert.strictEqual(evalApiGate(ctx(), 'incident', true, OPS, i, machine({ nonHuman: false })).s, 'G')
+})
+test('gate: an unreadable MIAC does not soften a denial', () => {
+    assert.strictEqual(evalApiGate(ctx(), 'incident', false, OPS, inputs({ miac: { state: 'hidden', records: [] } }), machine()).s, 'D')
+})
+test('miac columns: found by label, ignoring system columns', () => {
+    const cols = [
+        { name: 'u_people', label: 'Users' },
+        { name: 'u_pol', label: 'REST API Access Policies' },
+        { name: 'u_tbl', label: 'Tables' },
+        { name: 'u_kids', label: 'Applies to child tables' },
+        { name: 'sys_updated_by', label: 'Users' },
+    ]
+    assert.deepStrictEqual(matchMiacColumns(cols), { users: 'u_people', policies: 'u_pol', tables: 'u_tbl', childTables: 'u_kids' })
+})
+test('miac columns: a missing or ambiguous column is not guessed', () => {
+    assert.strictEqual(matchMiacColumns([{ name: 'u_pol', label: 'Policies' }, { name: 'u_tbl', label: 'Tables' }, { name: 'u_kids', label: 'Applies to child tables' }]), null)
+    assert.strictEqual(
+        matchMiacColumns([
+            { name: 'a', label: 'Users' },
+            { name: 'b', label: 'User' },
+            { name: 'u_pol', label: 'Policies' },
+            { name: 'u_tbl', label: 'Tables' },
+            { name: 'u_kids', label: 'Applies to child tables' },
+        ]),
+        null
+    )
+})
+
 const SYS = 'a'.repeat(32)
 test('request cleaning: no API means no API run', () => {
     assert.strictEqual(normalizeApiContext(undefined), undefined)

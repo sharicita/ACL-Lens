@@ -149,8 +149,13 @@ export interface Cell {
  * ext         - depends on something not resolvable statically (external IdP token, a resource not chosen)
  * endpoint    - Scripted REST endpoint ACLs / resource flags decided it
  * hidden      - the signed-in user can't read some of the API configuration, so it could not be evaluated
+ * miactable   - the user's Machine Identity Access Control record doesn't list this table
+ * miacpolicy  - none of the REST API access policies the user's MIAC references cover this request
+ * miacnone    - a machine account no MIAC names; whether that is refused is not confirmed
+ * miacmulti   - several MIACs name the user and disagree; how they combine is not confirmed
+ * miacunknown - the MIAC records could not be read or recognized on this instance
  */
-export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden'
+export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden' | 'miactable' | 'miacpolicy' | 'miacnone' | 'miacmulti' | 'miacunknown'
 
 /** What an API run is evaluated as. `api` is the API path: `now/table` or `<namespace>/<service_id>`. */
 export interface ApiContext {

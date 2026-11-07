@@ -3,6 +3,7 @@ import { AclIndex } from './acl-index.ts'
 import { AttributeInfo } from './attributes.ts'
 import { DataFilterIndex, dataFilterOutcomes, loadAttributes } from './data-filters.ts'
 import { Evaluator, applyDataFilters, emptyCounts } from './evaluator.ts'
+import { isNonHuman } from './account.ts'
 import { ApiSubject, applyApiGate, evalApiGate } from './api-access.ts'
 import { ApiLoad, loadApiInputs } from './api-loader.ts'
 import { accountWarning } from './account.ts'
@@ -123,8 +124,14 @@ function evaluateTable(
     if (sdf.length) out.sdf = sdf
     applyDataFilters(ops, sdf)
     if (ctx.api) {
-        const who: ApiSubject = { evalAcl: (a) => ev.evalAcl(a), hasRole: (r) => !!ev.roles()[r] }
-        out.api = evalApiGate(ctx.api.ctx, table, ctx.schema.wsAccess(table), TABLE_OPS, ctx.api.load.inputs, who)
+        const subject = ev.who()
+        const who: ApiSubject = {
+            evalAcl: (a) => ev.evalAcl(a),
+            hasRole: (r) => !!ev.roles()[r],
+            userId: subject.type === 'user' ? subject.id : '',
+            nonHuman: isNonHuman(subject),
+        }
+        out.api = evalApiGate(ctx.api.ctx, table, ctx.schema.wsAccess(table), TABLE_OPS, ctx.api.load.inputs, who, chain)
         applyApiGate(ops, out.api)
     }
     return out

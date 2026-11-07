@@ -102,4 +102,9 @@ export const API_REASON_TEXT: { [c: string]: string } = {
     ext: "Depends on something that can't be resolved without a live request (a token from an external identity provider, or a resource that wasn't chosen).",
     endpoint: "The Scripted REST API's own ACLs or resource settings (authentication, ACL authorization, internal role) decide this.",
     hidden: "You can't read some of the API configuration (policies, scopes or applications), so those checks couldn't be evaluated.",
+    miactable: "This user's Machine Identity Access Control record doesn't list this table, so the request is refused whatever the user's roles are.",
+    miacpolicy: "This user's Machine Identity Access Control record references no REST API access policy that covers this request, so it is refused even if the table is listed.",
+    miacnone: "No Machine Identity Access Control record names this machine account. Whether that means it's refused isn't confirmed, so test it through the integration.",
+    miacmulti: "Several Machine Identity Access Control records name this user and they disagree. How they combine isn't confirmed, so test it through the integration.",
+    miacunknown: "Machine Identity Access Control records couldn't be read or recognized on this instance, so that check couldn't be evaluated. It may refuse this request.",
 }
