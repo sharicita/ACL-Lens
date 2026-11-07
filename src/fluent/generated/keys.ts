@@ -85,6 +85,22 @@ declare global {
                         table: 'sys_security_acl'
                         id: 'd66e774684b84195b6e57bd6abeb11f4'
                     }
+                    'ai-provider-policy-api-key': {
+                        table: 'sys_data_policy2'
+                        id: 'df12577c689b4b3cada0d8f8df4a51ef'
+                    }
+                    'ai-provider-policy-api-key-rule': {
+                        table: 'sys_data_policy_rule'
+                        id: '197484ba6f974aa896040841f75d12d2'
+                    }
+                    'ai-provider-policy-endpoint': {
+                        table: 'sys_data_policy2'
+                        id: '4a05b164fd334800a2d3b8d58a874dc7'
+                    }
+                    'ai-provider-policy-endpoint-rule': {
+                        table: 'sys_data_policy_rule'
+                        id: 'c95636e0803f4106ab9903fee5f96a66'
+                    }
                     'ai-provider-test': {
                         table: 'sys_ui_action'
                         id: '62c339ed514f43238ef47e17e44e3d4f'
