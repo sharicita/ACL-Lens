@@ -753,3 +753,14 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Added:** each page describes itself to the Security Assistant in short lines of plain facts (`src/client/assistant/screenContext.ts`), sent with every question. Totals and top groups only, no row data, capped at 40 lines and 6,000 characters, and marked as data rather than instructions.
 - **Added:** copy buttons beside report and run names, chart icons and an Add a report card on the dashboard.
 - **Changed:** a report's title bar stops being draggable while its name is pressed, so the name can be highlighted. Clicking outside the assistant closes it.
+
+## 1.38 Port of the instance fixes from the Opus 5 review
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | On the `feat/port-pdi-fixes` branch. Offline tests and SDK build pass; not deployed |
+
+- **Checkpoint:** tag `pre-port-checkpoint`, and the instance's settings before the port in [pdi-state-before-port.md](pdi-state-before-port.md).
+- **Record IDs:** the data policies and rules keep the instance's IDs, so a deploy updates them. `keys.ts` holds the instance's IDs for the indexes too, but the build creates indexes from the dictionary file, so check for duplicates after the first deploy.
+- **Held back:** the owner-only read scripts on the 4 run ACLs. The app reads runs with plain `GlideRecord`, so those ACLs don't limit its own pages; a deploy without them removes them from the instance.

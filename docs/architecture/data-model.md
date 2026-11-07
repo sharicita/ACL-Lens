@@ -38,7 +38,9 @@ Large payloads split into ordered chunks of 60,000 characters ([ADR-0002](../adr
 | `seq` | integer | Chunk order |
 | `payload` | string(65000) | JSON fragment |
 
-Index: `run_kind_seq` (`run`, `kind`, `seq`).
+Indexes: `run`, `seq` and `cache_key`.
+
+Other indexes: run (`archived`, `sys_created_on`) and (`status`); AI message (`conversation`, `seq`); report (`system`, `shared`). Other application scopes can read these tables but not create, update, delete, configure or add fields. Changes to AI providers are audited, and two data policies require an API key for key-based providers and an endpoint for Azure and OpenAI-compatible ones.
 
 **Payload shapes** (TypeScript in `src/server/engine/types.ts`, `compare.ts`):
 - `results` — `AnalysisResult`:

@@ -11,6 +11,9 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Changed
+- Brought the fixes made directly on an instance during the Opus 5 review into the source, so a deploy keeps them: mandatory run and message fields, other scopes can only read ACL Lens tables, AI provider changes are audited, 6 indexes replace the run/kind/seq index, data policies require an API key and endpoint, and Run Records shows to platform admins. Compared with the instance's settings but not yet deployed. The 4 owner-only read scripts on run ACLs are not included, pending a decision on who may see runs.
+
 ## [1.9.0] - 2026-11-06
 
 ### Added
