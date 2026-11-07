@@ -11,6 +11,11 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-06
+
+### Changed
+- The "Allow if" tag on ACL rules is now blue instead of green, so it no longer looks like a pass beside a rule that failed. The tag names the rule type; the rule's result is shown next to it.
+
 ## [1.8.0] - 2026-11-06
 
 ### Added

@@ -1081,9 +1081,10 @@ code {
     background: var(--lx-d-bg);
     color: var(--lx-d-fg);
 }
+/* blue, not the Granted green: this names the rule type, and the rule's own result (Pass/Fail) sits beside it */
 .lens-pill--allow {
-    background: var(--lx-g-bg);
-    color: var(--lx-g-fg);
+    background: var(--lx-info-bg);
+    color: var(--lx-info);
 }
 .lens-pill--running {
     background: var(--lx-c-bg);
@@ -3912,6 +3913,7 @@ tr.lens-group > th {
     color: var(--lx-d-fg);
     font-size: 0.82rem;
 }
+
 /* a capped run: which tables it covers, and the next set */
 .lens-coverage {
     display: flex;

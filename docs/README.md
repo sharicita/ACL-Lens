@@ -4,7 +4,7 @@
 |---|---|
 | **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.14.0 |
 | **Status** | **Working build on a development PDI**. Core analysis, comparison, history and settings were verified on the PDI. The AI assistant's language-model step has only been tested offline (see [06](architecture/06-risks-assumptions-decisions.md)) |
-| **Version** | `1.8.0` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
+| **Version** | `1.8.1` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
 | **Date** | 2026-11-06 |
 | **Owner** | Project owner (PDI admin) |
 
@@ -57,6 +57,7 @@ From 1.0.0 the versions follow Semantic Versioning and the full history is in [C
 
 | Version | Date | Change |
 |---|---|---|
+| 1.8.1 | 2026-11-06 | Fix: the "Allow if" tag is blue, so it no longer looks like a pass |
 | 1.8.0 | 2026-11-06 | Dashboard tabs, drag to move, Save as report, stored results for slow reports |
 | 1.7.0 | 2026-11-06 | API access evaluation includes Machine Identity Access Control (offline tests only) |
 | 1.6.0 | 2026-11-06 | Run next set for runs that match more tables than one run covers |

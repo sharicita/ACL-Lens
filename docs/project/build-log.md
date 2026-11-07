@@ -733,3 +733,12 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 
 - **Changed:** the dashboard is saved as tabs, with reports that can be dragged between them, **Save as report** on a run page and a picker for filling a tab. Slow reports on a run are stored with that run (`report-cache.ts`).
 - **Schema:** `x_acllens_dashboard.layout` grew from 4,000 to 65,000 characters. A browser tab still showing the old page can't save its layout until it is refreshed.
+
+## 1.36 "Allow if" tag color (v1.8.1)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** the tag is blue because it names the rule type; the rule's own result sits beside it. `styles.generated.ts` regenerated from the current `app.css`.
