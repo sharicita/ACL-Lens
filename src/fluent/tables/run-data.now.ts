@@ -25,5 +25,8 @@ export const x_acllens_run_data = Table({
         seq: IntegerColumn({ label: 'Sequence', mandatory: true }),
         payload: StringColumn({ label: 'Payload', maxLength: 65000 }),
     },
-    index: [{ name: 'run_kind_seq', unique: false, element: ['run', 'kind', 'seq'] }],
+    index: [
+        { name: 'run_seq', unique: false, element: ['run', 'seq'] },
+        { name: 'cache_key', unique: false, element: 'cache_key' },
+    ],
 })

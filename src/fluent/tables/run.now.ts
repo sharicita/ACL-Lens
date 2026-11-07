@@ -49,4 +49,8 @@ export const x_acllens_run = Table({
         error_message: StringColumn({ label: 'Error', maxLength: 4000 }),
         archived: BooleanColumn({ label: 'Archived', default: false }),
     },
+    index: [
+        { name: 'archived_created', unique: false, element: ['archived', 'sys_created_on'] },
+        { name: 'status', unique: false, element: 'status' },
+    ],
 })

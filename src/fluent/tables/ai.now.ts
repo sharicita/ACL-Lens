@@ -103,6 +103,7 @@ export const x_acllens_ai_message = Table({
         tools_used: StringColumn({ label: 'Tools used', maxLength: 4000 }),
         provider_name: StringColumn({ label: 'Provider', maxLength: 100 }),
     },
+    index: [{ name: 'conversation_seq', unique: false, element: ['conversation', 'seq'] }],
 })
 
 // Seed provider: Now Assist (used automatically when the instance has it).

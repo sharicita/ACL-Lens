@@ -35,6 +35,7 @@ export const x_acllens_report = Table({
         copied_from: ReferenceColumn({ label: 'Copied from', referenceTable: 'x_acllens_report', cascadeRule: 'clear' }),
         order: IntegerColumn({ label: 'Order', default: 100 }),
     },
+    index: [{ name: 'system_shared', unique: false, element: ['system', 'shared'] }],
 })
 
 // One dashboard per user: its tabs and their tiles as JSON. Without one, the user sees the default (reports marked "on_default").
