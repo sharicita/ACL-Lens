@@ -8,6 +8,7 @@ import { ApiLoad, loadApiInputs } from './api-loader.ts'
 import { accountWarning } from './account.ts'
 import { Schema, tablesDefiningFields, listFields, FieldMeta } from './schema.ts'
 import { loadElevatedRoles, resolveSubject } from './subjects.ts'
+import { coverageWarning, tableWindow } from './table-window.ts'
 import {
     ALL_TABLE_OPS,
     AnalysisFilter,
@@ -170,13 +171,11 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter, api?: ApiCon
     }
     if (filter.excludeSystem) tables = tables.filter((t) => !ctx.schema.isSystem(t))
 
-    const max = Math.min(filter.maxTables || DEFAULT_MAX_TABLES, HARD_MAX_TABLES)
-    let truncated = false
-    if (tables.length > max) {
-        warnings.push(`${tables.length} tables matched; only the first ${max} (alphabetical) were analyzed. Narrow the filter or raise "Max tables".`)
-        tables = tables.slice(0, max)
-        truncated = true
-    }
+    const picked = tableWindow(tables, Math.min(filter.maxTables || DEFAULT_MAX_TABLES, HARD_MAX_TABLES), filter.startAfter)
+    tables = picked.tables
+    const coverage = picked.coverage
+    const truncated = !!coverage
+    if (coverage) warnings.push(coverageWarning(coverage))
 
     const includeFields = filter.includeFields !== false
     const chainTables: { [t: string]: boolean } = {}
@@ -206,6 +205,7 @@ export function analyze(refs: SubjectRef[], filter: AnalysisFilter, api?: ApiCon
         filter,
         tableCount: tables.length,
         truncated,
+        coverage: coverage || undefined,
         warnings,
         timings,
         acls: ctx.index.acls,

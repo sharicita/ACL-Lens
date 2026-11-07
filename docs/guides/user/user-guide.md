@@ -165,6 +165,8 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 
 ## 5. History and reruns
 
+- **Large runs:** a run analyzes up to **Max tables** tables in alphabetical order (1,500 unless you change it, up to 5,000). If more match, the run page shows which ones it covers. **Run next set** continues with the following tables, using the same subjects and filters, and saves a new run. Each set has its own results, so counts and reports cover only that set. **Edit in workspace** on a later set keeps its starting point until you choose *Start from the first table* or change the tables.
+
 - **History** lists saved runs. Search by number, name or subject.
 - **Rerun** re-evaluates the same users, roles and tables with today's data. It saves a new run linked to the original and shows **Changes since original run** (status changes and roles added or removed). This is useful as before/after evidence in a change record.
 - **Exports:** comparison CSV, full or filtered matrix CSV, raw JSON, Print / save as PDF.

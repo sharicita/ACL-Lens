@@ -230,6 +230,16 @@ export interface SubjectResult {
     counts: Counts
 }
 
+export interface TableCoverage {
+    /** position of the first and last table analyzed, among all matched tables (alphabetical, from 1) */
+    from: number
+    to: number
+    /** every table the filter matched */
+    total: number
+    /** where the next set starts; missing on the last set */
+    nextAfter?: string
+}
+
 export type FilterMode = 'secured_by_roles' | 'tables' | 'prefix' | 'scope' | 'all'
 
 export interface AnalysisFilter {
@@ -239,6 +249,8 @@ export interface AnalysisFilter {
     includeFields?: boolean
     excludeSystem?: boolean
     maxTables?: number
+    /** run the next set: only tables alphabetically after this one */
+    startAfter?: string
     /** also analyze every table that extends a selected table */
     includeChildren?: boolean
     /** evaluate as API access: add the API gate (stored with the run, so reruns repeat it) */
@@ -252,6 +264,8 @@ export interface AnalysisResult {
     filter: AnalysisFilter
     tableCount: number
     truncated: boolean
+    /** set when this run covers only part of the matched tables */
+    coverage?: TableCoverage
     warnings: string[]
     /** milliseconds spent per phase, for diagnosing slow runs */
     timings?: { [phase: string]: number }

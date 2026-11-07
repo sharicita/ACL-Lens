@@ -16,6 +16,7 @@ import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
 import Icon from './Icon'
 import { AccountTypeFilter, SubjectsProvider } from './SubjectName'
+import RunCoverage, { coverageOf, nextSetName } from './RunCoverage'
 
 interface Props {
     runId: string
@@ -109,6 +110,9 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
 
     const { run, results, comparison, drift } = payload
     const fileBase = `${run.number}${run.name ? '-' + run.name : ''}`
+    const coverage = results ? coverageOf(results) : null
+    // the coverage panel says this, with the button to continue
+    const warnings = results ? results.warnings.filter((w) => !(coverage && /^\d+ tables matched/.test(w))) : []
 
     const act = async (label: string, fn: () => Promise<RunPayload>) => {
         setBusy(label)
@@ -209,10 +213,26 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
             {run.status === 'error' && <div className="lens-alert lens-alert--critical">This run failed: {run.error_message}</div>}
             {results && (
                 <>
-                    {results.warnings.length > 0 && (
+                    {coverage && (
+                        <RunCoverage
+                            coverage={coverage}
+                            busy={busy}
+                            onNext={(after, from, to) =>
+                                act('next', () =>
+                                    LensApi.createRun({
+                                        name: nextSetName(run.name, from, to),
+                                        run_type: run.run_type,
+                                        subjects: run.subjects.map((s) => ({ type: s.type, id: s.id })),
+                                        filter: { ...run.filter, startAfter: after },
+                                    })
+                                )
+                            }
+                        />
+                    )}
+                    {warnings.length > 0 && (
                         <div className="lens-alert lens-alert--warning" role="status">
                             <ul>
-                                {results.warnings.map((w) => (
+                                {warnings.map((w) => (
                                     <li key={w}>{w}</li>
                                 ))}
                             </ul>

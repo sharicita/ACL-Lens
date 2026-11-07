@@ -704,3 +704,12 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 
 - **Changed:** `saveBlob` writes results in parts instead of building one string, so very large runs no longer hit the platform's string limit, and older runs still open. A new property, `x_acllens.run.max_result_mb`, caps a result; a run over it fails with a message naming the property and removes its partial rows. Settings moved **Clear history now** into the History section and gained a save bar that stays in view.
 - **Not done:** not yet run on an instance with a result that large.
+
+## 1.33 Run next set (v1.6.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** `table-window.ts` picks the alphabetical slice of matched tables for a run, and `startAfter` lets the next run continue from it. `RunCoverage` shows what a capped run covers and offers **Run next set**.

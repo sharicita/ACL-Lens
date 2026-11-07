@@ -22,6 +22,7 @@ function normalizeFilter(f: AnalysisFilter | undefined): AnalysisFilter {
         excludeSystem: !!filter.excludeSystem,
         includeChildren: !!filter.includeChildren,
         maxTables: filter.maxTables ? Math.max(1, Math.floor(filter.maxTables)) : undefined,
+        startAfter: /^[A-Za-z0-9_$.-]{1,80}$/.test(String(filter.startAfter || '')) ? filter.startAfter : undefined,
         api: normalizeApiContext(filter.api),
     }
 }

@@ -546,6 +546,10 @@ declare global {
                         table: 'sys_module'
                         id: 'f10f4620aef941368913caf02e42c68c'
                     }
+                    'src_server_engine_table-window_ts': {
+                        table: 'sys_module'
+                        id: 'ab63775fad914c099f167dc644f9ccc7'
+                    }
                     src_server_engine_types_ts: {
                         table: 'sys_module'
                         id: '7c1b710200e74adcb0cc56bd18a1c1c3'

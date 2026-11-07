@@ -11,6 +11,12 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-06
+
+### Added
+- **Run next set.** When more tables match than one run can cover, the run page shows which tables it covers and offers **Run next set**, which continues alphabetically with the same subjects and filters and saves a new run. Runs saved before this version offer it too.
+- "?" help for Max tables and run sets.
+
 ## [1.5.0] - 2026-11-06
 
 ### Added

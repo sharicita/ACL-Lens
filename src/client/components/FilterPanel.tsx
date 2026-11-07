@@ -27,7 +27,8 @@ const MODES: { value: FilterMode; label: string; help: string; placeholder?: str
 
 export default function FilterPanel({ filter, onChange }: Props) {
     const mode = MODES.filter((m) => m.value === filter.mode)[0] || MODES[0]
-    const set = (patch: Partial<AnalysisFilter>) => onChange({ ...filter, ...patch })
+    // a different set of tables starts from the beginning again
+    const set = (patch: Partial<AnalysisFilter>) => onChange({ ...filter, ...patch, ...('mode' in patch || 'value' in patch ? { startAfter: undefined } : {}) })
     return (
         <section className="lens-card" aria-labelledby="filter-title">
             <div className="lens-card__header">
@@ -108,7 +109,20 @@ export default function FilterPanel({ filter, onChange }: Props) {
                             onChange={(e) => set({ maxTables: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                         />
                     </label>
-                    <FieldInfo label="Max tables" text="Stops after this many tables (default 1,500, up to 5,000) so very broad analyses stay fast." />
+                    <HelpTip label="What does Max tables do?">
+                        <span>
+                            One run analyzes up to this many tables, in alphabetical order. Leave it empty for 1,500, or enter up to 5,000. Larger numbers take longer, and ServiceNow can stop a
+                            request that runs too long. If more tables match, the results page offers <strong>Run next set</strong> so you can work through the rest in several runs.
+                        </span>
+                    </HelpTip>
+                    {filter.startAfter && (
+                        <p className="lens-filter__startafter lens-muted">
+                            This run continues from an earlier set: it starts after <code>{filter.startAfter}</code>.{' '}
+                            <button type="button" className="lens-link" onClick={() => set({ startAfter: undefined })}>
+                                Start from the first table
+                            </button>
+                        </p>
+                    )}
                 </div>
             </div>
         </section>

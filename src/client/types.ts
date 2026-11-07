@@ -157,6 +157,13 @@ export interface SubjectResult {
     counts: { [op: string]: { [s: string]: number } }
 }
 
+export interface TableCoverage {
+    from: number
+    to: number
+    total: number
+    nextAfter?: string
+}
+
 export type FilterMode = 'secured_by_roles' | 'tables' | 'prefix' | 'scope' | 'all'
 
 export interface AnalysisFilter {
@@ -165,6 +172,8 @@ export interface AnalysisFilter {
     includeFields?: boolean
     excludeSystem?: boolean
     maxTables?: number
+    /** run the next set: only tables alphabetically after this one */
+    startAfter?: string
     /** also analyze every table that extends a selected table */
     includeChildren?: boolean
     /** evaluate as API access (adds the API gate to every table status) */
@@ -178,6 +187,8 @@ export interface AnalysisResult {
     filter: AnalysisFilter
     tableCount: number
     truncated: boolean
+    /** set when this run covers only part of the matched tables */
+    coverage?: TableCoverage
     warnings: string[]
     acls: AclInfo[]
     dataFilters?: DataFilterInfo[]
