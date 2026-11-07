@@ -5,36 +5,176 @@ import { queryText } from './search.ts'
 export const RUN_TABLE = 'x_acllens_run'
 export const DATA_TABLE = 'x_acllens_run_data'
 const CHUNK = 60000
+/** Target size of one stored part. Parts are parsed one at a time, so this bounds the largest string held. */
+const PART_SIZE = 500000
+/** Items in a list longer than this are stored as separate parts. */
+const DETACH_OVER = 20
 
-export type BlobKind = 'results' | 'comparison' | 'drift'
+/** Application property (ACL Lens > Properties): the most a single saved run result may take, in MB. */
+export const MAX_RESULT_PROP = 'x_acllens.run.max_result_mb'
+export const DEFAULT_MAX_RESULT_MB = 256
+export const MIN_MAX_RESULT_MB = 8
+export const MAX_MAX_RESULT_MB = 4096
 
-/** Stores a JSON payload across ordered rows of the run data table (avoids field size limits). */
-export function saveBlob(runId: string, kind: BlobKind, payload: unknown) {
-    const text = JSON.stringify(payload)
-    for (let seq = 0, pos = 0; pos < text.length || seq === 0; seq++, pos += CHUNK) {
+export function maxResultMb(): number {
+    const n = parseInt(gs.getProperty(MAX_RESULT_PROP, String(DEFAULT_MAX_RESULT_MB)), 10)
+    if (isNaN(n)) return DEFAULT_MAX_RESULT_MB
+    return Math.min(MAX_MAX_RESULT_MB, Math.max(MIN_MAX_RESULT_MB, n))
+}
+
+export type BlobKind = 'results' | 'comparison' | 'drift' | 'report'
+
+type Path = (string | number)[]
+interface Detached {
+    path: Path
+    items: unknown[]
+}
+
+function shallowCopy(o: any): any {
+    const c: any = {}
+    for (const k in o) c[k] = o[k]
+    return c
+}
+
+/**
+ * Splits a payload into a small "skeleton" plus the long lists taken out of it: top-level lists, and
+ * the `tables` list of each entry in a list such as `subjects`. The payload itself is not changed.
+ */
+export function detachLists(payload: any): { skeleton: any; lists: Detached[] } {
+    const lists: Detached[] = []
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return { skeleton: payload, lists }
+    const skeleton = shallowCopy(payload)
+    for (const k in payload) {
+        const v = payload[k]
+        if (!Array.isArray(v) || !v.length) continue
+        if (v.every((x: any) => x && typeof x === 'object' && Array.isArray(x.tables))) {
+            skeleton[k] = v.map((x: any) => {
+                const c = shallowCopy(x)
+                c.tables = []
+                return c
+            })
+            v.forEach((x: any, i: number) => lists.push({ path: [k, i, 'tables'], items: x.tables }))
+        } else if (v.length > DETACH_OVER) {
+            skeleton[k] = []
+            lists.push({ path: [k], items: v })
+        }
+    }
+    return { skeleton, lists }
+}
+
+/** Puts detached items back into the rebuilt object. */
+function attach(root: any, path: Path, items: unknown[]) {
+    let target = root
+    for (const step of path) target = target[step]
+    for (const item of items) target.push(item)
+}
+
+/**
+ * Stores a JSON payload across ordered rows of the run data table (avoids field size limits).
+ *
+ * The stored text is a sequence of parts separated by a newline (JSON never contains a raw one):
+ * the first part is the payload with its long lists emptied, each later part is
+ * `{"p": path, "t": [items]}`. No single string ever holds the whole payload, so the 32 MB
+ * server string limit does not cap the size of a run. The total is capped by the
+ * `x_acllens.run.max_result_mb` property instead. `key` tells apart several blobs of one kind.
+ */
+export function saveBlob(runId: string, kind: BlobKind, payload: unknown, key?: string) {
+    const limit = maxResultMb() * 1024 * 1024
+    let buffer = ''
+    let seq = 0
+    let total = 0
+    let first = true
+
+    const writeRow = (text: string) => {
         const d = gr(DATA_TABLE)
         d.initialize()
         d.setValue('run', runId)
         d.setValue('kind', kind)
-        d.setValue('seq', seq)
-        d.setValue('payload', text.substring(pos, pos + CHUNK))
+        if (key) d.setValue('cache_key', key)
+        d.setValue('seq', seq++)
+        d.setValue('payload', text)
         d.insert()
+    }
+    const emit = (part: string) => {
+        total += part.length + 1
+        if (total > limit) {
+            throw new Error(
+                `The result is larger than the ${maxResultMb()} MB saved-result limit. Narrow the filter, or an ACL Lens admin can raise the "${MAX_RESULT_PROP}" property (Properties page).`
+            )
+        }
+        buffer += (first ? '' : '\n') + part
+        first = false
+        while (buffer.length >= CHUNK) {
+            writeRow(buffer.substring(0, CHUNK))
+            buffer = buffer.substring(CHUNK)
+        }
+    }
+
+    try {
+        const { skeleton, lists } = detachLists(payload)
+        emit(JSON.stringify(skeleton))
+        for (const list of lists) {
+            let batch: string[] = []
+            let size = 0
+            const flush = () => {
+                if (!batch.length) return
+                emit(`{"p":${JSON.stringify(list.path)},"t":[${batch.join(',')}]}`)
+                batch = []
+                size = 0
+            }
+            for (const item of list.items) {
+                const s = JSON.stringify(item)
+                batch.push(s)
+                size += s.length + 1
+                if (size >= PART_SIZE) flush()
+            }
+            flush()
+        }
+        if (buffer.length || seq === 0) writeRow(buffer)
+    } catch (e) {
+        deleteBlob(runId, kind, key)
+        throw e
     }
 }
 
-export function loadBlob<T>(runId: string, kind: BlobKind): T | null {
+/** Removes every stored row of one blob (used when a save fails part-way). */
+export function deleteBlob(runId: string, kind: BlobKind, key?: string) {
     const d = gr(DATA_TABLE)
     d.addQuery('run', runId)
     d.addQuery('kind', kind)
+    if (key) d.addQuery('cache_key', key)
+    d.deleteMultiple()
+}
+
+/** Reads a blob written by {@link saveBlob}, or one saved by older versions as a single JSON string. */
+export function loadBlob<T>(runId: string, kind: BlobKind, key?: string): T | null {
+    const d = gr(DATA_TABLE)
+    d.addQuery('run', runId)
+    d.addQuery('kind', kind)
+    if (key) d.addQuery('cache_key', key)
     d.orderBy('seq')
     d.query()
-    let text = ''
+    let root: any = null
     let found = false
+    let pending = ''
+    const consume = (part: string) => {
+        if (!part) return
+        const parsed = JSON.parse(part)
+        if (root === null) root = parsed
+        else attach(root, parsed.p, parsed.t)
+    }
     while (d.next()) {
         found = true
-        text += d.getValue('payload') || ''
+        pending += d.getValue('payload') || ''
+        let nl = pending.indexOf('\n')
+        while (nl >= 0) {
+            consume(pending.substring(0, nl))
+            pending = pending.substring(nl + 1)
+            nl = pending.indexOf('\n')
+        }
     }
-    return found && text ? (JSON.parse(text) as T) : null
+    consume(pending)
+    return found && root !== null ? (root as T) : null
 }
 
 export interface RunMeta {

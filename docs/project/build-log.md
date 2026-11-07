@@ -694,3 +694,13 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **`data-theme="light"` on `<html>`:** Harbor follows the operating system's dark mode, but much of `app.css` still has fixed light colors, so a dark OS would have mixed dark and light surfaces.
 - **`base.css` left out for now:** with it embedded, its element styles changed the app wherever `.lens-*` rules didn't set a property: narrower paragraphs, lighter link weight in the title, shaded table headers and extra table margins (the run page grew from 1716px to 1925px tall), and dark headings on a dark instance theme. The prebuild already picks it up if the file is added, once those rules are dealt with.
 - **Still open:** moving hard-coded colors in `app.css` to tokens, spacing tokens, and `.ui-*` classes. Tips and meter tracks are light on a dark instance theme.
+
+## 1.32 Large results saved in parts (v1.5.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** `saveBlob` writes results in parts instead of building one string, so very large runs no longer hit the platform's string limit, and older runs still open. A new property, `x_acllens.run.max_result_mb`, caps a result; a run over it fails with a message naming the property and removes its partial rows. Settings moved **Clear history now** into the History section and gained a save bar that stays in view.
+- **Not done:** not yet run on an instance with a result that large.

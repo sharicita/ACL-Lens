@@ -11,6 +11,17 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-06
+
+### Added
+- **Largest saved result (MB)** setting, backed by the property `x_acllens.run.max_result_mb` (default 256, allowed 8 to 4096; ACL Lens admins can change it on the Properties page). A run whose result is bigger fails with a message that names the property, and its partly saved rows are removed.
+
+### Changed
+- On Settings, **Clear history now** is now part of the **History** section, and History is at the bottom of the page. **Save settings** appears in a bar that stays in view whenever there are unsaved changes.
+
+### Fixed
+- Very large runs (for example all tables with record and field rules) no longer fail with "String object would exceed maximum permitted size of 33554432". Results are now saved in parts instead of as one string, and runs already in History still open. A comparison CSV that is too large to attach is skipped with a warning instead of failing the run. Checked with offline tests only: not yet run on an instance with a result that large.
+
 ## [1.4.0] - 2026-11-06
 
 ### Changed

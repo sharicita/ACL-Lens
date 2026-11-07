@@ -1624,6 +1624,35 @@ ul.lens-tiles {
     gap: 1rem;
     flex-wrap: wrap;
 }
+.lens-settings__sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--lx-border);
+}
+.lens-card__body .lens-settings__sub h3 {
+    margin: 0;
+}
+/* stays in view while there is something to save, whichever card was changed */
+.lens-settings__savebar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-sm);
+    padding: 0.75rem 1.1rem;
+    background: var(--lx-surface);
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius);
+    box-shadow: var(--lx-shadow);
+}
+.lens-settings__savebar .lens-muted {
+    margin-right: auto;
+}
 .lens-settings__count {
     align-self: center;
     color: var(--lx-d-fg);

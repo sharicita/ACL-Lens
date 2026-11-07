@@ -60,6 +60,7 @@ export interface Settings {
     retention_action: 'delete' | 'archive'
     instance_theme: boolean
     mcp_enabled: boolean
+    max_result_mb: number
 }
 
 export interface McpInfo {

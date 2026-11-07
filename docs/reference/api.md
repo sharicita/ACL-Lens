@@ -51,8 +51,8 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| GET | `/admin/settings` | — | `{history_enabled, retention_enabled, retention_days, retention_action}` |
-| PUT | `/admin/settings` | Any subset of the above (`retention_days` 1–3650) | Saved settings |
+| GET | `/admin/settings` | — | `{history_enabled, retention_enabled, retention_days, retention_action, max_result_mb}` |
+| PUT | `/admin/settings` | Any subset of the above (`retention_days` 1–3650, `max_result_mb` 8–4096) | Saved settings |
 | POST | `/admin/history/preview` | `{mode: all\|range\|older_than, from?, to? (YYYY-MM-DD, admin time zone), days?, include_archived?}` | `{count}` |
 | POST | `/admin/history/clear` | Same | `{deleted}` (runs, result chunks and CSV attachments) |
 

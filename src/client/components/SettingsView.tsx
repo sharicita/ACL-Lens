@@ -96,23 +96,6 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
             )}
             {error && <div className="lens-alert lens-alert--critical">{error}</div>}
 
-            <section className="lens-card" aria-labelledby="set-history">
-                <div className="lens-card__header">
-                    <h2 id="set-history">History</h2>
-                </div>
-                <div className="lens-card__body lens-settings__body">
-                    <div className="lens-switch-row">
-                    <label className="lens-switch">
-                        <input type="checkbox" checked={form.history_enabled} onChange={(e) => setForm({ ...form, history_enabled: e.target.checked })} />
-                        <span>
-                            <strong>Save runs to History</strong>
-                        </span>
-                    </label>
-                    <FieldInfo label="Save runs to History" text="When off, analyses and comparisons still work but are not stored. They can't be reopened, rerun or audited later." />
-                    </div>
-                </div>
-            </section>
-
             <section className="lens-card" aria-labelledby="set-appearance">
                 <div className="lens-card__header">
                     <h2 id="set-appearance">Appearance</h2>
@@ -188,58 +171,72 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                         </div>
                     </fieldset>
                 </div>
-                <div className="lens-card__footer">
-                    <button type="button" className="lens-btn lens-btn--primary" disabled={!dirty || !!busy} onClick={save}>
-                        {busy === 'save' ? 'Saving…' : 'Save settings'}
-                    </button>
-                    <button type="button" className="lens-btn lens-btn--ghost" disabled={!dirty || !!busy} onClick={() => setForm(saved)}>
-                        Discard changes
-                    </button>
-                </div>
             </section>
 
-            <section className="lens-card" aria-labelledby="set-clear">
+            <section className="lens-card" aria-labelledby="set-history">
                 <div className="lens-card__header">
-                    <h2 id="set-clear">Clear history now</h2>
+                    <h2 id="set-history">History</h2>
                 </div>
                 <div className="lens-card__body lens-settings__body">
-                    <Tip id="settings-clear">Preview first: you'll see exactly how many runs match before anything is deleted. Deleting can't be undone; archive instead if you may need them later.</Tip>
-                    <div className="lens-radios" role="radiogroup" aria-label="What to clear">
-                        <label className="lens-check">
-                            <input type="radio" name="clear-mode" checked={clear.mode === 'older_than'} onChange={() => setClear({ ...clear, mode: 'older_than' })} />
-                            Older than
+                    <div className="lens-switch-row">
+                        <label className="lens-switch">
+                            <input type="checkbox" checked={form.history_enabled} onChange={(e) => setForm({ ...form, history_enabled: e.target.checked })} />
+                            <span>
+                                <strong>Save runs to History</strong>
+                            </span>
                         </label>
-                        <label className="lens-check">
-                            <input type="radio" name="clear-mode" checked={clear.mode === 'range'} onChange={() => setClear({ ...clear, mode: 'range' })} />
-                            Date range
-                        </label>
-                        <label className="lens-check">
-                            <input type="radio" name="clear-mode" checked={clear.mode === 'all'} onChange={() => setClear({ ...clear, mode: 'all' })} />
-                            All runs
-                        </label>
+                        <FieldInfo label="Save runs to History" text="When off, analyses and comparisons still work but are not stored. They can't be reopened, rerun or audited later." />
                     </div>
-                    {clear.mode === 'older_than' && (
-                        <label className="lens-field lens-settings__days">
-                            <span className="lens-field__label">Days</span>
-                            <input className="lens-input" type="number" min={1} value={clear.days} onChange={(e) => setClear({ ...clear, days: parseInt(e.target.value || '0', 10) })} />
-                        </label>
-                    )}
-                    {clear.mode === 'range' && (
-                        <div className="lens-settings__range">
-                            <label className="lens-field">
-                                <span className="lens-field__label">From</span>
-                                <input className="lens-input" type="date" value={clear.from} max={clear.to} onChange={(e) => setClear({ ...clear, from: e.target.value })} />
+                    <div className="lens-field">
+                        <span className="lens-field__label lens-field__label--info">
+                            <label htmlFor="set-max-result">Largest saved result (MB)</label>
+                            <FieldInfo
+                                label="Largest saved result"
+                                text="Big runs (many tables with field rules) are saved in parts. A run whose result is larger than this fails with a message instead of being saved. Raise it for very large runs; each MB uses that much database space per run. Allowed: 8 to 4096."
+                            />
+                        </span>
+                        <input id="set-max-result" className="lens-input lens-settings__days" type="number" min={8} max={4096} value={form.max_result_mb} onChange={(e) => setForm({ ...form, max_result_mb: parseInt(e.target.value || '0', 10) })} />
+                    </div>
+                    <div className="lens-settings__sub" role="group" aria-labelledby="set-clear">
+                        <h3 id="set-clear">Clear history now</h3>
+                        <Tip id="settings-clear">Preview first: you'll see exactly how many runs match before anything is deleted. Deleting can't be undone; archive instead if you may need them later.</Tip>
+                        <div className="lens-radios" role="radiogroup" aria-label="What to clear">
+                            <label className="lens-check">
+                                <input type="radio" name="clear-mode" checked={clear.mode === 'older_than'} onChange={() => setClear({ ...clear, mode: 'older_than' })} />
+                                Older than
                             </label>
-                            <label className="lens-field">
-                                <span className="lens-field__label">To</span>
-                                <input className="lens-input" type="date" value={clear.to} min={clear.from} onChange={(e) => setClear({ ...clear, to: e.target.value })} />
+                            <label className="lens-check">
+                                <input type="radio" name="clear-mode" checked={clear.mode === 'range'} onChange={() => setClear({ ...clear, mode: 'range' })} />
+                                Date range
+                            </label>
+                            <label className="lens-check">
+                                <input type="radio" name="clear-mode" checked={clear.mode === 'all'} onChange={() => setClear({ ...clear, mode: 'all' })} />
+                                All runs
                             </label>
                         </div>
-                    )}
-                    <label className="lens-check">
-                        <input type="checkbox" checked={!!clear.include_archived} onChange={(e) => setClear({ ...clear, include_archived: e.target.checked })} />
-                        Include archived runs
-                    </label>
+                        {clear.mode === 'older_than' && (
+                            <label className="lens-field lens-settings__days">
+                                <span className="lens-field__label">Days</span>
+                                <input className="lens-input" type="number" min={1} value={clear.days} onChange={(e) => setClear({ ...clear, days: parseInt(e.target.value || '0', 10) })} />
+                            </label>
+                        )}
+                        {clear.mode === 'range' && (
+                            <div className="lens-settings__range">
+                                <label className="lens-field">
+                                    <span className="lens-field__label">From</span>
+                                    <input className="lens-input" type="date" value={clear.from} max={clear.to} onChange={(e) => setClear({ ...clear, from: e.target.value })} />
+                                </label>
+                                <label className="lens-field">
+                                    <span className="lens-field__label">To</span>
+                                    <input className="lens-input" type="date" value={clear.to} min={clear.from} onChange={(e) => setClear({ ...clear, to: e.target.value })} />
+                                </label>
+                            </div>
+                        )}
+                        <label className="lens-check">
+                            <input type="checkbox" checked={!!clear.include_archived} onChange={(e) => setClear({ ...clear, include_archived: e.target.checked })} />
+                            Include archived runs
+                        </label>
+                    </div>
                 </div>
                 <div className="lens-card__footer">
                     <button type="button" className="lens-btn lens-btn--tertiary" disabled={!!busy} onClick={doPreview}>
@@ -259,6 +256,18 @@ export default function SettingsView({ onSaved, onNavigate }: Props) {
                     )}
                 </div>
             </section>
+
+            {dirty && (
+                <div className="lens-settings__savebar" role="status">
+                    <span className="lens-muted">You have unsaved changes.</span>
+                    <button type="button" className="lens-btn lens-btn--primary" disabled={!!busy} onClick={save}>
+                        {busy === 'save' ? 'Saving…' : 'Save settings'}
+                    </button>
+                    <button type="button" className="lens-btn lens-btn--ghost" disabled={!!busy} onClick={() => setForm(saved)}>
+                        Discard changes
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

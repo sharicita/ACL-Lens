@@ -294,6 +294,10 @@ declare global {
                         table: 'sys_properties'
                         id: 'eee877b8277f4df399a5145bf6c7c9fd'
                     }
+                    'prop-max-result-mb': {
+                        table: 'sys_properties'
+                        id: '38e3aa903510f847417b3c9acfb11055'
+                    }
                     'prop-mcp-enabled': {
                         table: 'sys_properties'
                         id: 'b3224649a67241bb9b3bde1e65573e21'
@@ -1794,6 +1798,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '72a92f38f1ff43eba16e92585fb4ab79'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'cache_key'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '72d151eb1fa542bd9f346751b207760b'
                         key: {
@@ -1832,6 +1845,14 @@ declare global {
                             value: 'overview'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '770f44352ca640079e314f873c0ffad1'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'cache_key'
                         }
                     },
                     {
@@ -2094,6 +2115,17 @@ declare global {
                             name: 'x_acllens_run'
                             element: 'run_type'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '97bd99a1ff5e465dac0feaa2fd193e26'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'kind'
+                            value: 'report'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {

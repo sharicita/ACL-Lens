@@ -50,7 +50,12 @@ export function executeRun(req: RunRequest, originalRun?: string) {
         if (runType === 'compare') {
             comparison = compare(result)
             saveBlob(runId, 'comparison', comparison)
-            attachText(runId, 'acl-lens-comparison.csv', 'text/csv', comparisonCsv(comparison))
+            try {
+                attachText(runId, 'acl-lens-comparison.csv', 'text/csv', comparisonCsv(comparison))
+            } catch (e) {
+                // a very large comparison can't be written as one CSV string; the saved results are unaffected
+                gs.warn(`ACL Lens: comparison CSV for run ${runId} was skipped: ${e}`)
+            }
         }
 
         let driftResult = null

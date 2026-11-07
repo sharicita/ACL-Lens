@@ -1,8 +1,9 @@
 import { gs, GlideDateTime, GlideSysAttachment } from '@servicenow/glide'
 import { chunk, gr } from '../engine/glide.ts'
-import { DATA_TABLE, RUN_TABLE } from '../engine/storage.ts'
+import { DATA_TABLE, MAX_MAX_RESULT_MB, MAX_RESULT_PROP, MIN_MAX_RESULT_MB, RUN_TABLE, maxResultMb } from '../engine/storage.ts'
 
 export const PROPS = {
+    maxResultMb: MAX_RESULT_PROP,
     historyEnabled: 'x_acllens.history.enabled',
     retentionEnabled: 'x_acllens.history.retention.enabled',
     retentionDays: 'x_acllens.history.retention.days',
@@ -18,6 +19,8 @@ export interface Settings {
     retention_action: 'delete' | 'archive'
     instance_theme: boolean
     mcp_enabled: boolean
+    /** largest saved result for one run, in MB */
+    max_result_mb: number
 }
 
 export function historyEnabled(): boolean {
@@ -67,6 +70,7 @@ export function getSettings(): Settings {
         retention_action: gs.getProperty(PROPS.retentionAction, 'delete') === 'archive' ? 'archive' : 'delete',
         instance_theme: instanceTheme(),
         mcp_enabled: mcpEnabled(),
+        max_result_mb: maxResultMb(),
     }
 }
 
@@ -84,6 +88,11 @@ export function saveSettings(input: Partial<Settings>): Settings {
         const d = Math.floor(Number(input.retention_days))
         if (!(d >= 1 && d <= 3650)) throw new Error('Retention days must be between 1 and 3650')
         setProperty(PROPS.retentionDays, String(d))
+    }
+    if (input.max_result_mb !== undefined) {
+        const mb = Math.floor(Number(input.max_result_mb))
+        if (!(mb >= MIN_MAX_RESULT_MB && mb <= MAX_MAX_RESULT_MB)) throw new Error(`Largest saved result must be between ${MIN_MAX_RESULT_MB} and ${MAX_MAX_RESULT_MB} MB`)
+        setProperty(PROPS.maxResultMb, String(mb))
     }
     if (input.mcp_enabled !== undefined) setProperty(PROPS.mcpEnabled, input.mcp_enabled ? 'true' : 'false')
     if (input.instance_theme !== undefined) setProperty(PROPS.instanceTheme, input.instance_theme ? 'true' : 'false')

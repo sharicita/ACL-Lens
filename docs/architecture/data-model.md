@@ -33,7 +33,8 @@ Large payloads split into ordered chunks of 60,000 characters ([ADR-0002](../adr
 | Column | Type | Notes |
 |---|---|---|
 | `run` | reference → run, mandatory | Cascade: delete |
-| `kind` | string choice | `results` · `comparison` · `drift` |
+| `kind` | string choice | `results` · `comparison` · `drift` · `report` |
+| `cache_key` | string(40) | Tells apart stored `report` results on one run (kind `report`: a calculated report that was slow to work out) |
 | `seq` | integer | Chunk order |
 | `payload` | string(65000) | JSON fragment |
 
@@ -116,6 +117,7 @@ Seed record (first install only): **Now Assist** (`type=now_assist`, order 10).
 |---|---|---|---|
 | `x_acllens.history.enabled` | boolean | `true` | admin / admin |
 | `x_acllens.history.retention.enabled` | boolean | `false` | admin / admin |
+| `x_acllens.run.max_result_mb` | integer | `256` | admin / admin |
 | `x_acllens.history.retention.days` | integer | `90` | admin / admin |
 | `x_acllens.history.retention.action` | choicelist `delete,archive` | `delete` | admin / admin |
 | `x_acllens.ui.instance_theme` | boolean | `false` | admin / admin |
