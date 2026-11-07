@@ -723,3 +723,13 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 
 - **Changed:** API access evaluation now includes MIAC, with a cross-scope read and five reason codes. See `03-access-evaluation-engine.md` §10.
 - **Not done:** not yet run on an instance that has MIAC records, and its column names are unconfirmed.
+
+## 1.35 Dashboard tabs and stored report results (v1.8.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** the dashboard is saved as tabs, with reports that can be dragged between them, **Save as report** on a run page and a picker for filling a tab. Slow reports on a run are stored with that run (`report-cache.ts`).
+- **Schema:** `x_acllens_dashboard.layout` grew from 4,000 to 65,000 characters. A browser tab still showing the old page can't save its layout until it is refreshed.

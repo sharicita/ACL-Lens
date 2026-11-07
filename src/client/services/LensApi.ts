@@ -1,5 +1,5 @@
 import { AnalysisFilter, FieldDetail, RunPayload, RunRecord, SubjectOption, SubjectType } from '../types'
-import { Catalog, Dashboard, Report, ReportData, Tile } from '../dashboard/types'
+import { Catalog, DashTab, Dashboard, Report, ReportData } from '../dashboard/types'
 
 declare global {
     interface Window {
@@ -214,7 +214,7 @@ export const LensApi = {
     dashboard() {
         return request<Dashboard>('/dashboard')
     },
-    saveDashboard(d: { layout: Tile[]; run?: string }) {
+    saveDashboard(d: { tabs: DashTab[]; run?: string }) {
         return request<Dashboard>('/dashboard', { method: 'PUT', body: JSON.stringify(d) })
     },
     resetDashboard() {

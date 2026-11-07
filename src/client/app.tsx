@@ -153,6 +153,7 @@ function Shell() {
                         onEdit={editInWorkspace}
                         isAdmin={me.is_admin}
                         canLiveCheck={!!me.can_live_check}
+                        onOpenDashboard={() => navigate('dashboard')}
                         onDeleted={() => {
                             // forget the deleted run so Back can't show it from memory
                             delete cache.current[view.id as string]

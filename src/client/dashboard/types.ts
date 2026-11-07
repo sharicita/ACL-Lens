@@ -5,6 +5,8 @@ export type ChartType = 'tile' | 'bar' | 'donut' | 'list'
 export type Category = 'overview' | 'high_risk' | 'vulnerability' | 'comparison'
 
 export interface ReportOptions {
+    /** always use this saved run instead of the one the dashboard shows */
+    run?: string
     ops?: string[]
     statuses?: string[]
     tables?: string[]
@@ -84,6 +86,8 @@ export interface ReportData {
     tables: string[]
     note?: string
     error?: string
+    /** the saved run this report always uses */
+    source?: { sys_id: string; number: string; name: string; created: string }
 }
 
 export interface Tile {
@@ -91,8 +95,15 @@ export interface Tile {
     size: 1 | 2
 }
 
+export interface DashTab {
+    id: string
+    title: string
+    description: string
+    tiles: Tile[]
+}
+
 export interface Dashboard {
-    layout: Tile[]
+    tabs: DashTab[]
     custom: boolean
     run: string
 }

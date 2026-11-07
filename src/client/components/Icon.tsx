@@ -33,6 +33,8 @@ const PATHS: { [name: string]: string } = {
     eye: 'M3 12s4-6 9-6 9 6 9 6-4 6-9 6-9-6-9-6Zm9 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
     target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-3.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z',
     close: 'M6 6l12 12M18 6 6 18',
+    grip: 'M9 6h1M15 6h1M9 12h1M15 12h1M9 18h1M15 18h1',
+    move: 'M4 12h14M13 7l5 5-5 5',
     chat: 'M5 5h14v10H9l-4 4V5Z',
     restore: 'M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4',
 }

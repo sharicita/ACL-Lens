@@ -26,6 +26,8 @@ export interface Fact {
 }
 
 export interface ReportOptions {
+    /** always use this saved run instead of the one the dashboard shows */
+    run?: string
     /** operations to include (table operations) */
     ops?: string[]
     /** result labels to include (Granted, Conditional, Denied, No rule…) */

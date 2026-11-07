@@ -10,6 +10,8 @@ interface Props {
     onRerun: () => void
     onCompare: () => void
     onEdit: () => void
+    /** save this run as a report on the dashboard (saved runs only) */
+    onSaveReport?: () => void
     onOpenRun: (id: string) => void
     onExportMatrix: (onlyFiltered: boolean) => void
     onExportJson: () => void
@@ -147,6 +149,18 @@ export default function RunHeader(p: Props) {
                         <Icon name="edit" />
                         Edit in workspace
                     </button>
+                    {!run.unsaved && p.onSaveReport && (
+                        <button
+                            type="button"
+                            className="lens-btn lens-btn--tertiary"
+                            disabled={!!p.busy}
+                            onClick={p.onSaveReport}
+                            data-tip="Adds a chart of this run to a dashboard tab. The report keeps showing this run, even after newer runs are saved."
+                        >
+                            <Icon name="report" />
+                            Save as report
+                        </button>
+                    )}
                     {manage && p.onArchive && (
                         <button
                             type="button"

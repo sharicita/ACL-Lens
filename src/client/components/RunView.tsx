@@ -17,6 +17,7 @@ import { useAssistant } from '../assistant/AssistantContext'
 import Icon from './Icon'
 import { AccountTypeFilter, SubjectsProvider } from './SubjectName'
 import RunCoverage, { coverageOf, nextSetName } from './RunCoverage'
+import SaveRunReport from '../dashboard/SaveRunReport'
 
 interface Props {
     runId: string
@@ -27,6 +28,7 @@ interface Props {
     isAdmin?: boolean
     /** the signed-in user can run the platform's live access evaluation */
     canLiveCheck?: boolean
+    onOpenDashboard: () => void
     /** called after the run is deleted (e.g. go back to History) */
     onDeleted: () => void
 }
@@ -50,11 +52,13 @@ function writeBaseline(runId: string, key: string) {
     }
 }
 
-export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, canLiveCheck, onDeleted }: Props) {
+export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, canLiveCheck, onOpenDashboard, onDeleted }: Props) {
     const [payload, setPayload] = useState<RunPayload | null>(cached || null)
     const [error, setError] = useState('')
     const [busy, setBusy] = useState('')
     const [actionError, setActionError] = useState('')
+    const [savingReport, setSavingReport] = useState(false)
+    const [savedReport, setSavedReport] = useState('')
     const [hidden, setHidden] = useState<Set<string>>(new Set())
     const [baseline, setBaseline] = useState('')
     const [detail, setDetail] = useState<number | null>(null)
@@ -168,6 +172,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                     )
                 }
                 onEdit={() => onEdit(payload)}
+                onSaveReport={results ? () => setSavingReport(true) : undefined}
                 onOpenRun={onOpenRun}
                 onExportMatrix={(onlyFiltered) => results && exportMatrixCsv(results, fileBase, onlyFiltered ? filtered.current : undefined)}
                 onExportJson={() => exportJson(payload, fileBase)}
@@ -200,6 +205,14 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
             {actionError && (
                 <div className="lens-alert lens-alert--critical" role="alert">
                     {actionError}
+                </div>
+            )}
+            {savedReport && (
+                <div className="lens-alert lens-alert--positive" role="status">
+                    {savedReport}{' '}
+                    <button type="button" className="lens-link" onClick={onOpenDashboard}>
+                        Open the dashboard
+                    </button>
                 </div>
             )}
             {!comparison && results && results.subjects.length > 1 && (
@@ -332,6 +345,17 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                     </div>
                     {detail !== null && <TableDetail results={results} index={detail} canLiveCheck={!!canLiveCheck} onClose={() => setDetail(null)} />}
                 </>
+            )}
+            {savingReport && (
+                <SaveRunReport
+                    run={run}
+                    isAdmin={!!isAdmin}
+                    onClose={() => setSavingReport(false)}
+                    onSaved={(message) => {
+                        setSavingReport(false)
+                        setSavedReport(message)
+                    }}
+                />
             )}
         </div>
         </SubjectsProvider>

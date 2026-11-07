@@ -554,6 +554,14 @@ declare global {
                         table: 'sys_module'
                         id: '7c1b710200e74adcb0cc56bd18a1c1c3'
                     }
+                    'src_server_reports_dashboard-layout_ts': {
+                        table: 'sys_module'
+                        id: '880d43e614ca4c55a8c06bd47fe40321'
+                    }
+                    'src_server_reports_report-cache_ts': {
+                        table: 'sys_module'
+                        id: '5e9ff8d769a2409b8c23d36026246821'
+                    }
                     src_server_reports_reports_ts: {
                         table: 'sys_module'
                         id: '4f370022c4784c139442aeae838bf3bf'

@@ -11,6 +11,23 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-06
+
+### Added
+- **Save as report** on a run page adds a chart of that run to a dashboard tab. The report keeps showing that run, whatever the dashboard's **Data from** says.
+- **Dashboard tabs.** Add tabs with their own titles and descriptions, and drag them to change the order. Arrow buttons do the same from the keyboard.
+- **Drag reports** by their title bar to move them on a tab, or drop them on another tab. The arrow buttons and a "Move to another tab" menu do the same from the keyboard.
+- **Fill a tab.** A new or empty tab asks what to put on it. Each run you choose under **Show data from** appears as a pill you can remove, and becomes a report of that run's data. **Choose specific reports** optionally adds reports from your other tabs. **Add report** offers the same on any tab.
+- "?" help for dashboard tabs and which run a report uses.
+
+### Changed
+- The report cards are now inside the dashboard card, so the page reads as one section.
+- The dashboard is saved as tabs. An existing dashboard becomes one tab called Overview. The layout column grew from 4,000 to 65,000 characters to hold them. A browser tab still showing the old page can't save its layout until it is refreshed.
+
+### Fixed
+- Dashboards on large runs no longer recalculate every time. Requests for a large run took about 40 seconds and held up everything else in the session, including saving tabs, which could fail with "Request failed (502)". Results that are slow to work out are now stored with the run, the page keeps what it has already loaded, and saves are retried with **Save again** instead of being lost. The first view of a large run is still slow.
+- The dashboard no longer says there's no saved run when a request failed.
+
 ## [1.7.0] - 2026-11-06
 
 ### Added

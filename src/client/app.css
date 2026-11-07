@@ -3471,7 +3471,7 @@ tr.lens-group > th {
     gap: 0.5rem;
     margin-left: auto;
 }
-.lens-dash__intro {
+.lens-dash__body {
     display: flex;
     flex-direction: column;
     gap: var(--lx-block-gap);
@@ -3936,3 +3936,280 @@ tr.lens-group > th {
     flex-basis: 100%;
 }
 
+/* dashboard tabs */
+.lens-dashtabs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-block-gap);
+}
+.lens-dashtabs__strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    border-bottom: 1px solid var(--lx-border);
+    padding-bottom: 0.5rem;
+}
+.lens-dashtabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-width: 0;
+}
+.lens-dashtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 16rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--lx-radius-sm);
+    color: var(--lx-muted);
+    cursor: pointer;
+    user-select: none;
+}
+.lens-dashtab__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lens-dashtab:hover {
+    background: var(--lx-hover);
+    color: var(--lx-text);
+}
+.lens-dashtab:focus-visible {
+    outline: 2px solid var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-dashtab--on {
+    background: var(--lx-accent-soft);
+    color: var(--lx-accent);
+    font-weight: 600;
+}
+.lens-dashtab__grip {
+    display: inline-flex;
+    color: var(--lx-muted);
+    cursor: grab;
+}
+.lens-dashtab--dragging,
+.lens-dash__tile--dragging {
+    opacity: 0.45;
+}
+.lens-dashtab--drop-before {
+    box-shadow: inset 2px 0 0 var(--lx-accent);
+}
+.lens-dashtab--drop-after {
+    box-shadow: inset -2px 0 0 var(--lx-accent);
+}
+.lens-dashtab--drop-into {
+    outline: 2px dashed var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-dashtabs__add {
+    border-style: dashed;
+}
+.lens-dashtabs__panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.lens-dashtabs__about {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+.lens-dashtabs__about h3 {
+    margin: 0;
+}
+.lens-dashtabs__about p {
+    margin: 0.2rem 0 0;
+}
+.lens-dashtabs__tools {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+}
+.lens-dashtabs__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex: 1 1 100%;
+}
+.lens-dashtabs__form .lens-field {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+.lens-dashtabs__form .lens-field--wide {
+    flex: 3 1 320px;
+}
+
+/* dragging report tiles */
+.lens-dash__tilehead[draggable='true'] {
+    cursor: grab;
+}
+.lens-dash__tilehead[draggable='true']:active {
+    cursor: grabbing;
+}
+.lens-dash__grip {
+    display: inline-flex;
+    color: var(--lx-muted);
+}
+.lens-dash__tile--drop-before {
+    box-shadow: -3px 0 0 var(--lx-accent);
+}
+.lens-dash__tile--drop-after {
+    box-shadow: 3px 0 0 var(--lx-accent);
+}
+.lens-dash__tile--wide.lens-dash__tile--drop-before {
+    box-shadow: 0 -3px 0 var(--lx-accent);
+}
+.lens-dash__tile--wide.lens-dash__tile--drop-after {
+    box-shadow: 0 3px 0 var(--lx-accent);
+}
+.lens-dash__source {
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+.lens-dash__move {
+    position: relative;
+}
+.lens-dash__move .lens-menu__list {
+    right: 0;
+    left: auto;
+}
+.lens-saverun__tab {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* report cards sit inside the dashboard card, as lighter sections of it */
+.lens-dash__grid > .lens-dash__tile {
+    box-shadow: none;
+}
+.lens-dash__grid > .lens-dash__tile--drop-before {
+    box-shadow: -3px 0 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--drop-after {
+    box-shadow: 3px 0 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--wide.lens-dash__tile--drop-before {
+    box-shadow: 0 -3px 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--wide.lens-dash__tile--drop-after {
+    box-shadow: 0 3px 0 var(--lx-accent);
+}
+.lens-dash__empty {
+    grid-column: 1 / -1;
+}
+
+/* filling a tab: tick reports, choose the run */
+.lens-picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-block-gap);
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius);
+    background: var(--lx-subtle);
+}
+.lens-card__body .lens-picker h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.lens-picker__run {
+    width: 100%;
+    max-width: 34rem;
+}
+/* a run's long name must not widen the page on a phone */
+.lens-dash__empty,
+.lens-picker,
+.lens-picker__run,
+.lens-picker__run select {
+    min-width: 0;
+    max-inline-size: 100%;
+}
+.lens-picker__run select {
+    width: 100%;
+}
+.lens-picker__groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: var(--lx-block-gap);
+}
+.lens-picker__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.lens-picker__group legend {
+    padding: 0 0 0.35rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--lx-muted);
+}
+
+/* runs chosen in the picker */
+.lens-picker__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.lens-datapill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    padding: 0.2rem 0.3rem 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: var(--lx-info-bg);
+    color: var(--lx-info);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.lens-datapill__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lens-datapill__x {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+.lens-datapill__x:hover {
+    background: var(--lx-hover);
+}
+.lens-datapill__x:focus-visible {
+    outline: 2px solid var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-picker__more summary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--lx-muted);
+    cursor: pointer;
+}
+.lens-picker__more .lens-picker__groups {
+    margin-top: var(--lx-block-gap);
+}
