@@ -35,6 +35,10 @@
 
 Server modules write runs and conversations with `GlideRecord`, after their own role checks and owner filters.
 
+## Who can see saved runs
+
+A run is visible to the person who ran it and to ACL Lens admins. Two layers apply the rule: ACLs on `x_acllens_run` and `x_acllens_run_data` for the Table API, lists, forms and `GlideRecordSecure`; and `mayReadRun` in `engine/storage.ts` for the app's own pages, which read with plain `GlideRecord`. Change both together.
+
 ## 4. Cross-scope privileges (all `allowed`)
 
 - **Read (`sys_db_object`, scope `global`):** `sys_security_acl`, `sys_security_acl_role`, `sys_security_operation`, `sys_security_attribute`, `sys_user`, `sys_user_role`, `sys_user_has_role`, `sys_user_role_contains`, `sys_user_group`, `sys_db_object`, `sys_dictionary`, `sys_scope`, `sys_one_extend_capability`.

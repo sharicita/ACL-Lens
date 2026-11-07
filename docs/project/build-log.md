@@ -763,4 +763,4 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 
 - **Checkpoint:** tag `pre-port-checkpoint`, and the instance's settings before the port in [pdi-state-before-port.md](pdi-state-before-port.md).
 - **Record IDs:** the data policies and rules keep the instance's IDs, so a deploy updates them. `keys.ts` holds the instance's IDs for the indexes too, but the build creates indexes from the dictionary file, so check for duplicates after the first deploy.
-- **Held back:** the owner-only read scripts on the 4 run ACLs. The app reads runs with plain `GlideRecord`, so those ACLs don't limit its own pages; a deploy without them removes them from the instance.
+- **Run privacy:** owner and admins, decided by the app's owner. The 4 run ACLs keep the instance's scripts, and because the app reads runs with plain `GlideRecord`, which ignores ACLs, `getRun`, `listRuns` and the dashboard apply the same rule in code. Stored report results are read without loading the run, so the dashboard checks access first. Covered by `tests/offline/run-access.test.js`, not yet tried with a non-admin user on an instance.

@@ -288,7 +288,7 @@ export default function ReportEditor({ report, catalog, run, isAdmin, onSaved, o
                         <label className="lens-check">
                             <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} />
                             Share with all ACL Lens users
-                            <FieldInfo label="Share" text="Shared reports appear in everyone's Add report list. Only ACL Lens admins can share." />
+                            <FieldInfo label="Share" text="Shared reports appear in everyone's Add report list. Only ACL Lens admins can share. A report tied to a saved run shows data only to that run's owner and ACL Lens admins." />
                         </label>
                     )}
                 </form>

@@ -177,6 +177,7 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 
 ## 5. History and reruns
 
+- **Who can see a run:** the person who ran it and ACL Lens admins. That covers History, opening or rerunning a run, the dashboard's **Data from**, and the assistant. A shared report tied to someone else's run says so instead of showing its data.
 - **Large runs:** a run analyzes up to **Max tables** tables in alphabetical order (1,500 unless you change it, up to 5,000). If more match, the run page shows which ones it covers. **Run next set** continues with the following tables, using the same subjects and filters, and saves a new run. Each set has its own results, so counts and reports cover only that set. **Edit in workspace** on a later set keeps its starting point until you choose *Start from the first table* or change the tables.
 
 - **History** lists saved runs. Search by number, name or subject.
