@@ -18,6 +18,16 @@ Property({
 })
 
 Property({
+    $id: Now.ID['prop-max-result-mb'],
+    name: 'x_acllens.run.max_result_mb',
+    type: 'integer',
+    value: '256',
+    description:
+        'Largest saved result for one run, in MB (8 to 4096). Results are stored in parts, so this is a storage guard rather than the 32 MB server string limit. Raise it if a run fails with "larger than the saved-result limit".',
+    roles: { read: READERS, write: ADMIN },
+})
+
+Property({
     $id: Now.ID['prop-retention-enabled'],
     name: 'x_acllens.history.retention.enabled',
     type: 'boolean',
@@ -104,7 +114,7 @@ UiAction({
     order: 100,
     // String script (not a module import) so it can keep the admin on the form afterwards.
     // The require path contains package.json "version" - update it if the version changes.
-    script: `const { testProviderAction } = require('x_acllens/acl-lens/0.0.1/src/server/ai/provider-test.ts');
+    script: `const { testProviderAction } = require('x_acllens/acl-lens/1.9.0/src/server/ai/provider-test.ts');
 testProviderAction(current);
 action.setRedirectURL(current);`,
 })

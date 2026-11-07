@@ -22,7 +22,7 @@ export const x_acllens_report = Table({
             label: 'Chart',
             maxLength: 20,
             dropdown: 'dropdown_without_none',
-            choices: { tile: 'Number', bar: 'Bar chart', donut: 'Donut', list: 'List' },
+            choices: { tile: 'Number', bar: 'Bar chart', overlay: 'Overlay bars', pie: 'Pie chart', donut: 'Donut', list: 'List' },
             default: 'bar',
         }),
         options: StringColumn({ label: 'Options (JSON)', maxLength: 4000 }),
@@ -35,14 +35,14 @@ export const x_acllens_report = Table({
     },
 })
 
-// One dashboard layout per user. Without one, the user sees the default (reports marked "on_default").
+// One dashboard per user: its tabs and their tiles as JSON. Without one, the user sees the default (reports marked "on_default").
 export const x_acllens_dashboard = Table({
     name: 'x_acllens_dashboard',
     label: 'ACL Lens Dashboard',
     display: 'owner',
     schema: {
         owner: ReferenceColumn({ label: 'Owner', referenceTable: 'sys_user', mandatory: true }),
-        layout: StringColumn({ label: 'Layout (JSON)', maxLength: 4000 }),
+        layout: StringColumn({ label: 'Layout (JSON)', maxLength: 65000 }),
         run: ReferenceColumn({ label: 'Run shown', referenceTable: 'x_acllens_run', cascadeRule: 'clear' }),
     },
 })

@@ -19,10 +19,14 @@ export default async ({ rootDir, config, fs, path, logger, registerExplicitId })
 
     // Embed app.css in the JS bundle. Separately published CSS assets are cached server-side
     // by the instance and can stay stale after a deploy; the JS bundle is cache-busted (uxpcb).
-    const cssSource = fs.readFileSync(path.join(clientDir, 'app.css'), 'utf8')
+    // The app-forge theme (styles/app-forge/base.css + theme.css) goes first, then app.css.
+    const cssFiles = ['styles/app-forge/base.css', 'styles/app-forge/theme.css', 'app.css']
+        .map((f) => path.join(clientDir, f))
+        .filter((f) => fs.existsSync(f))
+    const cssSource = cssFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n')
     fs.writeFileSync(
         path.join(clientDir, 'styles.generated.ts'),
-        `// Generated from app.css by now.prebuild.mjs - edit app.css instead.\nexport const APP_CSS = ${JSON.stringify(cssSource)}\n`
+        `// Generated from styles/app-forge/*.css and app.css by now.prebuild.mjs - edit those instead.\nexport const APP_CSS = ${JSON.stringify(cssSource)}\n`
     )
 
     // This is the destination for the build output

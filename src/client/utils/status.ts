@@ -91,3 +91,20 @@ export const REASON_TEXT: { [c: string]: string } = {
 }
 
 export const RESULT_TEXT: { [r: string]: string } = { P: 'Pass', C: 'Conditional', F: 'Fail' }
+
+/** Why the API access checks limited a result (ApiGate.why codes) */
+export const API_REASON_TEXT: { [c: string]: string } = {
+    wsoff: 'The table does not allow web-service access ("Allow access to this table via web services" is off), so the Table API refuses it.',
+    authblocked: 'The REST API access policy that applies does not allow the chosen authentication method.',
+    noscope: "The OAuth application doesn't hold the auth scope this API requires.",
+    unscoped: 'This API has no auth scope and the OAuth application only allows APIs that have one.',
+    useraccount: 'The OAuth application holds the useraccount scope, which reaches every API.',
+    ext: "Depends on something that can't be resolved without a live request (a token from an external identity provider, or a resource that wasn't chosen).",
+    endpoint: "The Scripted REST API's own ACLs or resource settings (authentication, ACL authorization, internal role) decide this.",
+    hidden: "You can't read some of the API configuration (policies, scopes or applications), so those checks couldn't be evaluated.",
+    miactable: "This user's Machine Identity Access Control record doesn't list this table, so the request is refused whatever the user's roles are.",
+    miacpolicy: "This user's Machine Identity Access Control record references no REST API access policy that covers this request, so it is refused even if the table is listed.",
+    miacnone: "No Machine Identity Access Control record names this machine account. Whether that means it's refused isn't confirmed, so test it through the integration.",
+    miacmulti: "Several Machine Identity Access Control records name this user and they disagree. How they combine isn't confirmed, so test it through the integration.",
+    miacunknown: "Machine Identity Access Control records couldn't be read or recognized on this instance, so that check couldn't be evaluated. It may refuse this request.",
+}

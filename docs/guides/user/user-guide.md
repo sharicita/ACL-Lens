@@ -91,7 +91,14 @@ Shown to people with the `admin`, `user_admin` or `access_analyzer_admin` role (
 - The check is for the table, not a particular record: conditions and scripts are not run. *Export* downloads every operation checked as CSV. Nothing is saved or changed, and changing the baseline clears the results.
 
 ### Machine and API-only accounts
-When a user is a machine identity, an AI agent identity, *Web service access only*, or an internal integration user, the run shows a warning. ACL Lens (and the live check) evaluate record ACLs and security data filters. **OAuth scopes on the token, REST API access policies and API-level ACLs are not evaluated** and can narrow that account's real access further. Test those through the integration itself.
+When a user is a machine identity, an AI agent identity, *Web service access only*, or an internal integration user, the run shows a warning. Without API access turned on, ACL Lens evaluates only record ACLs and security data filters.
+
+Tick **Evaluate as API access** on the run form (the section opens for these users) to also check the OAuth auth scope, the REST API access policy, Machine Identity Access Control (MIAC), the API's own ACLs and the table's web-service access:
+
+- **MIAC:** a table the user's MIAC doesn't list is Denied, and so is a request none of its referenced policies cover, whatever roles the user holds.
+- **Conditional:** a machine account shows Conditional when no MIAC names it, when several MIACs disagree, or when MIAC records can't be read or recognized on your instance. Adaptive authentication conditions and tokens from an external identity provider are also Conditional.
+
+The live check and Access Analyzer don't apply MIAC, so they can show a pass that a real REST call refuses. Test important results through the integration itself.
 
 ### Matrix
 - **Click any C (Conditional) cell** (table or field row) to see right there **why it's Conditional**: the rule(s) that decide record by record, with the condition, the script (if you can read ACL scripts) and the description already open. *Open full details* goes to the table panel. Esc closes it.
@@ -159,11 +166,18 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 | **Comparison** | *Tables where subjects differ* · *Roles held by only some subjects* |
 
 - **Drill in:** click a bar, a donut slice or a number to see the rows behind it, with sort, group, filter, **Open list** (the tables in ServiceNow), **Copy query** and **Export**. The list icon on a tile shows every row.
+- **Charts:** the icons at the top of a report card show it as a bar chart, overlay bars, pie chart, donut, number or list. Your choice is saved for that card. Overlay bars are available when a report's groups are broken down.
+- **Add a report:** the card with the plus at the end of a tab adds a report to this tab or to a new tab, or builds a new one.
+- **Tabs:** group reports on tabs with their own titles and descriptions. **+ New tab** adds one, then asks what to put on it. Choose a run under **Show data from** and it appears as a pill (× removes it); **Add report** adds a report of each run's data. **Choose specific reports** is optional: it lists your reports, with those on your other tabs first. **Add report** → *Add several, or from a previous run* does the same on any tab. Drag a tab to change the order. The buttons beside the tab's title edit it, move it or remove it (its reports stay available under **Add report**).
+- **Drag reports:** drag a report by its title bar to another position, or drop it on another tab.
+- **Save as report:** on a run page, **Save as report** adds a chart of that run to the tab you choose. It keeps showing that run, and its title bar names the run, whatever **Data from** says. To make it follow **Data from**, edit it and untick *Always use*.
 - **Arrange:** each tile has buttons to move it earlier or later, switch between half and full width, or remove it. **Add report** lists every report you can use (shipped, shared and your own) and **+ New report…**. **Reset** brings back the default reports and layout. Your layout is yours only.
 - **Customize:** the pencil on a shipped report opens it as *Customize*. Change the name, what it measures, the chart (bar, donut, number, list), the grouping, how many groups to show, and filters (operations, results, account types, table text, the high-risk table list or the privileged roles). A live preview shows the result. **Save my copy** creates your own report and puts it in the same place on your dashboard. Your own reports can be edited or deleted. ACL Lens admins can share a report with everyone.
 - High-risk tables are often system tables. If *Changes allowed on high-risk tables* says none were part of the run, analyze those tables with *Exclude system tables* unticked.
 
 ## 5. History and reruns
+
+- **Large runs:** a run analyzes up to **Max tables** tables in alphabetical order (1,500 unless you change it, up to 5,000). If more match, the run page shows which ones it covers. **Run next set** continues with the following tables, using the same subjects and filters, and saves a new run. Each set has its own results, so counts and reports cover only that set. **Edit in workspace** on a later set keeps its starting point until you choose *Start from the first table* or change the tables.
 
 - **History** lists saved runs. Search by number, name or subject.
 - **Rerun** re-evaluates the same users, roles and tables with today's data. It saves a new run linked to the original and shows **Changes since original run** (status changes and roles added or removed). This is useful as before/after evidence in a change record.
@@ -174,7 +188,8 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 
 ## 6. Security Assistant
 
-- Click **Assistant** in the header (top right, after Settings). It knows the run and table you have open.
+- Click **Assistant** in the header (top right, after Settings). It sees what's on the page behind it (the run, the reports on a dashboard tab with their totals, the table you have open), so you can ask "what does this show?" directly. The panel names what it's looking at above the question box.
+- Click anywhere outside the panel, or press Escape, to close it. Your conversation is still there when you reopen it.
 - Ask, for example:
   - *"Why can't Abel update incidents?"*
   - *"Review the ACLs on incident against best practices."*
@@ -213,4 +228,4 @@ Turning it off makes the endpoint refuse every request straight away.
 
 ### AI providers
 
-**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. See [05 §2](architecture/05-ai-assistant-and-mcp.md#2-providers).
+**AI Providers** (admin): configure Now Assist (not available on free developer instances) or an external provider, then use **Test connection**. The endpoint must belong to the chosen Type (HTTPS). Tick *Allow custom endpoint* only for an approved company AI gateway. In **Model**, enter the API model ID (for example `claude-haiku-5-5`), not the display name ("Claude Haiku 5.5"); leave it empty to use the default. Anthropic lists model IDs at <https://docs.anthropic.com/en/docs/about-claude/models>. See [05 §2](../../architecture/05-ai-assistant-and-mcp.md#2-providers).

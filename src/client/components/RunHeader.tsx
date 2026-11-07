@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { RunRecord } from '../types'
 import Icon from './Icon'
+import CopyButton from './CopyButton'
 
 interface Props {
     run: RunRecord
@@ -10,6 +11,8 @@ interface Props {
     onRerun: () => void
     onCompare: () => void
     onEdit: () => void
+    /** save this run as a report on the dashboard (saved runs only) */
+    onSaveReport?: () => void
     onOpenRun: (id: string) => void
     onExportMatrix: (onlyFiltered: boolean) => void
     onExportJson: () => void
@@ -61,7 +64,9 @@ export default function RunHeader(p: Props) {
                             {run.created} · {run.run_by} · {run.table_count} tables · {(run.duration_ms / 1000).toFixed(1)}s
                         </span>
                     </p>
-                    <h2 className="lens-runhead__title">{run.name || run.subject_summary || 'Untitled run'}</h2>
+                    <h2 className="lens-runhead__title">
+                        {run.name || run.subject_summary || 'Untitled run'} <CopyButton text={`${run.number} ${run.name || run.subject_summary || ''}`.trim()} label={`the name of run ${run.number}`} />
+                    </h2>
                     <p className="lens-muted" data-tip="Which tables this run analyzed. Use Edit in workspace to change it and run again.">
                         {FILTER_TEXT[filter.mode] || filter.mode}
                         {filter.value ? `: ${filter.value}` : ''}
@@ -69,6 +74,17 @@ export default function RunHeader(p: Props) {
                         {filter.includeChildren ? ' · extended tables included' : ''}
                         {filter.excludeSystem ? ' · system tables excluded' : ''}
                     </p>
+                    {filter.api && (
+                        <p
+                            className="lens-muted"
+                            data-tip="This run also applied the API access checks: the OAuth auth scope, the REST API access policy, the API's ACLs and web-service access. Cells marked API were limited by them."
+                        >
+                            <Icon name="plug" /> Evaluated as API access: {(filter.api.names || {}).api || filter.api.api}
+                            {filter.api.authProfile && filter.api.authProfile !== 'any' ? ` · ${(filter.api.names || {}).authProfile || 'one authentication method'}` : ' · any allowed authentication method'}
+                            {filter.api.oauthEntity ? ` · OAuth: ${(filter.api.names || {}).oauthEntity || filter.api.oauthEntity}` : ''}
+                            {filter.api.operation ? ` · resource: ${(filter.api.names || {}).operation || filter.api.operation}` : ''}
+                        </p>
+                    )}
                     {(run.original_run || p.reruns.length > 0) && (
                         <p className="lens-lineage">
                             {run.original_run && (
@@ -136,6 +152,18 @@ export default function RunHeader(p: Props) {
                         <Icon name="edit" />
                         Edit in workspace
                     </button>
+                    {!run.unsaved && p.onSaveReport && (
+                        <button
+                            type="button"
+                            className="lens-btn lens-btn--tertiary"
+                            disabled={!!p.busy}
+                            onClick={p.onSaveReport}
+                            data-tip="Adds a chart of this run to a dashboard tab. The report keeps showing this run, even after newer runs are saved."
+                        >
+                            <Icon name="report" />
+                            Save as report
+                        </button>
+                    )}
                     {manage && p.onArchive && (
                         <button
                             type="button"

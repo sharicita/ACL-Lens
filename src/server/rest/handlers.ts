@@ -5,6 +5,7 @@ import { listRuns } from '../engine/storage.ts'
 import { executeRun, loadRun, rerun } from '../engine/runs.ts'
 import { rankedSearch } from '../engine/search.ts'
 import { aclDetail } from '../engine/acl-detail.ts'
+import { lookupApis, lookupAuthProfiles, lookupOauthApps, lookupResources } from '../engine/api-lookup.ts'
 import { mcpInfo } from '../ai/mcp.ts'
 import { dashboardData, deleteReport, getDashboard, listReports, previewReport, reportCatalog, resetDashboard, saveDashboard, saveReport } from '../reports/reports.ts'
 import { clearHistory, deleteRun, getSettings, historyEnabled, instanceTheme, previewClear, saveSettings, setArchived, userTheme } from '../admin/settings.ts'
@@ -90,6 +91,24 @@ export function getTables(request: any, response: any) {
         }
         return { results, prefixCount }
     })
+}
+
+// ---- "Evaluate as API access" lookups (limited to what the user can read) ----
+
+export function getApiLookupApis(request: any, response: any) {
+    handle(request, response, (req) => lookupApis(qp(req, 'q')))
+}
+
+export function getApiLookupProfiles(request: any, response: any) {
+    handle(request, response, (req) => lookupAuthProfiles(qp(req, 'q')))
+}
+
+export function getApiLookupOauth(request: any, response: any) {
+    handle(request, response, (req) => lookupOauthApps(qp(req, 'q')))
+}
+
+export function getApiLookupResources(request: any, response: any) {
+    handle(request, response, (req) => lookupResources(qp(req, 'api'), qp(req, 'q')))
 }
 
 export function getAclDetail(request: any, response: any) {

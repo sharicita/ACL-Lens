@@ -54,14 +54,14 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 
 ### Built
 - Subtitle text; slide animations (drawer, field rows, panels); scope typeahead; light restyle; contextual dismissible tips.
-- Security Assistant ([ADR-0003](adr/ADR-0003-ai-provider-agnostic-read-only.md)):
+- Security Assistant ([ADR-0003](../adr/ADR-0003-ai-provider-agnostic-read-only.md)):
   - provider tables and ACLs;
   - Now Assist / Anthropic / OpenAI-compatible / Azure connectors;
   - agent loop and 10 read-only tools;
   - MCP endpoint, panel UI and Markdown renderer.
 
 ### Found and fixed
-- The instance served the *previous* stylesheet after every deploy (cached server-side by asset record). Styles moved into the JS bundle ([ADR-0004](adr/ADR-0004-styles-in-js-bundle.md)).
+- The instance served the *previous* stylesheet after every deploy (cached server-side by asset record). Styles moved into the JS bundle ([ADR-0004](../adr/ADR-0004-styles-in-js-bundle.md)).
 - Unescaped apostrophes in `.now.ts` strings broke the Fluent parser.
 
 ### Verified
@@ -83,7 +83,7 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 - Scope search ranking: scope prefix → name prefix → contains; `x_` apps first when empty.
 - Longer slides: 0.4 s in / 0.32 s out, 64 px travel.
 - Standard tooltip layer (`data-tip`) on every interactive element, including the rerun links.
-- Properties / Settings view ([ADR-0005](adr/ADR-0005-history-governance.md)): history toggle, clear history (all / range / older than), retention (off by default, 90 days, delete or archive), daily job, archive/restore.
+- Properties / Settings view ([ADR-0005](../adr/ADR-0005-history-governance.md)): history toggle, clear history (all / range / older than), retention (off by default, 90 days, delete or archive), daily job, archive/restore.
 - Provider form:
   - capability reference and skill input name;
   - type-based UI policy;
@@ -117,7 +117,7 @@ Verified: comparison (ALR0001001/1004), `itil` vs `admin` over 1,500 tables (108
 | | |
 |---|---|
 | **Date** | 2026-10-08 |
-| **Decision** | [ADR-0006](adr/ADR-0006-dependency-supply-chain.md) |
+| **Decision** | [ADR-0006](../adr/ADR-0006-dependency-supply-chain.md) |
 
 ### Why
 The instance listed hundreds of npm packages being installed for the app. This was the full development dependency tree, restored because the template uploads the app source to the instance.
@@ -199,7 +199,7 @@ The instance listed hundreds of npm packages being installed for the app. This w
 | | |
 |---|---|
 | **Date** | 2026-10-09 |
-| **Decisions** | D-13 ([ADR-0007](adr/ADR-0007-placeholder-scope-and-install-profiles.md)) |
+| **Decisions** | D-13 ([ADR-0007](../adr/ADR-0007-placeholder-scope-and-install-profiles.md)) |
 
 ### Built
 - **One search everywhere:** `rankedSearch` on the server (prefix matches first, then contains; deduplicated; `GlideRecordSecure` where the user's access matters) and `SearchCombo` / `rankFilter` on the client (ARIA combobox, highlighted matches, result count announced). Used for users, roles, scopes, tables (new `GET /tables`) and the result filters.
@@ -209,7 +209,7 @@ The instance listed hundreds of npm packages being installed for the app. This w
 - **Condition details:** *Show the condition* loads `GET /acl/{id}` on demand (condition, applies-to, security attribute, script only with ACL read, description).
 - **Links:** `RecordLink` to users, roles, groups, tables, fields and ACLs; `DocLink` (book icon) to ServiceNow documentation; both open in a new window and are labelled for screen readers.
 - **Accessibility and performance:** the assistant opens above the details drawer (z-index fix); focus moves into the drawer and is trapped there, and returns on close; table captions and header scopes; `lang`; contrast of muted text; ACL details cached per page; data loaded only when expanded.
-- **Publishable source:** placeholder scope `x_acllens`, new neutral `scopeId`, app description set; `tools/deploy.mjs`, `tools/profile.mjs`, `tools/scope.mjs`, the GitHub Action, `npm run setup` (local wizard), `INSTALL.md`, [install-and-deploy.md](install-and-deploy.md).
+- **Publishable source:** placeholder scope `x_acllens`, new neutral `scopeId`, app description set; `tools/deploy.mjs`, `tools/profile.mjs`, `tools/scope.mjs`, the GitHub Action, `npm run setup` (local wizard), `INSTALL.md`, [install-and-deploy.md](../operations/runbook.md).
 
 ### Verified on the PDI
 - As the role-only user: ranked user and role search; table search empty by design (no `sys_db_object` read; typed names still work); new cards, Roles tab, condition details and Ask assistant from the drawer.
@@ -579,3 +579,177 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Machine and API-only accounts** (`account.ts`): a run warning for machine and AI agent identities, web-service-only and internal integration users. OAuth scopes, REST API access policies and API-level ACLs are not evaluated, statically or live.
 - **Verify live** (`LiveVerify.tsx`, `liveVerify.ts`): runs the platform's live evaluation (the existing Access Analyzer data broker call) as the baseline subject for every table the matrix shows, up to 300, and lists where it differs from the prediction. Access handlers and data filtration aren't records, so this is the only way they're covered.
 - Offline tests cover the fold and the warning.
+
+
+## 1.26 API access evaluation: data model and engine (v1.1.0)
+
+| | |
+|---|---|
+| **Date** | 2026-10-27 |
+| **Status** | Engine built and tested offline; not yet run on an instance |
+
+- **Confirmed (Phase 0):** the tables and columns behind REST API access policies, auth scopes, Scripted REST ACLs and the web-service switch, queried on the PDI. See `architecture/03-access-evaluation-engine.md` §9. The Table API is a built-in processor (`now/table`), not a Scripted REST API, and policies match on `api_path`.
+- **Built (Phase 1):** `engine/api-access.ts` (policy matcher with 9 priority levels, scope check, endpoint ACLs, gate, fold), `engine/api-loader.ts` (reads the configuration as the signed-in user; unreadable tables make the gate Conditional), the `analyze(refs, filter, api?)` wiring, `Schema.wsAccess`, and cross-scope read privileges.
+- **Versioning:** SemVer starts at 1.0.0; this change is 1.1.0 (`feat`). Rules in `CHANGELOG.md`.
+- **Verified:** `npm test` (45 new tests) and the server type-check.
+- **Not verified:** the loader's queries against the instance (nothing sends an API context until Phase 2).
+
+## 1.27 Evaluate as API access on the run form (v1.2.0)
+
+| | |
+|---|---|
+| **Date** | 2026-10-27 |
+| **Status** | Built; offline tests, type-checks and SDK build pass; not yet run on an instance |
+
+- **Built:** the API context travels inside the run `filter` (validated by `normalizeApiContext`, stored with the run, repeated by reruns); four lookup routes under `/api-access/` (APIs, resources, authentication profiles, OAuth applications, all `GlideRecordSecure`); `ApiAccessPanel` on the run form; `ApiGateNote` on the conditional-cell popover and the table drawer; the API context on the run header; user search flags machine, AI agent, web-service-only and integration users so the section opens for them.
+- **Decision:** the section opens for API accounts but the "also check the API controls" box stays unticked, so a run never changes meaning without the user choosing it.
+- **Verified:** `npm test` (48 API tests), server and client type-checks, `npm run build`. `keys.ts` gained the new route, module and cross-scope entries.
+- **Not verified:** nothing has been run in the browser or against the instance yet (needs an install on a PDI).
+- **Left for Phase 2:** the `API` marker on cells, an explanation for Denied cells, an API tab in the table drawer, and the gate in comparison, drift, exports, the dashboard and the assistant.
+
+## Dependency audit: SDK build toolchain advisories
+
+| | |
+|---|---|
+| **Date** | 2026-10-15 |
+| **Status** | Reviewed; no change possible yet |
+
+- **Checked:** `npm audit` shows 13 high and 5 moderate advisories, all in devDependencies under `@servicenow/sdk` 4.13.6 and `@servicenow/isomorphic-rollup` 1.3.11. None of them is shipped to the instance. They come from just two root advisories:
+  - **braces ≤3.0.3** (high, GHSA-vfj7-8cjw-p6xm, stack exhaustion from deeply nested brace patterns). Pulled in by `fast-glob` 3.3.3 → `micromatch` 4.0.8 (SDK build core) and by `rollup-plugin-livereload` 2.0.5 → `livereload` 0.9.3 → `chokidar` 3.6.0 (isomorphic-rollup). The other high entries (`micromatch`, `fast-glob`, `chokidar`, `livereload`, `rollup-plugin-livereload` and the `@servicenow/*` packages) are only flagged because they depend on braces.
+  - **sprintf-js ≤1.1.3** (moderate, GHSA-hp3w-g68c-fv3c, unbounded precision specifiers). Pulled in by `@cyclonedx/cyclonedx-library` 8.6.0 → `xmlbuilder2` 3.1.1 → `js-yaml` 3.15.2 → `argparse` 1.0.10. js-yaml 3 only uses argparse in its command-line tool, which the build never runs.
+- **Not changed:** no override was added. braces 3.0.3 and sprintf-js 1.1.3 are the latest published versions, both inside the vulnerable range, and neither package has had a release since 2024. A same-major override has nothing to pin to. npm's suggested fix is a downgrade to `@servicenow/sdk` 3.0.3 and isomorphic-rollup 1.2.13, which the standard rules out, and 4.13.6 / 1.3.11 are already the latest releases.
+- **Rejected options:**
+  - `livereload` 0.10.3 (uses chokidar 4, which doesn't need braces) is a breaking 0.x minor bump outside rollup-plugin-livereload's `^0.9.1` range. braces would still come in through fast-glob → micromatch, so the high advisory would remain anyway.
+  - `argparse` 2 or `xmlbuilder2` 4 would remove sprintf-js, but both are major bumps under the SDK's SBOM code.
+- **Risk:** low. Both are denial-of-service bugs that need an attacker to control glob or format-string input. In the build toolchain those inputs come from the project's own config and source.
+- **Follow-up:** run `npm audit` again when a patched braces or sprintf-js is published, or when a new SDK or isomorphic-rollup release drops them, then add a same-major override or upgrade.
+- **Verified:** `npm audit` before and after: 13 high, 5 moderate, 0 critical. Unchanged because nothing was changed. `package.json` and `package-lock.json` were not touched.
+
+## 1.28 Live verification covers field rules (v1.2.1, v1.3.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Built; offline tests, type-checks and SDK build pass; not yet run on an instance |
+
+- **v1.2.1:** `sys_db_object.ws_access` was treated as on unless it was the string `false`, so a table with it off (returned as `0`) passed the API gate. It now reads the value as a boolean, and a missing or empty value means allowed. The Denied explanation reads "deny this operation".
+- **v1.3.0:** Live verification runs one platform check per table plus one per field rule (up to 300), shows the field in rows and the CSV, adds a Result column, and hides only agreeing rows. Errors and empty results now show a message.
+- **Fixed:** Live verification did nothing on ServiceNow pages, because Prototype.js replaces `Array.from` with a version that ignores the map function (lesson P-12). Offline tests can't show this.
+- **Added while committing:** a color for the Conditional result chip, which had none.
+
+## Dependency update: SDK 4.14.0
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests, type-checks and SDK build pass; PDI deploy and smoke test still to do (ADR-0006) |
+
+- **Changed:** `@servicenow/sdk` 4.13.6 → 4.14.0 (exact pin); `@servicenow/isomorphic-rollup` → ^1.3.13 (1.3.13). Overrides: `fastify` 5.12.8, `joi` 17.13.9, `undici` 7.30.2, new `zod` 4.6.7. `fast-uri` patched in the lockfile with `npm audit fix` (never `--force`).
+- **`npm audit`:** before 10 high, 12 moderate, 1 low; after 17 moderate, 0 high, 0 critical. `npm audit --omit=dev`: 0.
+- **Accepted for now:** all 17 come from two advisories in development tools: `glob` (patched only above 14.0.1; the tree has 10.5.0 and 13.0.7) and `minimatch` (patched in 11.0.1; the tree has 3.1.5, 9.0.9 and 10.2.6). Those are major changes under the SDK's own dependencies, which ADR-0006 rules out. Neither ships to the instance. The earlier `braces` and `sprintf-js` advisories no longer appear. Recheck in the weekly dependency report.
+- **Supply chain (ADR-0006):** `npm audit signatures`: 489 packages verified, none invalid or missing; integrity hashes present; all packages from `registry.npmjs.org`.
+- **Verified:** clean `npm ci`, offline tests (engine, api-access 48, agent, safety) and `now-sdk build` with no change to generated source. **Not verified:** deploy and smoke test on a PDI.
+
+## 1.29 Phone viewport and .env ignore rules (v1.3.1)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; phone layout checked in a local test page with sample data, not on a PDI |
+
+- **Changed:** viewport tag in `src/client/index.html`; `.env` and `.env.*` git-ignored, `.env.example` kept (app-forge standards check).
+- **Found at 375px:** the header doesn't wrap, so `.lens-header__tabs` pushes the page to about 690px and the whole page scrolls sideways; `.lens-opsel` runs past its card to 565px; most controls are under 44px and text inputs under 16px.
+- **Working at 375px:** the workspace and run cards stack, the matrix and history tables scroll inside their own containers, and the Conditional popover fits the screen.
+- **Not checked:** the Polaris shell (the iframe's width comes from the parent page), the MCP view and a dashboard with data.
+
+## Documentation layout and CONTRIBUTING.md
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Done; no change to what ships to the instance |
+
+- **Changed:** 9 documents moved with `npm run docs-migrate -- <folder> --apply` in app-forge, so history is kept and relative links are fixed. `CONTRIBUTING.md` added from the app-forge template.
+- **Fixed by hand:** the migration fixes link targets, not link text or code. The setup wizard's document map in `tools/setup/server.mjs` still pointed at the old files, and link text in `INSTALL.md` and `SECURITY.md` showed the old paths.
+
+## 1.30 Phone layout: no sideways page scroll (v1.3.2)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; checked at 320px, 375px and 1280px in a local test page with sample data, not on a PDI |
+
+- **Changed:** phone styles are the base for `.lens-header`, `.lens-header__tabs`, `.lens-tab` and `.lens-opsel`, with desktop restored at `min-width: 48rem`. The comparison summary table now has a scroll container, and the workspace grid column can shrink (`minmax(0, 1fr)`).
+- **Why the tabs wrap:** a scrolling tab bar could hide the current page; wrapped tabs are all visible without any script.
+- **Not done:** other controls under 44px, text inputs under 16px, and tables in drawers and dashboard reports, which weren't checked at phone width.
+
+## 1.31 App-forge Harbor theme (v1.4.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; checked in a local test page with sample data (light, simulated dark instance theme, 375px and 1280px), not on a PDI |
+
+- **Changed:** `theme.css` from app-forge's Harbor theme added, `--lx-*` tokens mapped onto `--ui-*` at the top of `app.css`, the theme embedded by `now.prebuild.mjs` and `tools/dev.mjs`, and `app-forge.json` added. `.lens-*` classes are unchanged.
+- **`data-theme="light"` on `<html>`:** Harbor follows the operating system's dark mode, but much of `app.css` still has fixed light colors, so a dark OS would have mixed dark and light surfaces.
+- **`base.css` left out for now:** with it embedded, its element styles changed the app wherever `.lens-*` rules didn't set a property: narrower paragraphs, lighter link weight in the title, shaded table headers and extra table margins (the run page grew from 1716px to 1925px tall), and dark headings on a dark instance theme. The prebuild already picks it up if the file is added, once those rules are dealt with.
+- **Still open:** moving hard-coded colors in `app.css` to tokens, spacing tokens, and `.ui-*` classes. Tips and meter tracks are light on a dark instance theme.
+
+## 1.32 Large results saved in parts (v1.5.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** `saveBlob` writes results in parts instead of building one string, so very large runs no longer hit the platform's string limit, and older runs still open. A new property, `x_acllens.run.max_result_mb`, caps a result; a run over it fails with a message naming the property and removes its partial rows. Settings moved **Clear history now** into the History section and gained a save bar that stays in view.
+- **Not done:** not yet run on an instance with a result that large.
+
+## 1.33 Run next set (v1.6.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** `table-window.ts` picks the alphabetical slice of matched tables for a run, and `startAfter` lets the next run continue from it. `RunCoverage` shows what a capped run covers and offers **Run next set**.
+
+## 1.34 Machine Identity Access Control (v1.7.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** API access evaluation now includes MIAC, with a cross-scope read and five reason codes. See `03-access-evaluation-engine.md` §10.
+- **Not done:** not yet run on an instance that has MIAC records, and its column names are unconfirmed.
+
+## 1.35 Dashboard tabs and stored report results (v1.8.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** the dashboard is saved as tabs, with reports that can be dragged between them, **Save as report** on a run page and a picker for filling a tab. Slow reports on a run are stored with that run (`report-cache.ts`).
+- **Schema:** `x_acllens_dashboard.layout` grew from 4,000 to 65,000 characters. A browser tab still showing the old page can't save its layout until it is refreshed.
+
+## 1.36 "Allow if" tag color (v1.8.1)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass; not on a PDI |
+
+- **Changed:** the tag is blue because it names the rule type; the rule's own result sits beside it. `styles.generated.ts` regenerated from the current `app.css`.
+
+## 1.37 Assistant page context, copy buttons, chart icons (v1.9.0)
+
+| | |
+|---|---|
+| **Date** | 2026-11-06 |
+| **Status** | Offline tests and SDK build pass, and the UI was checked with sample data; not on a PDI, and not tried with a real AI provider |
+
+- **Added:** each page describes itself to the Security Assistant in short lines of plain facts (`src/client/assistant/screenContext.ts`), sent with every question. Totals and top groups only, no row data, capped at 40 lines and 6,000 characters, and marked as data rather than instructions.
+- **Added:** copy buttons beside report and run names, chart icons and an Add a report card on the dashboard.
+- **Changed:** a report's title bar stops being draggable while its name is pressed, so the name can be highlighted. Clicking outside the assistant closes it.

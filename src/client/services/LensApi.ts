@@ -1,5 +1,5 @@
 import { AnalysisFilter, FieldDetail, RunPayload, RunRecord, SubjectOption, SubjectType } from '../types'
-import { Catalog, Dashboard, Report, ReportData, Tile } from '../dashboard/types'
+import { Catalog, DashTab, Dashboard, Report, ReportData } from '../dashboard/types'
 
 declare global {
     interface Window {
@@ -29,6 +29,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export type SubjectRef = { type: SubjectType; id: string }
 
+/** One result of an "Evaluate as API access" lookup (an API path or a sys_id) */
+export interface ApiOption {
+    id: string
+    name: string
+    detail: string
+}
+
 export interface AclDetail {
     sys_id: string
     name: string
@@ -53,6 +60,7 @@ export interface Settings {
     retention_action: 'delete' | 'archive'
     instance_theme: boolean
     mcp_enabled: boolean
+    max_result_mb: number
 }
 
 export interface McpInfo {
@@ -102,6 +110,18 @@ export const LensApi = {
     },
     searchTables(q: string) {
         return request<{ results: { name: string; label: string; scope: string }[]; prefixCount: number }>(`/tables?${new URLSearchParams({ q })}`)
+    },
+    searchApis(q: string) {
+        return request<ApiOption[]>(`/api-access/apis?${new URLSearchParams({ q })}`)
+    },
+    searchApiResources(api: string, q: string) {
+        return request<ApiOption[]>(`/api-access/resources?${new URLSearchParams({ api, q })}`)
+    },
+    searchAuthProfiles(q: string) {
+        return request<ApiOption[]>(`/api-access/profiles?${new URLSearchParams({ q })}`)
+    },
+    searchOauthApps(q: string) {
+        return request<ApiOption[]>(`/api-access/oauth?${new URLSearchParams({ q })}`)
     },
     aclDetail(id: string) {
         return request<AclDetail>(`/acl/${id}`)
@@ -194,7 +214,7 @@ export const LensApi = {
     dashboard() {
         return request<Dashboard>('/dashboard')
     },
-    saveDashboard(d: { layout: Tile[]; run?: string }) {
+    saveDashboard(d: { tabs: DashTab[]; run?: string }) {
         return request<Dashboard>('/dashboard', { method: 'PUT', body: JSON.stringify(d) })
     },
     resetDashboard() {

@@ -22,7 +22,7 @@ const TOKEN = crypto.randomBytes(24).toString('hex')
 const MIN_NODE = [20, 18]
 const IDLE_LIMIT_MS = 60 * 60 * 1000
 const STATIC = { '/': ['wizard.html', 'text/html'], '/wizard.css': ['wizard.css', 'text/css'], '/wizard.js': ['wizard.js', 'text/javascript'] }
-const DOCS = { 'INSTALL.md': 'INSTALL.md', 'install-and-deploy.md': 'docs/install-and-deploy.md', 'user-guide.md': 'docs/user-guide.md' }
+const DOCS = { 'INSTALL.md': 'INSTALL.md', 'install-and-deploy.md': 'docs/operations/runbook.md', 'user-guide.md': 'docs/guides/user/user-guide.md' }
 
 let port = 0
 let lastSeen = Date.now()

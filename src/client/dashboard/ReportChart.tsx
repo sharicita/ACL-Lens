@@ -1,5 +1,6 @@
 import React from 'react'
 import { ChartType, DIM_LABEL, ReportData, ReportGroup, TONE } from './types'
+import { sliceGroups } from './layout'
 
 interface Props {
     chart: ChartType
@@ -48,10 +49,22 @@ function Tile({ data, onPick }: Props) {
     )
 }
 
-function Bars({ data, onPick }: Props) {
+/** True when a report's groups are broken down, so their parts can be overlaid. */
+export function canOverlay(data: ReportData): boolean {
+    return data.groups.some((g) => !!g.parts && Object.keys(g.parts).length > 1)
+}
+
+/** True when a report has groups to draw as bars or slices. */
+export function hasGroups(data: ReportData): boolean {
+    return data.groups.length > 0
+}
+
+function Bars({ data, onPick, chart }: Props) {
     if (!data.total) return <Empty data={data} />
-    const max = Math.max(...data.groups.map((g) => g.value), 1)
-    const stacked = data.groups.some((g) => g.parts && Object.keys(g.parts).length > 1)
+    const stacked = canOverlay(data)
+    // overlaid parts share one baseline, so they are scaled to the largest part rather than the largest group
+    const overlay = stacked && chart === 'overlay'
+    const max = Math.max(...data.groups.map((g) => (overlay ? Math.max(0, ...Object.keys(g.parts || {}).map((p) => g.parts![p])) : g.value)), 1)
     const parts = stacked ? STACK_ORDER.filter((p) => data.groups.some((g) => g.parts && g.parts[p])).concat(
         Array.from(new Set(data.groups.flatMap((g) => Object.keys(g.parts || {})))).filter((p) => STACK_ORDER.indexOf(p) < 0)
     ) : []
@@ -78,8 +91,15 @@ function Bars({ data, onPick }: Props) {
                             data-tip={g.parts ? Object.keys(g.parts).map((p) => `${p}: ${fmt(g.parts![p])}`).join(' · ') : `${fmt(g.value)} ${data.unit}`}
                         >
                             <span className="lens-chart-bars__label">{g.label}</span>
-                            <span className="lens-chart-bars__track">
-                                {stacked && g.parts ? (
+                            <span className={`lens-chart-bars__track${overlay ? ' lens-chart-bars__track--overlay' : ''}`}>
+                                {overlay && g.parts ? (
+                                    // largest first, so every smaller part stays visible in front of it
+                                    parts
+                                        .map((p, i) => ({ p, i, n: g.parts![p] || 0 }))
+                                        .filter((x) => x.n > 0)
+                                        .sort((a, b) => b.n - a.n)
+                                        .map(({ p, i, n }) => <span key={p} className={`lens-chart-bars__bar lens-chart-bars__bar--overlay lens-tone--${toneOf(p, i)}`} style={{ width: `${(n / max) * 100}%` }} />)
+                                ) : stacked && g.parts ? (
                                     parts.map((p, i) =>
                                         g.parts![p] ? (
                                             <span key={p} className={`lens-chart-bars__bar lens-tone--${toneOf(p, i)}`} style={{ width: `${(g.parts![p] / max) * 100}%` }} />
@@ -98,12 +118,14 @@ function Bars({ data, onPick }: Props) {
     )
 }
 
-function Donut({ data, onPick }: Props) {
+function Donut({ data, onPick, chart }: Props) {
     if (!data.total) return <Empty data={data} />
-    const R = 42
+    const pie = chart === 'pie'
+    // a pie is a ring as thick as its radius
+    const R = pie ? 25 : 42
     const C = 2 * Math.PI * R
     let offset = 0
-    const segs = data.groups.map((g, i) => {
+    const segs = sliceGroups(data.groups).map((g, i) => {
         const len = (g.value / data.total) * C
         const seg = { g, i, len, offset }
         offset += len
@@ -111,7 +133,7 @@ function Donut({ data, onPick }: Props) {
     })
     return (
         <div className="lens-chart-donut">
-            <svg viewBox="0 0 110 110" role="img" aria-label={`${fmt(data.total)} ${data.unit}: ${data.groups.map((g) => `${g.label} ${g.value}`).join(', ')}`}>
+            <svg viewBox="0 0 110 110" role="img" aria-label={`${fmt(data.total)} ${data.unit}: ${segs.map(({ g }) => `${g.label} ${g.value}`).join(', ')}`}>
                 <g transform="rotate(-90 55 55)">
                     {segs.map(({ g, i, len, offset: o }) => (
                         <circle
@@ -121,19 +143,23 @@ function Donut({ data, onPick }: Props) {
                             cy="55"
                             r={R}
                             fill="none"
-                            strokeWidth="16"
+                            strokeWidth={pie ? 50 : 16}
                             strokeDasharray={`${len} ${C - len}`}
                             strokeDashoffset={-o}
                             onClick={() => onPick && onPick(g.key === '__other' ? null : g)}
                         />
                     ))}
                 </g>
-                <text x="55" y="53" textAnchor="middle" className="lens-chart-donut__total">
-                    {fmt(data.total)}
-                </text>
-                <text x="55" y="67" textAnchor="middle" className="lens-chart-donut__unit">
-                    {data.unit.length > 14 ? data.unit.split(' ')[0] : data.unit}
-                </text>
+                {!pie && (
+                    <>
+                        <text x="55" y="53" textAnchor="middle" className="lens-chart-donut__total">
+                            {fmt(data.total)}
+                        </text>
+                        <text x="55" y="67" textAnchor="middle" className="lens-chart-donut__unit">
+                            {data.unit.length > 14 ? data.unit.split(' ')[0] : data.unit}
+                        </text>
+                    </>
+                )}
             </svg>
             <ul className="lens-chart__legend lens-chart__legend--col">
                 {segs.map(({ g, i }) => (
@@ -189,7 +215,7 @@ function List({ data, onPick, compact }: Props) {
 export default function ReportChart(props: Props) {
     if (props.data.error) return <p className="lens-alert lens-alert--critical">{props.data.error}</p>
     if (props.chart === 'tile') return <Tile {...props} />
-    if (props.chart === 'donut') return <Donut {...props} />
+    if (props.chart === 'donut' || props.chart === 'pie') return <Donut {...props} />
     if (props.chart === 'list') return <List {...props} />
     return <Bars {...props} />
 }

@@ -1,6 +1,6 @@
 # Install and Deployment Reference
 
-The step-by-step guide for end users is **[INSTALL.md](../INSTALL.md)** at the project root. This page explains how installation works, covers every scenario, and lists the rules for keeping the repository safe to publish.
+The step-by-step guide for end users is **[INSTALL.md](../../INSTALL.md)** at the project root. This page explains how installation works, covers every scenario, and lists the rules for keeping the repository safe to publish.
 
 ## 1. Scenarios at a glance
 
@@ -121,7 +121,7 @@ Clone the `scope/<your scope>` branch created by the GitHub Action, or `main` to
 
 ## 8. Generative AI on personal developer instances
 
-Now Assist, the Now Assist Skill Kit and other ServiceNow generative AI capabilities are **not available on Personal Developer Instances**. ServiceNow staff confirm this in the Community. On a PDI the assistant shows *No AI provider is available* until you add an external provider (Anthropic Claude, an OpenAI-compatible API, or Azure OpenAI; see [05](architecture/05-ai-assistant-and-mcp.md)). On a licensed instance, an admin must first activate Now Assist and the generic LLM capability.
+Now Assist, the Now Assist Skill Kit and other ServiceNow generative AI capabilities are **not available on Personal Developer Instances**. ServiceNow staff confirm this in the Community. On a PDI the assistant shows *No AI provider is available* until you add an external provider (Anthropic Claude, an OpenAI-compatible API, or Azure OpenAI; see [05](../architecture/05-ai-assistant-and-mcp.md)). On a licensed instance, an admin must first activate Now Assist and the generic LLM capability.
 
 ## 9. Keeping the repository publishable
 

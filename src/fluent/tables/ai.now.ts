@@ -41,7 +41,7 @@ export const x_acllens_ai_provider = Table({
             maxLength: 1000,
             hint: 'Anthropic: https://api.anthropic.com/v1/messages · OpenAI-compatible: base URL ending in /v1 · Azure: full chat/completions URL incl. api-version',
         }),
-        model: StringColumn({ label: 'Model', maxLength: 200, hint: 'e.g. claude-opus-5-5' }),
+        model: StringColumn({ label: 'Model', maxLength: 200, hint: 'Use the API model ID, not the display name: for example claude-haiku-5-5, not "Claude Haiku 5.5". Leave empty to use the default (claude-opus-5-5). Find IDs in the provider\'s model list: Anthropic at docs.anthropic.com/en/docs/about-claude/models, or run GET https://api.anthropic.com/v1/models with your key. For OpenAI-compatible or Azure providers, use the model or deployment name from that service.' }),
         allow_custom_endpoint: BooleanColumn({
             label: 'Allow custom endpoint',
             default: false,

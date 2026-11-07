@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useAssistant } from '../assistant/AssistantContext'
+import { workspaceContext } from '../assistant/screenContext'
 import { WorkspaceDraft } from '../app'
 import { LensApi } from '../services/LensApi'
 import { RunPayload } from '../types'
 import SubjectPicker from './SubjectPicker'
 import FilterPanel from './FilterPanel'
+import ApiAccessPanel from './ApiAccessPanel'
 import Tip from './Tip'
 import Icon from './Icon'
 
@@ -20,6 +23,11 @@ const MAX_SUBJECTS = 8
 export default function Workspace({ draft, historyEnabled, onDraftChange, onRunComplete, onOpenDashboard }: Props) {
     const [busy, setBusy] = useState<'' | 'analyze' | 'compare'>('')
     const [error, setError] = useState('')
+    const assistant = useAssistant()
+    useEffect(() => {
+        assistant.setContext(workspaceContext(draft))
+        return () => assistant.setContext({})
+    }, [draft])
 
     const run = async (runType: 'analyze' | 'compare') => {
         setBusy(runType)
@@ -68,6 +76,11 @@ export default function Workspace({ draft, historyEnabled, onDraftChange, onRunC
                 onRemove={(s) => onDraftChange({ ...draft, subjects: draft.subjects.filter((x) => !(x.id === s.id && x.type === s.type)) })}
             />
             <FilterPanel filter={draft.filter} onChange={(filter) => onDraftChange({ ...draft, filter })} />
+            <ApiAccessPanel
+                api={draft.filter.api}
+                suggest={draft.subjects.some((s) => s.apiAccount)}
+                onChange={(api) => onDraftChange({ ...draft, filter: { ...draft.filter, api } })}
+            />
             <section className="lens-card" aria-labelledby="run-title">
                 <div className="lens-card__header">
                     <h2 id="run-title">

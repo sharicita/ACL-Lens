@@ -6,7 +6,7 @@ The baseline every new ServiceNow app (ServiceNow SDK / Fluent) should meet from
 - **Building a screen:** treat §5–§9 as its definition of done.
 - **Before each release:** run the checks in §12–§13.
 
-Each item says **what**, and where useful **why**, in one line. ACL Lens is the reference implementation. File names in `code` point to working examples in this repository, and the reasoning behind each item is in [lessons-learned.md](lessons-learned.md).
+Each item says **what**, and where useful **why**, in one line. ACL Lens is the reference implementation. File names in `code` point to working examples in this repository, and the reasoning behind each item is in [lessons-learned.md](project/lessons-learned.md).
 
 ---
 
@@ -197,3 +197,4 @@ Every data list provides:
 - [ ] Read the SDK orientation docs for each new project; check each CLI subcommand's `--help` before first use.
 - [ ] On Windows, write multi-line edit scripts to a file instead of shell heredocs (apostrophes break them).
 - [ ] Keep memory and this standard in sync with new lessons.
+- [ ] **Versioning:** Semantic Versioning in `package.json`, Conventional Commits for every commit message, and a `CHANGELOG.md` (Keep a Changelog). `feat` bumps the minor version, `fix` the patch, a breaking change the major; the bumping commit updates `package.json`, `package-lock.json`, the `require()` path in any string-script UI action, the changelog and the docs version table, and is tagged `vX.Y.Z`. *(`CHANGELOG.md`)*

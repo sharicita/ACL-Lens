@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalysisResult, TABLE_OPS } from '../types'
 import { LiveStatus } from '../utils/liveCheck'
-import { VERIFY_MAX_TABLES, VerifyProgress, VerifyRow, Verdict, verifyLive } from '../utils/liveVerify'
+import { VERIFY_MAX_CHECKS, VerifyProgress, VerifyRow, Verdict, verifyChecks, verifyLive } from '../utils/liveVerify'
 import { OP_HELP, STATUS_LABEL, statusText } from '../utils/status'
 import { download, safeName, toCsv } from '../utils/download'
 import Icon from './Icon'
@@ -57,13 +57,14 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
         const list = tables()
         setNotice(list.length ? '' : 'No tables match the matrix filter. Clear the filter to choose the tables to verify.')
         if (!list.length) return
-        if (list.length > 50 && !window.confirm(`Verify ${Math.min(list.length, VERIFY_MAX_TABLES)} tables live as ${subject.subject.label}? Each table is one platform check, so this can take a few minutes.`)) return
+        const total = Math.min(verifyChecks(subject, list).length, VERIFY_MAX_CHECKS)
+        if (total > 50 && !window.confirm(`Run ${total} live checks as ${subject.subject.label}? Each table and each field rule is one platform check, so this can take a few minutes.`)) return
         cancelled.current = false
         setRunning(true)
         setShowAll(false)
         setRows([])
         setCheckedFor(subject.subject.key)
-        setProgress({ done: 0, total: Math.min(list.length, VERIFY_MAX_TABLES) })
+        setProgress({ done: 0, total })
         try {
             const out = await verifyLive({
                 results,
@@ -78,6 +79,9 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                 },
             })
             setRows(out)
+            if (!out.length && !cancelled.current) setNotice('The platform returned no operations for these tables, so there is nothing to compare.')
+        } catch (e: any) {
+            setNotice(`Live verification stopped: ${e && e.message ? e.message : String(e)}`)
         } finally {
             setRunning(false)
         }
@@ -86,8 +90,9 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
     const count = (v: Verdict) => (rows || []).filter((r) => r.verdict === v).length
     const order: { [v: string]: number } = { error: 0, differs: 1, resolved: 2, agree: 3 }
     const shown = (rows || [])
-        .filter((r) => showAll || r.verdict === 'differs' || r.verdict === 'error')
-        .sort((a, b) => order[a.verdict] - order[b.verdict] || a.table.localeCompare(b.table) || ops.indexOf(a.op) - ops.indexOf(b.op))
+        // matches are hidden by default; differences, errors and the platform's answer for Conditional results are what's worth reading
+        .filter((r) => showAll || r.verdict !== 'agree')
+        .sort((a, b) => order[a.verdict] - order[b.verdict] || a.table.localeCompare(b.table) || a.field.localeCompare(b.field) || ops.indexOf(a.op) - ops.indexOf(b.op))
     const handlerBlocks = (rows || []).filter((r) => r.live && r.live.accessHandler === 'blocked').length
     const dd = results.defaultDeny
 
@@ -96,10 +101,10 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
         const out: unknown[][] = [
             [`Live verification as ${subject.subject.label} (${subject.subject.type})`],
             [],
-            ['Table', 'Label', 'Operation', 'ACL Lens', 'Live overall', 'Security data filter', 'ACL', 'Access handler', 'Data filtration', 'Result', 'Why'],
+            ['Table', 'Label', 'Field', 'Operation', 'ACL Lens', 'Live overall', 'Security data filter', 'ACL', 'Access handler', 'Data filtration', 'Result', 'Why'],
         ]
         for (const r of rows)
-            out.push([r.table, r.label, r.op, r.op ? statusText(r.predicted, dd, r.op) : '', LIVE_TEXT[r.live?.overall || ''], LIVE_TEXT[r.live?.securityDataFilter || ''], LIVE_TEXT[r.live?.acl || ''], LIVE_TEXT[r.live?.accessHandler || ''], LIVE_TEXT[r.live?.dataFiltration || ''], VERDICT_TEXT[r.verdict], r.reason])
+            out.push([r.table, r.label, r.field, r.op, r.op ? statusText(r.predicted, dd, r.op) : '', LIVE_TEXT[r.live?.overall || ''], LIVE_TEXT[r.live?.securityDataFilter || ''], LIVE_TEXT[r.live?.acl || ''], LIVE_TEXT[r.live?.accessHandler || ''], LIVE_TEXT[r.live?.dataFiltration || ''], VERDICT_TEXT[r.verdict], r.reason])
         download(`${safeName(`${fileBase}-live-${subject.subject.label}`)}.csv`, toCsv(out), 'text/csv;charset=utf-8')
     }
 
@@ -110,7 +115,7 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                     <h2 id="verify-title">Live verification</h2>
                     <p className="lens-muted lens-verify__sub">
                         The platform evaluates each table as <strong>{subject.subject.label}</strong>, the same way its Access Analyzer does. This covers access handlers and data
-                        filtration, which ACL Lens can't read. Read-only, and nothing is saved.
+                        filtration, which ACL Lens can't read. Each table's operations and each field rule in the run are checked. Read-only, and nothing is saved.
                     </p>
                 </div>
                 {canRun ? (
@@ -150,9 +155,9 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                 <div className="lens-verify__body">
                     {running && (
                         <div className="lens-verify__progress" role="status">
-                            <progress max={progress.total} value={progress.done} aria-label="Tables checked" />
+                            <progress max={progress.total} value={progress.done} aria-label="Checks done" />
                             <span className="lens-muted">
-                                Checked {progress.done} of {progress.total} tables…
+                                Checked {progress.done} of {progress.total} tables and fields…
                             </span>
                         </div>
                     )}
@@ -170,12 +175,12 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                                         · access handlers blocked {handlerBlocks} operation{handlerBlocks === 1 ? '' : 's'}
                                     </span>
                                 )}
-                                {progress.total < tables().length && !running && (
-                                    <span className="lens-muted">· only the first {VERIFY_MAX_TABLES} tables were checked</span>
+                                {progress.total < verifyChecks(subject, tables()).length && !running && (
+                                    <span className="lens-muted">· only the first {VERIFY_MAX_CHECKS} checks were run</span>
                                 )}
                             </p>
                             <label className="lens-check">
-                                <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> <span>Show every operation checked</span>
+                                <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> <span>Also show operations where the platform agrees</span>
                             </label>
                             {shown.length ? (
                                 <div className="lens-mx__scroll">
@@ -189,20 +194,21 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                                                 <th>Access handler</th>
                                                 <th>Data filtration</th>
                                                 <th>Security data filter</th>
+                                                <th data-tip="Agrees, Differs, or Conditional (ACL Lens couldn't decide without a record; the platform's table-level answer is shown)">Result</th>
                                                 <th>Why</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {shown.map((r, i) => (
-                                                <tr key={`${r.table}-${r.op}-${i}`} className={`lens-verify__row--${r.verdict}`}>
+                                                <tr key={`${r.table}-${r.field}-${r.op}-${i}`} className={`lens-verify__row--${r.verdict}`}>
                                                     <th scope="row">
                                                         <button type="button" className="lens-link" onClick={() => onOpenTable(r.ti)} data-tip="Open the table details, where the Live tab shows every rule the platform checked">
                                                             {r.label || r.table}
                                                         </button>{' '}
-                                                        <code className="lens-muted">{r.table}</code>
+                                                        <code className="lens-muted">{r.table + (r.field ? '.' + r.field : '')}</code>
                                                     </th>
                                                     {r.verdict === 'error' ? (
-                                                        <td colSpan={7} className="lens-verify__err">
+                                                        <td colSpan={8} className="lens-verify__err">
                                                             {r.reason}
                                                         </td>
                                                     ) : (
@@ -221,6 +227,9 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                                                             <td>
                                                                 <Live s={r.live?.securityDataFilter} />
                                                             </td>
+                                                            <td>
+                                                                <span className={`lens-verify__chip lens-verify__chip--${r.verdict}`}>{VERDICT_TEXT[r.verdict]}</span>
+                                                            </td>
                                                             <td className="lens-verify__why">{r.reason}</td>
                                                         </>
                                                     )}
@@ -230,7 +239,7 @@ export default function LiveVerify({ results, baseline, tables, canRun, fileBase
                                     </table>
                                 </div>
                             ) : (
-                                !running && <p className="lens-muted">The platform agrees with every Granted, Denied and No rule result checked.</p>
+                                !running && <p className="lens-muted">The platform agrees with ACL Lens on every operation checked.</p>
                             )}
                         </>
                     )}

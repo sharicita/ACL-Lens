@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [04 §6](../architecture/04-security-architecture.md#6-data-retention-and-privacy), [Data dictionary](../data-dictionary.md#system-properties) |
+| **Relates to** | [04 §6](../architecture/security.md#6-data-retention-and-privacy), [Data dictionary](../architecture/data-model.md#system-properties) |
 
 ## Context
 Runs hold security posture data, and some organizations must keep it for audit while others must not keep it. Admins need to stop collection, remove data on demand and enforce retention.

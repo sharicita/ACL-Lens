@@ -1,45 +1,50 @@
 /* ACL Lens – light, quiet, modern. Accent follows the instance theme (Horizon token); neutrals are
    kept deliberately soft so the access colours carry the meaning. */
 :root {
-    --lx-bg: #f8fafb;
-    --lx-surface: #ffffff;
-    --lx-subtle: #f4f6f8;
-    --lx-hover: #f1f4f7;
-    --lx-border: #e8ecf0;
-    --lx-border-strong: #d9dfe5;
-    --lx-text: #1f2a33;
-    --lx-muted: #6b7783;
+    /* These tokens come from the app-forge theme (styles/app-forge/theme.css, embedded ahead of this
+       file by the prebuild). Change the look in app-forge, not here. */
+    --lx-bg: var(--ui-canvas);
+    --lx-surface: var(--ui-surface);
+    --lx-subtle: var(--ui-subtle);
+    --lx-hover: var(--ui-hover);
+    --lx-border: var(--ui-line);
+    --lx-border-strong: var(--ui-line-strong);
+    --lx-text: var(--ui-fg);
+    --lx-muted: var(--ui-muted);
     /* decorative only; text uses --lx-muted (contrast >= 4.5:1) */
-    --lx-faint: #8c97a1;
-    /* ACL Lens's own accent; "Follow each user's ServiceNow theme" replaces it with the user's */
+    --lx-faint: var(--ui-faint);
+    /* Harbor's accent as RGB, for the translucent tints below; "Follow each user's ServiceNow theme" replaces it */
     --lx-accent-rgb: 3, 117, 160;
-    --lx-accent: rgb(var(--lx-accent-rgb));
-    --lx-accent-soft: rgba(var(--lx-accent-rgb), 0.08);
-    --lx-accent-soft-2: rgba(var(--lx-accent-rgb), 0.14);
-    --lx-on-accent: #ffffff;
+    --lx-accent: var(--ui-accent);
+    --lx-accent-soft: var(--ui-accent-soft);
+    --lx-accent-soft-2: var(--ui-accent-soft-2);
+    --lx-on-accent: var(--ui-on-accent);
     --lx-focus: rgba(var(--lx-accent-rgb), 0.35);
 
-    --lx-g-bg: #e9f6ee;
-    --lx-g-fg: #1e7a46;
-    --lx-c-bg: #fdf4dc;
-    --lx-c-fg: #8a6210;
-    --lx-d-bg: #fbecec;
-    --lx-d-fg: #b03a3a;
-    --lx-n-bg: #f0f2f4;
-    --lx-n-fg: #5f6b75;
-    --lx-diff: #7c5cc4;
-    --lx-diff-soft: rgba(124, 92, 196, 0.1);
+    --lx-g-bg: var(--ui-success-bg);
+    --lx-g-fg: var(--ui-success);
+    --lx-c-bg: var(--ui-warning-bg);
+    --lx-c-fg: var(--ui-warning);
+    --lx-d-bg: var(--ui-danger-bg);
+    --lx-d-fg: var(--ui-danger);
+    --lx-n-bg: var(--ui-neutral-bg);
+    --lx-n-fg: var(--ui-neutral);
+    --lx-info: var(--ui-info);
+    --lx-info-bg: var(--ui-info-bg);
+    --lx-diff: var(--ui-highlight);
+    --lx-diff-soft: var(--ui-highlight-bg);
 
-    --lx-radius: 10px;
-    --lx-radius-sm: 6px;
-    --lx-shadow: 0 1px 2px rgba(16, 24, 32, 0.04);
-    --lx-shadow-pop: 0 8px 24px rgba(16, 24, 32, 0.08), 0 1px 3px rgba(16, 24, 32, 0.06);
-    --lx-space: 1rem;
-    --lx-space-sm: 0.5rem;
-    --lx-font: var(--now-font-family, 'Lato', 'Segoe UI', system-ui, Arial, sans-serif);
-    --lx-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --lx-radius: var(--ui-radius-md);
+    --lx-radius-sm: var(--ui-radius-sm);
+    --lx-shadow: var(--ui-shadow-sm);
+    --lx-shadow-pop: var(--ui-shadow-pop);
+    --lx-space: var(--ui-space-md);
+    --lx-space-sm: var(--ui-space-sm);
+    /* the instance's font when it has one */
+    --lx-font: var(--now-font-family, var(--ui-font-body));
+    --lx-ease: var(--ui-motion-ease);
     --lx-ease-in: cubic-bezier(0.4, 0, 0.8, 0.4);
-    --lx-slide-in: 0.4s;
+    --lx-slide-in: var(--ui-motion-slow);
     --lx-slide-out: 0.32s;
 }
 
@@ -48,6 +53,10 @@
    appearance). Access colours are unchanged so results read the same in every theme. */
 :root.lens-theme-instance {
     --lx-accent-rgb: var(--now-actionable--primary--background-color, 3, 117, 160);
+    --lx-accent: rgb(var(--lx-accent-rgb));
+    --lx-accent-soft: rgba(var(--lx-accent-rgb), 0.08);
+    --lx-accent-soft-2: rgba(var(--lx-accent-rgb), 0.14);
+    --lx-diff-soft: rgba(124, 92, 196, 0.1);
     --lx-on-accent: rgb(var(--now-actionable_label--primary--color, 255, 255, 255));
     --lx-focus: rgba(var(--now-color_focus-ring, var(--lx-accent-rgb)), 0.45);
     --lx-bg: rgb(var(--now-color_background--secondary, 248, 250, 251));
@@ -120,8 +129,10 @@ body {
 }
 
 /* header */
+/* Phones: the header wraps and scrolls away with the page, so it doesn't take up the small screen */
 .lens-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: var(--lx-space);
@@ -129,9 +140,15 @@ body {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--lx-border);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 20;
+}
+@media (min-width: 48rem) {
+    .lens-header {
+        flex-wrap: nowrap;
+        position: sticky;
+        top: 0;
+    }
 }
 .lens-header__brand {
     display: flex;
@@ -153,6 +170,9 @@ body {
 }
 .lens-header__tabs {
     display: flex;
+    /* wraps instead of scrolling, so the current page stays visible on phones */
+    flex-wrap: wrap;
+    max-width: 100%;
     gap: 0.25rem;
     padding: 0.2rem;
     background: var(--lx-subtle);
@@ -167,6 +187,18 @@ body {
     color: var(--lx-muted);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
+}
+/* a comfortable touch target on phones */
+.lens-tab {
+    min-height: 2.75rem;
+}
+@media (min-width: 48rem) {
+    .lens-header__tabs {
+        flex-wrap: nowrap;
+    }
+    .lens-tab {
+        min-height: 0;
+    }
 }
 .lens-tab:hover {
     color: var(--lx-text);
@@ -227,7 +259,7 @@ body {
 }
 @media (max-width: 900px) {
     .lens-workspace {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -1049,9 +1081,10 @@ code {
     background: var(--lx-d-bg);
     color: var(--lx-d-fg);
 }
+/* blue, not the Granted green: this names the rule type, and the rule's own result (Pass/Fail) sits beside it */
 .lens-pill--allow {
-    background: var(--lx-g-bg);
-    color: var(--lx-g-fg);
+    background: var(--lx-info-bg);
+    color: var(--lx-info);
 }
 .lens-pill--running {
     background: var(--lx-c-bg);
@@ -1593,6 +1626,35 @@ ul.lens-tiles {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+}
+.lens-settings__sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--lx-border);
+}
+.lens-card__body .lens-settings__sub h3 {
+    margin: 0;
+}
+/* stays in view while there is something to save, whichever card was changed */
+.lens-settings__savebar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-sm);
+    padding: 0.75rem 1.1rem;
+    background: var(--lx-surface);
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius);
+    box-shadow: var(--lx-shadow);
+}
+.lens-settings__savebar .lens-muted {
+    margin-right: auto;
 }
 .lens-settings__count {
     align-self: center;
@@ -2664,8 +2726,10 @@ a.lens-link.lens-confignav__ext {
 /* access matrix: any combination of operations */
 .lens-opsel {
     display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem 0.25rem;
 }
 .lens-opsel__label {
     color: var(--lx-muted);
@@ -2674,13 +2738,22 @@ a.lens-link.lens-confignav__ext {
 .lens-opsel__op {
     font: inherit;
     font-weight: 600;
-    min-width: 1.9rem;
-    height: 1.9rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
     border-radius: var(--lx-radius-sm);
     border: 1px solid var(--lx-border-strong);
     background: var(--lx-surface);
     color: var(--lx-muted);
     cursor: pointer;
+}
+@media (min-width: 48rem) {
+    .lens-opsel {
+        row-gap: 0.25rem;
+    }
+    .lens-opsel__op {
+        min-width: 1.9rem;
+        height: 1.9rem;
+    }
 }
 .lens-opsel__op--on {
     background: var(--lx-accent-soft-2);
@@ -3399,7 +3472,7 @@ tr.lens-group > th {
     gap: 0.5rem;
     margin-left: auto;
 }
-.lens-dash__intro {
+.lens-dash__body {
     display: flex;
     flex-direction: column;
     gap: var(--lx-block-gap);
@@ -3464,6 +3537,26 @@ tr.lens-group > th {
 .lens-dash__tile--wide {
     grid-column: 1 / -1;
 }
+/* the plus at the end of a tab: add a report here or on a new tab */
+.lens-dash__addcard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lx-space-sm);
+    min-height: 12rem;
+    padding: var(--lx-space);
+    text-align: center;
+    color: var(--lx-muted);
+    border: 1.5px dashed var(--lx-border-strong);
+    border-radius: var(--lx-radius);
+}
+.lens-dash__addactions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--lx-space-sm);
+}
 @media (max-width: 900px) {
     .lens-dash__grid {
         grid-template-columns: minmax(0, 1fr);
@@ -3477,9 +3570,30 @@ tr.lens-group > th {
     font-size: 0.95rem;
     font-weight: 600;
 }
-.lens-dash__tools {
+.lens-dash__tools,
+.lens-dash__views {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 0.15rem;
+}
+.lens-dash__views {
+    padding-right: 0.45rem;
+    border-right: 1px solid var(--lx-border);
+}
+.lens-dash__views .lens-icon-btn {
+    min-width: 1.8rem;
+    min-height: 1.8rem;
+    justify-content: center;
+    color: var(--lx-muted);
+}
+.lens-dash__views .lens-dash__view--on {
+    background: var(--lx-accent-soft);
+    color: var(--lx-accent);
+}
+.lens-dash__source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 .lens-dash__tools .lens-icon-btn {
     min-width: 1.8rem;
@@ -3621,6 +3735,15 @@ tr.lens-group > th {
 .lens-chart-bars__bar {
     height: 100%;
     min-width: 2px;
+}
+.lens-chart-bars__track--overlay {
+    position: relative;
+}
+.lens-chart-bars__bar--overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-right: 1px solid var(--lx-surface);
 }
 .lens-chart-bars__value {
     font-size: 0.82rem;
@@ -3813,6 +3936,10 @@ tr.lens-group > th {
     background: var(--lx-diff-soft);
     color: var(--lx-diff);
 }
+.lens-verify__chip--resolved {
+    background: var(--lx-c-bg);
+    color: var(--lx-c-fg);
+}
 .lens-verify__chip--error {
     background: var(--lx-d-bg);
     color: var(--lx-d-fg);
@@ -3835,4 +3962,331 @@ tr.lens-group > th {
 .lens-verify__err {
     color: var(--lx-d-fg);
     font-size: 0.82rem;
+}
+
+/* a capped run: which tables it covers, and the next set */
+.lens-coverage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--lx-space-sm);
+    padding: 0.75rem 1.1rem;
+    background: var(--lx-surface);
+    border: 1px solid var(--lx-border);
+    border-left: 3px solid var(--lx-info);
+    border-radius: var(--lx-radius);
+}
+.lens-coverage__text {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 auto 0 0;
+}
+.lens-filter__startafter {
+    margin: 0;
+    flex-basis: 100%;
+}
+
+/* dashboard tabs */
+.lens-dashtabs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-block-gap);
+}
+.lens-dashtabs__strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    border-bottom: 1px solid var(--lx-border);
+    padding-bottom: 0.5rem;
+}
+.lens-dashtabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-width: 0;
+}
+.lens-dashtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 16rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--lx-radius-sm);
+    color: var(--lx-muted);
+    cursor: pointer;
+    user-select: none;
+}
+.lens-dashtab__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lens-dashtab:hover {
+    background: var(--lx-hover);
+    color: var(--lx-text);
+}
+.lens-dashtab:focus-visible {
+    outline: 2px solid var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-dashtab--on {
+    background: var(--lx-accent-soft);
+    color: var(--lx-accent);
+    font-weight: 600;
+}
+.lens-dashtab__grip {
+    display: inline-flex;
+    color: var(--lx-muted);
+    cursor: grab;
+}
+.lens-dashtab--dragging,
+.lens-dash__tile--dragging {
+    opacity: 0.45;
+}
+.lens-dashtab--drop-before {
+    box-shadow: inset 2px 0 0 var(--lx-accent);
+}
+.lens-dashtab--drop-after {
+    box-shadow: inset -2px 0 0 var(--lx-accent);
+}
+.lens-dashtab--drop-into {
+    outline: 2px dashed var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-dashtabs__add {
+    border-style: dashed;
+}
+.lens-dashtabs__panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.lens-dashtabs__about {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+.lens-dashtabs__about h3 {
+    margin: 0;
+}
+.lens-dashtabs__about p {
+    margin: 0.2rem 0 0;
+}
+.lens-dashtabs__tools {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+}
+.lens-dashtabs__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex: 1 1 100%;
+}
+.lens-dashtabs__form .lens-field {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+.lens-dashtabs__form .lens-field--wide {
+    flex: 3 1 320px;
+}
+
+/* dragging report tiles */
+.lens-dash__tilehead[draggable='true'] {
+    cursor: grab;
+}
+.lens-dash__tilehead[draggable='true']:active {
+    cursor: grabbing;
+}
+.lens-dash__grip {
+    display: inline-flex;
+    color: var(--lx-muted);
+}
+.lens-dash__tile--drop-before {
+    box-shadow: -3px 0 0 var(--lx-accent);
+}
+.lens-dash__tile--drop-after {
+    box-shadow: 3px 0 0 var(--lx-accent);
+}
+.lens-dash__tile--wide.lens-dash__tile--drop-before {
+    box-shadow: 0 -3px 0 var(--lx-accent);
+}
+.lens-dash__tile--wide.lens-dash__tile--drop-after {
+    box-shadow: 0 3px 0 var(--lx-accent);
+}
+.lens-dash__source {
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+.lens-dash__move {
+    position: relative;
+}
+.lens-dash__move .lens-menu__list {
+    right: 0;
+    left: auto;
+}
+.lens-saverun__tab {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* report cards sit inside the dashboard card, as lighter sections of it */
+.lens-dash__grid > .lens-dash__tile {
+    box-shadow: none;
+}
+.lens-dash__grid > .lens-dash__tile--drop-before {
+    box-shadow: -3px 0 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--drop-after {
+    box-shadow: 3px 0 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--wide.lens-dash__tile--drop-before {
+    box-shadow: 0 -3px 0 var(--lx-accent);
+}
+.lens-dash__grid > .lens-dash__tile--wide.lens-dash__tile--drop-after {
+    box-shadow: 0 3px 0 var(--lx-accent);
+}
+.lens-dash__empty {
+    grid-column: 1 / -1;
+}
+
+/* filling a tab: tick reports, choose the run */
+.lens-picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-block-gap);
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--lx-border);
+    border-radius: var(--lx-radius);
+    background: var(--lx-subtle);
+}
+.lens-card__body .lens-picker h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.lens-picker__run {
+    width: 100%;
+    max-width: 34rem;
+}
+/* a run's long name must not widen the page on a phone */
+.lens-dash__empty,
+.lens-picker,
+.lens-picker__run,
+.lens-picker__run select {
+    min-width: 0;
+    max-inline-size: 100%;
+}
+.lens-picker__run select {
+    width: 100%;
+}
+.lens-picker__groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: var(--lx-block-gap);
+}
+.lens-picker__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.lens-picker__group legend {
+    padding: 0 0 0.35rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--lx-muted);
+}
+
+/* runs chosen in the picker */
+.lens-picker__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.lens-datapill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    padding: 0.2rem 0.3rem 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: var(--lx-info-bg);
+    color: var(--lx-info);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.lens-datapill__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.lens-datapill__x {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+.lens-datapill__x:hover {
+    background: var(--lx-hover);
+}
+.lens-datapill__x:focus-visible {
+    outline: 2px solid var(--lx-accent);
+    outline-offset: 1px;
+}
+.lens-picker__more summary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--lx-muted);
+    cursor: pointer;
+}
+.lens-picker__more .lens-picker__groups {
+    margin-top: var(--lx-block-gap);
+}
+
+/* report and run names can be highlighted and copied */
+.lens-dash__name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-width: 0;
+    margin-right: auto;
+}
+.lens-dash__tilehead .lens-dash__name h3 {
+    margin: 0;
+    cursor: text;
+    user-select: text;
+}
+.lens-dash__tilehead .lens-dash__source {
+    user-select: text;
+}
+.lens-copy {
+    flex: none;
+    min-width: 1.6rem;
+    min-height: 1.6rem;
+    justify-content: center;
+    color: var(--lx-muted);
+    vertical-align: middle;
 }

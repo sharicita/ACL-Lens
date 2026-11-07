@@ -1,0 +1,7 @@
+{
+    "template": "servicenow",
+    "addons": [],
+    "theme": "harbor",
+    "appForge": "0.5.0+9beec4c",
+    "created": "2026-11-06"
+}

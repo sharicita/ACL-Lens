@@ -1,7 +1,7 @@
 import '@servicenow/sdk/global'
 import { Table, StringColumn, ReferenceColumn, IntegerColumn } from '@servicenow/sdk/core'
 
-// Chunked JSON payloads (results / comparison / drift) belonging to a run.
+// Chunked JSON payloads (results / comparison / drift / calculated reports) belonging to a run.
 export const x_acllens_run_data = Table({
     name: 'x_acllens_run_data',
     label: 'ACL Lens Run Data',
@@ -16,8 +16,9 @@ export const x_acllens_run_data = Table({
             label: 'Kind',
             maxLength: 40,
             dropdown: 'dropdown_without_none',
-            choices: { results: 'Results', comparison: 'Comparison', drift: 'Drift' },
+            choices: { results: 'Results', comparison: 'Comparison', drift: 'Drift', report: 'Calculated report' },
         }),
+        cache_key: StringColumn({ label: 'Report key', maxLength: 40 }),
         seq: IntegerColumn({ label: 'Sequence' }),
         payload: StringColumn({ label: 'Payload', maxLength: 65000 }),
     },

@@ -14,8 +14,11 @@ import LiveVerify from './LiveVerify'
 import RoleComparison from './RoleComparison'
 import Tip from './Tip'
 import { useAssistant } from '../assistant/AssistantContext'
+import { runContext } from '../assistant/screenContext'
 import Icon from './Icon'
 import { AccountTypeFilter, SubjectsProvider } from './SubjectName'
+import RunCoverage, { coverageOf, nextSetName } from './RunCoverage'
+import SaveRunReport from '../dashboard/SaveRunReport'
 
 interface Props {
     runId: string
@@ -26,6 +29,7 @@ interface Props {
     isAdmin?: boolean
     /** the signed-in user can run the platform's live access evaluation */
     canLiveCheck?: boolean
+    onOpenDashboard: () => void
     /** called after the run is deleted (e.g. go back to History) */
     onDeleted: () => void
 }
@@ -49,11 +53,13 @@ function writeBaseline(runId: string, key: string) {
     }
 }
 
-export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, canLiveCheck, onDeleted }: Props) {
+export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdit, isAdmin, canLiveCheck, onOpenDashboard, onDeleted }: Props) {
     const [payload, setPayload] = useState<RunPayload | null>(cached || null)
     const [error, setError] = useState('')
     const [busy, setBusy] = useState('')
     const [actionError, setActionError] = useState('')
+    const [savingReport, setSavingReport] = useState(false)
+    const [savedReport, setSavedReport] = useState('')
     const [hidden, setHidden] = useState<Set<string>>(new Set())
     const [baseline, setBaseline] = useState('')
     const [detail, setDetail] = useState<number | null>(null)
@@ -84,14 +90,9 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
 
     useEffect(() => {
         if (!payload) return
-        assistant.setContext({
-            view: 'run',
-            run_id: payload.run.sys_id,
-            run_number: payload.run.number,
-            subjects: (payload.results?.subjects || []).map((s) => `${s.subject.label} (${s.subject.type})`),
-        })
+        assistant.setContext(runContext(payload, tab))
         return () => assistant.setContext({})
-    }, [payload])
+    }, [payload, tab])
 
     useEffect(() => {
         if (payload) {
@@ -109,6 +110,9 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
 
     const { run, results, comparison, drift } = payload
     const fileBase = `${run.number}${run.name ? '-' + run.name : ''}`
+    const coverage = results ? coverageOf(results) : null
+    // the coverage panel says this, with the button to continue
+    const warnings = results ? results.warnings.filter((w) => !(coverage && /^\d+ tables matched/.test(w))) : []
 
     const act = async (label: string, fn: () => Promise<RunPayload>) => {
         setBusy(label)
@@ -164,6 +168,7 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                     )
                 }
                 onEdit={() => onEdit(payload)}
+                onSaveReport={results ? () => setSavingReport(true) : undefined}
                 onOpenRun={onOpenRun}
                 onExportMatrix={(onlyFiltered) => results && exportMatrixCsv(results, fileBase, onlyFiltered ? filtered.current : undefined)}
                 onExportJson={() => exportJson(payload, fileBase)}
@@ -198,6 +203,14 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                     {actionError}
                 </div>
             )}
+            {savedReport && (
+                <div className="lens-alert lens-alert--positive" role="status">
+                    {savedReport}{' '}
+                    <button type="button" className="lens-link" onClick={onOpenDashboard}>
+                        Open the dashboard
+                    </button>
+                </div>
+            )}
             {!comparison && results && results.subjects.length > 1 && (
                 <Tip id="run-compare">
                     "Run comparison script" saves a comparison run with totals, head-to-head counts, role differences and an exportable list of every difference.
@@ -209,10 +222,26 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
             {run.status === 'error' && <div className="lens-alert lens-alert--critical">This run failed: {run.error_message}</div>}
             {results && (
                 <>
-                    {results.warnings.length > 0 && (
+                    {coverage && (
+                        <RunCoverage
+                            coverage={coverage}
+                            busy={busy}
+                            onNext={(after, from, to) =>
+                                act('next', () =>
+                                    LensApi.createRun({
+                                        name: nextSetName(run.name, from, to),
+                                        run_type: run.run_type,
+                                        subjects: run.subjects.map((s) => ({ type: s.type, id: s.id })),
+                                        filter: { ...run.filter, startAfter: after },
+                                    })
+                                )
+                            }
+                        />
+                    )}
+                    {warnings.length > 0 && (
                         <div className="lens-alert lens-alert--warning" role="status">
                             <ul>
-                                {results.warnings.map((w) => (
+                                {warnings.map((w) => (
                                     <li key={w}>{w}</li>
                                 ))}
                             </ul>
@@ -312,6 +341,17 @@ export default function RunView({ runId, cached, onRunComplete, onOpenRun, onEdi
                     </div>
                     {detail !== null && <TableDetail results={results} index={detail} canLiveCheck={!!canLiveCheck} onClose={() => setDetail(null)} />}
                 </>
+            )}
+            {savingReport && (
+                <SaveRunReport
+                    run={run}
+                    isAdmin={!!isAdmin}
+                    onClose={() => setSavingReport(false)}
+                    onSaved={(message) => {
+                        setSavingReport(false)
+                        setSavedReport(message)
+                    }}
+                />
             )}
         </div>
         </SubjectsProvider>

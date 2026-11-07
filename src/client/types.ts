@@ -26,6 +26,8 @@ export interface SubjectOption {
     label: string
     sub: string
     type: SubjectType
+    /** a machine, AI agent, web-service-only or integration user (set for users found by search) */
+    apiAccount?: boolean
 }
 
 export type RoleAssignment = 'direct' | 'group' | 'inherited' | 'selected' | 'contained'
@@ -86,8 +88,34 @@ export interface Cell {
     a: AclOutcome[]
     /** a security data filter limits which rows this operation reaches (A = applied, C = depends on a security attribute) */
     df?: 'A' | 'C'
-    /** the ACL-only status, when a data filter changed it */
+    /** the API access gate limits this operation (D = denies it, C = depends on something not resolvable statically) */
+    api?: 'D' | 'C'
+    /** the ACL-only status, when a data filter or the API gate changed it */
     acl?: Status
+}
+
+export type ApiReason = 'wsoff' | 'authblocked' | 'noscope' | 'unscoped' | 'useraccount' | 'ext' | 'endpoint' | 'hidden' | 'miactable' | 'miacpolicy' | 'miacnone' | 'miacmulti' | 'miacunknown'
+
+/** What an API run is evaluated as; `api` is `now/table` or `<namespace>/<service_id>` */
+export interface ApiContext {
+    api: string
+    authProfile?: string
+    oauthEntity?: string
+    version?: string
+    resource?: string
+    operation?: string
+    /** display names for the ids above (api, authProfile, oauthEntity, operation) */
+    names?: { [key: string]: string }
+}
+
+export interface ApiGate {
+    s: Status
+    ws?: boolean
+    ops?: { [op: string]: Status }
+    pol?: { [op: string]: { id: string; ok: boolean | 'C'; lvl: number } }
+    scope?: { r: 'P' | 'F' | 'C'; why: ApiReason | 'scope' | ''; id?: string }
+    ep?: AclOutcome[]
+    why: ApiReason[]
 }
 
 export interface FieldRow {
@@ -119,12 +147,21 @@ export interface TableResult {
     fields: FieldRow[]
     /** security data filters (missing on runs saved before they were analyzed) */
     sdf?: DataFilterOutcome[]
+    /** API access gate (only on runs evaluated with an API context) */
+    api?: ApiGate
 }
 
 export interface SubjectResult {
     subject: Subject
     tables: TableResult[]
     counts: { [op: string]: { [s: string]: number } }
+}
+
+export interface TableCoverage {
+    from: number
+    to: number
+    total: number
+    nextAfter?: string
 }
 
 export type FilterMode = 'secured_by_roles' | 'tables' | 'prefix' | 'scope' | 'all'
@@ -135,8 +172,12 @@ export interface AnalysisFilter {
     includeFields?: boolean
     excludeSystem?: boolean
     maxTables?: number
+    /** run the next set: only tables alphabetically after this one */
+    startAfter?: string
     /** also analyze every table that extends a selected table */
     includeChildren?: boolean
+    /** evaluate as API access (adds the API gate to every table status) */
+    api?: ApiContext
 }
 
 export interface AnalysisResult {
@@ -146,9 +187,15 @@ export interface AnalysisResult {
     filter: AnalysisFilter
     tableCount: number
     truncated: boolean
+    /** set when this run covers only part of the matched tables */
+    coverage?: TableCoverage
     warnings: string[]
     acls: AclInfo[]
     dataFilters?: DataFilterInfo[]
+    /** what the run was evaluated as, when it had an API context */
+    api?: ApiContext
+    /** Scripted REST endpoint ACLs referenced by ApiGate.ep */
+    apiAcls?: AclInfo[]
     /** table operations evaluated (missing on runs saved before the extra operations: TABLE_OPS) */
     ops?: Op[]
     subjects: SubjectResult[]

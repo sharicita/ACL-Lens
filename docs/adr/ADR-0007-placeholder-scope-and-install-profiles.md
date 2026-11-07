@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-09 |
-| **Relates to** | [Install & Deployment](../install-and-deploy.md), [INSTALL.md](../../INSTALL.md) |
+| **Relates to** | [Install & Deployment](../operations/runbook.md), [INSTALL.md](../../INSTALL.md) |
 
 ## Context
 - The repository should be safe to make public, and anyone should be able to install it.
@@ -22,4 +22,4 @@
 - ✅ The source contains no personal or company data; installs on several instances each keep their own scope.
 - ✅ Existing installs are updated in place: verified on the development PDI with no duplicate app.
 - ⚠️ `npm run build` / `now-sdk install` from the root would install `x_acllens` as a separate app. Use `npm run deploy` instead, as documented.
-- ⚠️ Git history from before this change still contains the original identifiers. Publishing a clean history needs a fresh repository or a history rewrite ([install-and-deploy §9](../install-and-deploy.md#9-keeping-the-repository-publishable)).
+- ⚠️ Git history from before this change still contains the original identifiers. Publishing a clean history needs a fresh repository or a history rewrite ([install-and-deploy §9](../operations/runbook.md#9-keeping-the-repository-publishable)).

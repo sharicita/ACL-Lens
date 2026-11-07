@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.13.6 |
+| **Application** | ACL Lens (`x_acllens`, a placeholder for your scope), a ServiceNow scoped application built with Fluent / Now SDK 4.14.0 |
 | **Status** | **Working build on a development PDI**. Core analysis, comparison, history and settings were verified on the PDI. The AI assistant's language-model step has only been tested offline (see [06](architecture/06-risks-assumptions-decisions.md)) |
-| **Version** | `0.0.1` (package.json) |
-| **Date** | 2026-10-09 |
+| **Version** | `1.9.0` (package.json; see [CHANGELOG.md](../CHANGELOG.md) for the versioning rules) |
+| **Date** | 2026-11-06 |
 | **Owner** | Project owner (PDI admin) |
 
 ACL Lens shows clearly what a **user or role can create, read, write and delete**, table by table and field by field. It explains **which ACLs decided each result and why**. You can open several users and roles side by side, run a server-side **comparison script** with exportable results, and keep a **history** of runs you can reopen and rerun. A read-only **Security Assistant** (AI) helps troubleshoot and design ACLs while seeing only what the signed-in user can see.
@@ -14,21 +14,22 @@ ACL Lens shows clearly what a **user or role can create, read, write and delete*
 
 | # | Document | Covers |
 |---|---|---|
-| 01 | [Overview & Scope](architecture/01-overview-and-scope.md) | Purpose, users and roles, features, product boundary (what it does and does not do) |
+| 01 | [Overview & Scope](architecture/overview.md) | Purpose, users and roles, features, product boundary (what it does and does not do) |
 | 02 | [System Architecture](architecture/02-system-architecture.md) | Components, request flow, project layout, build pipeline, performance |
 | 03 | [Access Evaluation Engine](architecture/03-access-evaluation-engine.md) | How access is computed: matching order, statuses, reason codes, comparison, drift, known limits |
-| 04 | [Security Architecture](architecture/04-security-architecture.md) | Roles, ACLs, cross-scope privileges, data exposure, secrets, retention, threat model |
+| 04 | [Security Architecture](architecture/security.md) | Roles, ACLs, cross-scope privileges, data exposure, secrets, retention, threat model |
 | 05 | [AI Assistant & MCP](architecture/05-ai-assistant-and-mcp.md) | Provider abstraction, Now Assist setup, agent loop, read-only tools, MCP server, guard rails |
 | 06 | [Risks, Assumptions & Decisions](architecture/06-risks-assumptions-decisions.md) | Decision log, verified vs unverified items, risks, open items |
-| — | [Data Dictionary](data-dictionary.md) | Tables, columns, properties, roles and every metadata record the app installs |
-| — | [API Reference](api-reference.md) | REST endpoints and MCP methods |
-| — | [User Guide](user-guide.md) | How to use the Workspace, matrix, details, comparison, history, assistant and settings |
-| — | [Install & Deployment](install-and-deploy.md) | Every install route (guided setup, ServiceNow IDE, update sets, multiple instances), how scopes and profiles work, keeping the repo publishable. End-user steps: [INSTALL.md](../INSTALL.md) |
-| — | [Developer Setup](dev-setup.md) | Prerequisites, build/deploy, conventions, tests, troubleshooting |
+| — | [Data Dictionary](architecture/data-model.md) | Tables, columns, properties, roles and every metadata record the app installs |
+| — | [API Reference](reference/api.md) | REST endpoints and MCP methods |
+| — | [User Guide](guides/user/user-guide.md) | How to use the Workspace, matrix, details, comparison, history, assistant and settings |
+| — | [Install & Deployment](operations/runbook.md) | Every install route (guided setup, ServiceNow IDE, update sets, multiple instances), how scopes and profiles work, keeping the repo publishable. End-user steps: [INSTALL.md](../INSTALL.md) |
+| — | [Developer Setup](guides/developer/dev-setup.md) | Prerequisites, build/deploy, conventions, tests, troubleshooting |
 | — | [New App Build Standards](new-app-build-standards.md) | The reusable baseline for every new ServiceNow app: setup, install, security, navigation, UI/UX, lists, accessibility, docs and process (checklist) |
-| — | [Lessons Learned](lessons-learned.md) | What this build taught us, and the UX baseline for future builds |
-| — | [Build Log](build-log.md) | What was built in each iteration, issues found on the PDI and how they were fixed |
+| — | [Lessons Learned](project/lessons-learned.md) | What this build taught us, and the UX baseline for future builds |
+| — | [Build Log](project/build-log.md) | What was built in each iteration, issues found on the PDI and how they were fixed |
 | — | [ADRs](adr/) | Architecture decision records |
+| — | [Contributing](../CONTRIBUTING.md) | Branches, commits, versions and what to run before a pull request |
 
 ## Architecture decision records
 
@@ -52,8 +53,24 @@ ACL Lens shows clearly what a **user or role can create, read, write and delete*
 
 ## Change log
 
+From 1.0.0 the versions follow Semantic Versioning and the full history is in [CHANGELOG.md](../CHANGELOG.md). The `0.x` rows below are the earlier informal numbering.
+
 | Version | Date | Change |
 |---|---|---|
+| 1.9.0 | 2026-11-06 | The Security Assistant sees the page behind it and closes on an outside click; copy buttons; chart icons on report cards |
+| 1.8.1 | 2026-11-06 | Fix: the "Allow if" tag is blue, so it no longer looks like a pass |
+| 1.8.0 | 2026-11-06 | Dashboard tabs, drag to move, Save as report, stored results for slow reports |
+| 1.7.0 | 2026-11-06 | API access evaluation includes Machine Identity Access Control (offline tests only) |
+| 1.6.0 | 2026-11-06 | Run next set for runs that match more tables than one run covers |
+| 1.5.0 | 2026-11-06 | Very large results saved in parts, with a size limit setting |
+| 1.4.0 | 2026-11-06 | Colors and shapes come from the app-forge Harbor theme |
+| 1.3.2 | 2026-11-06 | Fix: no sideways page scroll at phone width (header, operation picker, comparison summary table) |
+| 1.3.1 | 2026-11-06 | Fix: phone browsers use the device width (viewport tag); the header and operation picker still overflow at phone width. SDK 4.14.0 |
+| 1.3.0 | 2026-11-06 | Live verification checks field rules too and has a Result column; fix: it did nothing on ServiceNow pages (Prototype.js `Array.from`) |
+| 1.2.1 | 2026-10-27 | Fix: the web-service access switch was read wrongly (tables with it off passed the API gate) |
+| 1.2.0 | 2026-10-27 | Evaluate as API access on the run form: choose the API, authentication method, OAuth application and resource; explanations on conditional cells |
+| 1.1.0 | 2026-10-27 | API access evaluation engine (policies, auth scopes, endpoint ACLs, web-service access); not yet available in the UI |
+| 1.0.0 | 2026-10-27 | Baseline for Semantic Versioning, Conventional Commits and `CHANGELOG.md` |
 | 0.7 | 2026-10-09 | Report list views, sorting everywhere, cleaner cards, tooltips kept on screen, tips with "Don't show again", admin archive/delete on the run page, instance-theme property, lessons learned |
 | 0.6 | 2026-10-09 | Publishable source (placeholder scope `x_acllens`, local install profiles), guided setup (`npm run setup`), INSTALL.md, scope GitHub Action; unified ranked search; baseline explained; Roles tab; condition details; record and documentation links; account-type badges; accessibility fixes |
 | 0.5 | 2026-10-08 | Supply chain: source upload to the instance turned off (uploaded source package removed); SDK 4.11.2 → 4.13.6; npm overrides for patched build-tool dependencies; ADR-0006 |

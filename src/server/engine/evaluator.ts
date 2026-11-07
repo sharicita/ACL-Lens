@@ -39,6 +39,11 @@ export class Evaluator {
         for (const r of IMPLICIT_ROLES) this.roleSet[r] = true
     }
 
+    /** the subject being evaluated */
+    who(): Subject {
+        return this.subject
+    }
+
     /** the subject's roles, including implicit ones */
     roles(): { [r: string]: boolean } {
         return this.roleSet

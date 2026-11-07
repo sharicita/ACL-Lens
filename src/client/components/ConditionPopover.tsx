@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { AclInfo, Cell, DataFilterInfo } from '../types'
+import { AclInfo, ApiGate, Cell, DataFilterInfo } from '../types'
 import { REASON_TEXT } from '../utils/status'
+import ApiGateNote from './ApiGateNote'
 import { ConditionDetail } from './AclList'
 import RecordLink, { recordUrl } from './RecordLink'
 import Icon from './Icon'
@@ -15,6 +16,9 @@ interface Props {
     target: string
     /** the security data filters that apply (or may apply) to this subject on the table */
     filters?: DataFilterInfo[]
+    /** the API access gate for this subject's table, when the run was evaluated as API access */
+    gate?: ApiGate
+    defaultDeny?: boolean
     onOpenDetails?: () => void
     onClose: () => void
 }
@@ -23,7 +27,7 @@ interface Props {
  * "Why is this Conditional?" next to a matrix cell: the rules that decide record by record, with their
  * condition / script shown straight away. Positioned against the window so it is never cut off.
  */
-export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op, target, filters = [], onOpenDetails, onClose }: Props) {
+export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op, target, filters = [], gate, defaultDeny = true, onOpenDetails, onClose }: Props) {
     const ref = useRef<HTMLDivElement>(null)
     const titleId = useId()
     const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
@@ -93,6 +97,7 @@ export default function ConditionPopover({ anchor, cell, acls, subjectLabel, op,
                 </button>
             </div>
             <div className="lens-condpop__body">
+                <ApiGateNote cell={cell} gate={gate} op={op.split(' ').pop() || op} subjectLabel={subjectLabel} defaultDeny={defaultDeny} />
                 {cell.df && (
                     <div className="lens-condpop__df">
                         <p className="lens-muted lens-condpop__lead">

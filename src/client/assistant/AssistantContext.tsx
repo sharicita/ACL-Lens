@@ -1,12 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import type { ScreenContext } from './screenContext'
 
-export interface ScreenContext {
-    run_id?: string
-    run_number?: string
-    subjects?: string[]
-    table?: string
-    view?: string
-}
+export type { ScreenContext }
 
 interface AssistantApi {
     open: boolean

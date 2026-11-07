@@ -16,7 +16,7 @@ The platform's Access Analyzer answers one question at a time and doesn't show t
 | ACL Lens administrator | `x_acllens.admin` (contains `.user`) | Everything above, plus Settings (history, clearing, retention), archive/restore runs, AI provider configuration, Run Records list |
 | System administrator | `admin` | Passes all role checks (platform behaviour) |
 
-> `x_acllens.user` is a **sensitive role**: holders can see the access, ACL rules and role assignments of any user or role, because that is the purpose of the tool. Grant it only to people who audit security ([04 §2](04-security-architecture.md)).
+> `x_acllens.user` is a **sensitive role**: holders can see the access, ACL rules and role assignments of any user or role, because that is the purpose of the tool. Grant it only to people who audit security ([04 §2](security.md)).
 
 ## 3. Features
 

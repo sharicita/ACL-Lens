@@ -21,6 +21,7 @@ const TOOL_LABEL: { [t: string]: string } = {
 
 function suggestions(ctx: ReturnType<typeof useAssistant>['context']): string[] {
     const out: string[] = []
+    if (ctx.view === 'dashboard') out.push('What stands out in the reports on this tab?')
     if (ctx.table) {
         out.push(`Explain who can update ${ctx.table} records and why.`)
         out.push(`Review the ACLs on ${ctx.table} against best practices.`)
@@ -44,6 +45,7 @@ export default function AssistantPanel() {
     const [showHistory, setShowHistory] = useState(false)
     const [history, setHistory] = useState<{ sys_id: string; title: string; updated: string }[]>([])
     const endRef = useRef<HTMLDivElement>(null)
+    const panelRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
@@ -63,6 +65,20 @@ export default function AssistantPanel() {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && a.close()
         window.addEventListener('keydown', onKey)
         return () => window.removeEventListener('keydown', onKey)
+    }, [a.open])
+
+    // Clicking anywhere else slides the panel away. The conversation stays for when it reopens.
+    useEffect(() => {
+        if (!a.open) return
+        const onDown = (e: PointerEvent) => {
+            const target = e.target as Element
+            // the page's scrollbar, this panel, and the buttons that open it themselves
+            if (target === document.documentElement || !target.closest) return
+            if ((panelRef.current && panelRef.current.contains(target)) || target.closest('[data-assistant-opener]')) return
+            a.close()
+        }
+        document.addEventListener('pointerdown', onDown)
+        return () => document.removeEventListener('pointerdown', onDown)
     }, [a.open])
 
     const send = async (text?: string) => {
@@ -102,7 +118,7 @@ export default function AssistantPanel() {
     if (!rendered) return null
     const unavailable = status && !status.active
     return (
-        <div className={`lens-ai${closing ? ' lens-ai--closing' : ''}`} role="dialog" aria-modal="false" aria-labelledby="ai-title">
+        <div ref={panelRef} className={`lens-ai${closing ? ' lens-ai--closing' : ''}`} role="dialog" aria-modal="false" aria-labelledby="ai-title">
             <header className="lens-ai__head">
                 <div>
                     <h2 id="ai-title">
@@ -179,7 +195,7 @@ export default function AssistantPanel() {
                 {!messages.length && !unavailable && (
                     <div className="lens-ai__welcome">
                         <p>Ask about access, troubleshooting, or designing ACLs. I can look things up, but only what you have access to, and I never change anything.</p>
-                        <Tip id="ai-context">The assistant knows which run and table you have open, so you can ask "why is this denied?" directly.</Tip>
+                        <Tip id="ai-context">The assistant sees what's on the page behind it, such as the run, report or table you have open, so you can ask "what does this show?" directly. Click outside this panel to close it.</Tip>
                         <div className="lens-ai__suggest">
                             {suggestions(a.context).map((s) => (
                                 <button key={s} type="button" className="lens-suggest" onClick={() => send(s)}>
@@ -221,9 +237,9 @@ export default function AssistantPanel() {
                     send()
                 }}
             >
-                {(a.context.run_number || a.context.table) && (
-                    <p className="lens-ai__ctx">
-                        Context: {[a.context.run_number, a.context.table].filter(Boolean).join(' · ')}
+                {(a.context.page || a.context.run_number || a.context.table) && (
+                    <p className="lens-ai__ctx" data-tip="The assistant takes what's on this page into account.">
+                        Looking at: {[a.context.page, a.context.tab, a.context.run_number, a.context.table].filter(Boolean).join(' · ')}
                     </p>
                 )}
                 <textarea

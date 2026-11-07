@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [Data dictionary](../data-dictionary.md) |
+| **Relates to** | [Data dictionary](../architecture/data-model.md) |
 
 ## Context
 A run can cover thousands of tables × up to 8 subjects × 4 operations, plus field rules and the ACLs that decided them. That's several MB of JSON. Options were: a normalized cell table (millions of rows), attachments (size limits on `getContent`, harder cleanup), or chunked rows.

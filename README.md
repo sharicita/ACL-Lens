@@ -24,7 +24,7 @@ Already set up? Update the install with `npm run deploy`.
 
 ## Documentation
 
-**[docs/README.md](docs/README.md)** covers the overview, architecture, access engine, security, AI assistant and MCP, data dictionary, API reference, user guide, [install and deployment](docs/install-and-deploy.md), developer setup, build log and ADRs.
+**[docs/README.md](docs/README.md)** covers the overview, architecture, access engine, security, AI assistant and MCP, data dictionary, API reference, user guide, [install and deployment](docs/operations/runbook.md), developer setup, build log and ADRs.
 
 ## Development
 
@@ -34,7 +34,7 @@ npm test              # offline tests
 npm run deploy:build  # build with your install profile
 ```
 
-The source uses the placeholder scope `x_acllens`. Your real scope and instance stay in the git-ignored `acl-lens.local.json`, so this repository can be shared publicly ([how it works](docs/install-and-deploy.md#2-how-the-scope-works)).
+The source uses the placeholder scope `x_acllens`. Your real scope and instance stay in the git-ignored `acl-lens.local.json`, so this repository can be shared publicly ([how it works](docs/operations/runbook.md#2-how-the-scope-works)).
 
 ## License
 

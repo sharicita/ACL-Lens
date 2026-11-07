@@ -20,6 +20,10 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | DELETE | `/runs/{id}` **admin** | — | `{deleted: 1, number}`. Removes the run, its `_run_data` rows and attachments |
 | GET | `/fields` | `table`, `subjects=user:<id>,role:<id>,group:<id>` | Live evaluation of every column of `table`, plus `tableCells` for all 12 table operations and `dataFilters` per subject |
 | GET | `/tables` | `q` | `{results: [{name, label, scope}], prefixCount}`: tables the caller can read in `sys_db_object` (`GlideRecordSecure`), ranked by name then label; `prefixCount` = tables whose name starts with `q` |
+| GET | `/api-access/apis` | `q` | `[{id, name, detail}]`: the built-in Table API (`id=now/table`) first, then active Scripted REST APIs (`id=<namespace>/<service_id>`) the caller can read in `sys_ws_definition` |
+| GET | `/api-access/resources` | `api`, `q` | Resources (`sys_ws_operation`) of one Scripted REST API the caller can read; `id` is the operation sys_id, `detail` is `METHOD /path` |
+| GET | `/api-access/profiles` | `q` | Active inbound authentication profiles the caller can read; `detail` is the profile type |
+| GET | `/api-access/oauth` | `q` | Active OAuth applications (`oauth_entity`) the caller can read; `detail` is the type and scope restriction |
 | GET | `/acl/{id}` | — | `{name, operation, decision, description, roles, condition, condition_query, applies_to, security_attribute, has_script, script, script_hidden, admin_overrides}`. `script` is returned only when the caller can read `sys_security_acl`; otherwise `script_hidden=true` |
 | GET | `/me` | — | `{user, is_admin, can_live_check, history_enabled, instance_theme}`. `can_live_check` is true for `admin`, `user_admin` or `access_analyzer_admin` (the platform enforces it on the live check itself) |
 | GET | `/admin/mcp` **admin** | — | MCP setup information (see the MCP section) |
@@ -28,6 +32,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 - `mode`: `secured_by_roles` · `tables` · `prefix` · `scope` · `all`
 - `value`: comma-separated tables or prefixes, or a scope
 - `includeFields` (default true), `excludeSystem`, `includeChildren` (also analyze tables that extend the selected ones; not used with `all`), `maxTables` (default 1,500; max 5,000)
+- `api` (optional, **evaluate as API access**): `{api, authProfile?, oauthEntity?, operation?, version?, resource?, names?}`. `api` is `now/table` or `<namespace>/<service_id>`; `authProfile` is an `inbound_auth_profile` sys_id or `any`; `oauthEntity` and `operation` are sys_ids; `names` are display labels only. Values are validated (a bad value returns 400). With `api`, each table result carries an `api` gate and cells limited by it carry `api: 'D' | 'C'`; the context is stored in the run's `filter`, so reruns repeat it. Tables the caller can't read (policies, scopes, applications) make the gate Conditional (`hidden`).
 
 ## Reporting dashboard
 
@@ -37,17 +42,17 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | POST | `/reports` | `{sys_id?, name, description, measure, chart, options, copied_from?, shared? (admin)}` | The saved report. Without `sys_id` it creates the caller's own report; shipped reports are never changed |
 | DELETE | `/reports/{id}` | — | `{deleted: true}` (own reports; admins: any non-shipped) |
 | POST | `/reports/preview` | `{run?, report}` | `{run, data}` for an unsaved definition (the editor's live preview) |
-| GET | `/dashboard` | — | `{layout: [{report, size}], custom, run}`. Without a saved layout: the default reports |
-| PUT | `/dashboard` | `{layout, run?}` | Saves the caller's layout and chosen run |
+| GET | `/dashboard` | — | `{tabs: [{id, title, description, tiles: [{report, size}]}], custom, run}`. Without a saved dashboard: one tab with the default reports |
+| PUT | `/dashboard` | `{tabs, run?}` (1–20 tabs, up to 40 tiles each; title required) | Saves the caller's tabs and chosen run |
 | DELETE | `/dashboard` | — | Back to the default (the caller's reports are kept) |
-| POST | `/dashboard/data` | `{run?, reports: [id]}` | `{run, reports: {id: data}}`: every tile from one run, loaded once. `data` = `{total, unit, groupBy, groups[], columns[], rows[] (max 2,000), rowsTruncated, tables[], note?}` |
+| POST | `/dashboard/data` | `{run?, reports: [id]}` | `{run, reports: {id: data}}`: each run loaded once. A report whose `options.run` is set uses that run and adds `data.source = {sys_id, number, name, created}`; the others use `run`. `data` = `{total, unit, groupBy, groups[], columns[], rows[] (max 2,000), rowsTruncated, tables[], note?}` |
 
 ## Settings (admin)
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| GET | `/admin/settings` | — | `{history_enabled, retention_enabled, retention_days, retention_action}` |
-| PUT | `/admin/settings` | Any subset of the above (`retention_days` 1–3650) | Saved settings |
+| GET | `/admin/settings` | — | `{history_enabled, retention_enabled, retention_days, retention_action, max_result_mb}` |
+| PUT | `/admin/settings` | Any subset of the above (`retention_days` 1–3650, `max_result_mb` 8–4096) | Saved settings |
 | POST | `/admin/history/preview` | `{mode: all\|range\|older_than, from?, to? (YYYY-MM-DD, admin time zone), days?, include_archived?}` | `{count}` |
 | POST | `/admin/history/clear` | Same | `{deleted}` (runs, result chunks and CSV attachments) |
 
@@ -56,7 +61,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | Method | Path | Body | Returns |
 |---|---|---|---|
 | GET | `/ai/status` | — | `{active: {name, type, model} \| null, providers: [{name, type, available, reason}], is_admin}` |
-| POST | `/ai/chat` | `{conversation_id?, message, context?: {run_id, run_number, subjects, table}}` | `{conversation_id, title, answer, tools_used, provider}` |
+| POST | `/ai/chat` | `{conversation_id?, message, context?: {run_id, run_number, subjects, table, page, summary: [string]}}` (`summary` is cut to 40 lines and 6,000 characters) | `{conversation_id, title, answer, tools_used, provider}` |
 | GET | `/ai/conversations` | — | The caller's conversations |
 | GET | `/ai/conversations/{id}` | — | Messages (caller's own only) |
 
@@ -70,7 +75,7 @@ Stateless JSON-RPC 2.0 (MCP `2025-06-18`). Single requests or batches; notificat
 |---|---|
 | `initialize` | `serverInfo.name = acl-lens`; capabilities: tools, prompts, resources; `instructions` = operating rules |
 | `ping` | |
-| `tools/list`, `tools/call` | 10 read-only tools ([05 §4](architecture/05-ai-assistant-and-mcp.md#4-read-only-tools-toolsts)). Results come as text content; `isError` when the tool reports an error such as `no_access` |
+| `tools/list`, `tools/call` | 10 read-only tools ([05 §4](../architecture/05-ai-assistant-and-mcp.md#4-read-only-tools-toolsts)). Results come as text content; `isError` when the tool reports an error such as `no_access` |
 | `resources/list`, `resources/read` | `acl-lens://guidance/{evaluation\|troubleshooting\|design\|testing\|scripted\|scoped_apps}` |
 | `prompts/list`, `prompts/get` | `troubleshoot_access(user, table, operation?, field?)`, `design_acls(table, requirements)`, `review_acl(acl)` |
 

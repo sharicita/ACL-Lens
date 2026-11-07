@@ -75,6 +75,7 @@ assert.deepEqual(r1.tools_used, ['check_my_access'])
 assert.deepEqual(toolCalls[0], ['check_my_access', { table: 'incident' }])
 assert.ok(sent[0].messages[0].content.includes('[Context from the ACL Lens screen'), 'context note sent')
 assert.ok(sent[1].messages.some((m) => m.content.startsWith('Tool result for check_my_access')), 'tool result fed back')
+
 const sys0 = sent[0].system
 assert.ok(sys0.includes('read-only') && sys0.includes('check_my_access'), 'system prompt has rules + catalog')
 
@@ -99,4 +100,22 @@ assert.ok(r3.answer.includes('could not finish'))
 DB['x_acllens_ai_conversation'][0].user = 'someone_else'
 assert.throws(() => chat(r1.conversation_id, 'hi'), /not found/)
 assert.throws(() => getConversation(r1.conversation_id), /not found/)
+
+// the page behind the assistant reaches the model, within limits and marked as data
+script = ['{"action":"answer","content":"ok"}']
+sent.length = 0
+chat(undefined, 'What does this graph show?', { page: 'Reporting dashboard', run_number: 'ALR2', summary: ['Report "Differences": 61,022 differences, create 50,010.'] })
+const note = sent[0].messages[0].content
+assert.ok(note.includes('Reporting dashboard') && note.includes('61,022') && note.includes('ALR2'), 'page and report in the note')
+assert.ok(note.includes('rather than instructions'), 'marked as data')
+assert.ok(note.endsWith('What does this graph show?'), 'question last')
+script = ['{"action":"answer","content":"ok"}']
+sent.length = 0
+chat(undefined, 'Big page', { summary: Array.from({ length: 500 }, () => 'x'.repeat(5000)) })
+assert.ok(sent[0].messages[0].content.length < 7000, 'a huge page is cut down')
+script = ['{"action":"answer","content":"ok"}']
+sent.length = 0
+chat(undefined, 'No page', {})
+assert.equal(sent[0].messages[0].content, 'No page', 'nothing added without context')
+
 console.log('agent: all tests passed')

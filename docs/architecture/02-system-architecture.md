@@ -65,7 +65,7 @@ flowchart LR
 
 ```
 now.config.json            scope, scopeId, name
-now.prebuild.mjs           client build (rollup) + embeds app.css into styles.generated.ts
+now.prebuild.mjs           client build (rollup) + embeds the theme and app.css into styles.generated.ts
 src/fluent/                Fluent metadata (.now.ts) - tables, security, REST, UI page, menu, settings
 src/fluent/generated/      keys.ts (record identities - commit, do not hand edit)
 src/server/engine/         analysis engine, storage, runs
@@ -81,7 +81,7 @@ docs/                      this documentation
 
 `npm run build` (now-sdk build):
 1. Type-checks Fluent and server modules.
-2. Runs `now.prebuild.mjs`: copies `src/client/app.css` into `styles.generated.ts` ([ADR-0004](../adr/ADR-0004-styles-in-js-bundle.md)), then bundles the client with rollup into `dist/static`.
+2. Runs `now.prebuild.mjs`: copies `src/client/styles/app-forge/theme.css` and `src/client/app.css` into `styles.generated.ts` ([ADR-0004](../adr/ADR-0004-styles-in-js-bundle.md)), then bundles the client with rollup into `dist/static`.
 3. Compiles Fluent into XML in `dist/app`. Every file in `src/server` becomes a `sys_module` record.
 
 `npm run deploy` installs `dist/app` on the authenticated instance and prints a rollback link.

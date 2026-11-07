@@ -4,6 +4,26 @@ import { ALL_TABLE_OPS, AclInfo, Op } from './types.ts'
 const OPS_QUERY = `operation.nameIN${ALL_TABLE_OPS.join(',')}`
 const MAX_TARGETED_NAMES = 150
 
+/** The AclInfo for the current sys_security_acl row (roles are filled in separately). */
+export function aclInfoFromRow(a: any): AclInfo {
+    const opName = (a.getDisplayValue('operation') || a.getValue('operation')) as Op
+    const localOrExisting = a.getValue('local_or_existing')
+    return {
+        id: a.getUniqueValue(),
+        name: a.getValue('name'),
+        op: opName,
+        decision: a.getValue('decision_type') === 'deny' ? 'deny' : 'allow',
+        roles: [],
+        adminOverrides: bool(a.getValue('admin_overrides')),
+        condition: cleanQuery(a.getValue('condition')),
+        hasScript: bool(a.getValue('advanced')) && !!(a.getValue('script') || '').trim(),
+        securityAttribute: localOrExisting === 'Existing' && a.getValue('security_attribute') ? a.getDisplayValue('security_attribute') : '',
+        appliesTo: cleanQuery(a.getValue('applies_to')),
+        description: a.getValue('description') || '',
+        scope: a.getDisplayValue('sys_scope') || '',
+    }
+}
+
 /**
  * Loads active record ACLs (create/read/write/delete and the other table operations) with their roles and indexes them by
  * "<acl name>|<operation>" for fast hierarchy lookups.
@@ -29,25 +49,7 @@ export class AclIndex {
         a.query()
         const idToIndex: { [id: string]: number } = {}
         while (a.next()) {
-            const opName = (a.getDisplayValue('operation') || a.getValue('operation')) as Op
-            const localOrExisting = a.getValue('local_or_existing')
-            const info: AclInfo = {
-                id: a.getUniqueValue(),
-                name: a.getValue('name'),
-                op: opName,
-                decision: a.getValue('decision_type') === 'deny' ? 'deny' : 'allow',
-                roles: [],
-                adminOverrides: bool(a.getValue('admin_overrides')),
-                condition: cleanQuery(a.getValue('condition')),
-                hasScript: bool(a.getValue('advanced')) && !!(a.getValue('script') || '').trim(),
-                securityAttribute:
-                    localOrExisting === 'Existing' && a.getValue('security_attribute')
-                        ? a.getDisplayValue('security_attribute')
-                        : '',
-                appliesTo: cleanQuery(a.getValue('applies_to')),
-                description: a.getValue('description') || '',
-                scope: a.getDisplayValue('sys_scope') || '',
-            }
+            const info = aclInfoFromRow(a)
             idToIndex[info.id] = this.acls.length
             this.acls.push(info)
         }

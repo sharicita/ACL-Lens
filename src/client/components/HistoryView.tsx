@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useAssistant } from '../assistant/AssistantContext'
+import { historyContext } from '../assistant/screenContext'
 import { LensApi } from '../services/LensApi'
 import { RunPayload, RunRecord } from '../types'
 import Tip from './Tip'
@@ -42,6 +44,11 @@ export default function HistoryView({ isAdmin, historyEnabled, onOpen, onRunComp
     const on = (col: string, r: RunRecord) => ({ onContextMenu: sorter.cellMenu(col, r) })
     const show = sorter.shows
     const [error, setError] = useState('')
+    const assistant = useAssistant()
+    useEffect(() => {
+        assistant.setContext(historyContext(runs, !!(q || type)))
+        return () => assistant.setContext({})
+    }, [runs])
 
     useEffect(() => {
         setLoading(true)

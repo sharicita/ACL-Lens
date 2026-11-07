@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Accepted 2026-10-08 |
-| **Relates to** | [03](../architecture/03-access-evaluation-engine.md), [04 §2](../architecture/04-security-architecture.md#2-roles) |
+| **Relates to** | [03](../architecture/03-access-evaluation-engine.md), [04 §2](../architecture/security.md#2-roles) |
 
 ## Context
 Showing what *another* user or a role can access needs either live evaluation as that user (impersonation, `GlideRecordSecure` in their session) or a model of the platform's ACL rules. Impersonation is intrusive, needs privileged APIs, gives nothing for a role (which isn't a session), and can't explain *why*.

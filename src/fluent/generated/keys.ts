@@ -190,6 +190,22 @@ declare global {
                         table: 'sys_ws_operation'
                         id: '1c55c0bbea864c6e9df54adc33580bb2'
                     }
+                    'lens-api-lookup-apis': {
+                        table: 'sys_ws_operation'
+                        id: '413ec2d6e43d40bdad3c5b31439a4e16'
+                    }
+                    'lens-api-lookup-oauth': {
+                        table: 'sys_ws_operation'
+                        id: 'cfc7ba0417e9462f855771cbfe260ad1'
+                    }
+                    'lens-api-lookup-profiles': {
+                        table: 'sys_ws_operation'
+                        id: '7b03cb1a955b47328e2ee37e699533b4'
+                    }
+                    'lens-api-lookup-resources': {
+                        table: 'sys_ws_operation'
+                        id: 'aad4e4ed06e2415f9f0c4a0a0759fc04'
+                    }
                     'lens-api-mcp': {
                         table: 'sys_ws_operation'
                         id: '2a361c7c2a144813bd8cf41ce5d94bcb'
@@ -277,6 +293,10 @@ declare global {
                     'prop-history-enabled': {
                         table: 'sys_properties'
                         id: 'eee877b8277f4df399a5145bf6c7c9fd'
+                    }
+                    'prop-max-result-mb': {
+                        table: 'sys_properties'
+                        id: '38e3aa903510f847417b3c9acfb11055'
                     }
                     'prop-mcp-enabled': {
                         table: 'sys_properties'
@@ -470,6 +490,18 @@ declare global {
                         table: 'sys_module'
                         id: '55d7894a01bf402285da419490b4ab04'
                     }
+                    'src_server_engine_api-access_ts': {
+                        table: 'sys_module'
+                        id: '19e9b246e951474cb68a862664b58f07'
+                    }
+                    'src_server_engine_api-loader_ts': {
+                        table: 'sys_module'
+                        id: '249b260355fd4321b4efc55953695343'
+                    }
+                    'src_server_engine_api-lookup_ts': {
+                        table: 'sys_module'
+                        id: '27c6313b82274232b18afed565794d51'
+                    }
                     src_server_engine_attributes_ts: {
                         table: 'sys_module'
                         id: '313d636c66d74435852f9ac86abb592d'
@@ -514,9 +546,21 @@ declare global {
                         table: 'sys_module'
                         id: 'f10f4620aef941368913caf02e42c68c'
                     }
+                    'src_server_engine_table-window_ts': {
+                        table: 'sys_module'
+                        id: 'ab63775fad914c099f167dc644f9ccc7'
+                    }
                     src_server_engine_types_ts: {
                         table: 'sys_module'
                         id: '7c1b710200e74adcb0cc56bd18a1c1c3'
+                    }
+                    'src_server_reports_dashboard-layout_ts': {
+                        table: 'sys_module'
+                        id: '880d43e614ca4c55a8c06bd47fe40321'
+                    }
+                    'src_server_reports_report-cache_ts': {
+                        table: 'sys_module'
+                        id: '5e9ff8d769a2409b8c23d36026246821'
                     }
                     src_server_reports_reports_ts: {
                         table: 'sys_module'
@@ -533,6 +577,46 @@ declare global {
                     'xscope-exec-oneextend': {
                         table: 'sys_scope_privilege'
                         id: '4fea21cd39d449008e91ede1b3da4110'
+                    }
+                    'xscope-read-http_body_auth': {
+                        table: 'sys_scope_privilege'
+                        id: '73a52c5e106c4e34b46b31e9b1885568'
+                    }
+                    'xscope-read-http_key_auth': {
+                        table: 'sys_scope_privilege'
+                        id: 'a22bf33ed01e4e25b8614cfb85d1cff5'
+                    }
+                    'xscope-read-inbound_auth_profile': {
+                        table: 'sys_scope_privilege'
+                        id: '31374c78960141a786f7006997b3c516'
+                    }
+                    'xscope-read-oauth_entity': {
+                        table: 'sys_scope_privilege'
+                        id: '2b24c3833c6f4d8698582c8f7aff4821'
+                    }
+                    'xscope-read-oauth_entity_auth_scope_mapping': {
+                        table: 'sys_scope_privilege'
+                        id: '8fb46580177b4b7696844d6c8ac34b26'
+                    }
+                    'xscope-read-std_http_auth': {
+                        table: 'sys_scope_privilege'
+                        id: '32bea18226db4b3da022cf7034d04939'
+                    }
+                    'xscope-read-sys_api_access_policy': {
+                        table: 'sys_scope_privilege'
+                        id: '35e83b87fa924399a625578214039b42'
+                    }
+                    'xscope-read-sys_api_access_scope': {
+                        table: 'sys_scope_privilege'
+                        id: '8e219e653f5344559b94a9afbb67efcb'
+                    }
+                    'xscope-read-sys_auth_profile_mapping': {
+                        table: 'sys_scope_privilege'
+                        id: 'f80cea7addca4897a46b24b051689e54'
+                    }
+                    'xscope-read-sys_auth_scope': {
+                        table: 'sys_scope_privilege'
+                        id: 'c8a88e8b5b96492eafea16067cfd85ee'
                     }
                     'xscope-read-sys_db_object': {
                         table: 'sys_scope_privilege'
@@ -570,6 +654,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '29947ea9d9ef46908aa8b76d8409781e'
                     }
+                    'xscope-read-sys_security_machine_identity_access_control': {
+                        table: 'sys_scope_privilege'
+                        id: '5048f5a54e054ba7b928e533362f7345'
+                    }
                     'xscope-read-sys_security_operation': {
                         table: 'sys_scope_privilege'
                         id: 'edb398d4a7a04c8a80732cb7ccc01631'
@@ -593,6 +681,18 @@ declare global {
                     'xscope-read-sys_user_role_contains': {
                         table: 'sys_scope_privilege'
                         id: '3fa73ab2192c4e049eff62ec2b565398'
+                    }
+                    'xscope-read-sys_ws_definition': {
+                        table: 'sys_scope_privilege'
+                        id: '475c5f112c6f473392c48b1455be6d54'
+                    }
+                    'xscope-read-sys_ws_operation': {
+                        table: 'sys_scope_privilege'
+                        id: '1fbdb786ecca45949571462da0ff07ba'
+                    }
+                    'xscope-read-sys_ws_version': {
+                        table: 'sys_scope_privilege'
+                        id: '05cc03ab3d09414d8f488e952f6ddfdd'
                     }
                 }
                 composite: [
@@ -1279,6 +1379,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '4aa447275882438eb16f3473f0e11f22'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'overlay'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '4aa6c86b9931415d849a4c2295b1f826'
                         key: {
@@ -1714,6 +1825,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '72a92f38f1ff43eba16e92585fb4ab79'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'cache_key'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '72d151eb1fa542bd9f346751b207760b'
                         key: {
@@ -1752,6 +1872,14 @@ declare global {
                             value: 'overview'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '770f44352ca640079e314f873c0ffad1'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'cache_key'
                         }
                     },
                     {
@@ -1924,6 +2052,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '881766a4f30c4df493be57dbc399963d'
+                        key: {
+                            name: 'x_acllens_report'
+                            element: 'chart'
+                            value: 'pie'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '8b267085f9d74f74a3eb39c4702222c0'
                         key: {
@@ -2014,6 +2153,17 @@ declare global {
                             name: 'x_acllens_run'
                             element: 'run_type'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '97bd99a1ff5e465dac0feaa2fd193e26'
+                        key: {
+                            name: 'x_acllens_run_data'
+                            element: 'kind'
+                            value: 'report'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {

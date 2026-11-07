@@ -1,9 +1,11 @@
 import { gs } from '@servicenow/glide'
 import { gr } from '../engine/glide.ts'
 import { loadRun } from '../engine/runs.ts'
-import { getRun } from '../engine/storage.ts'
+import { deleteBlob, getRun, loadBlob, saveBlob } from '../engine/storage.ts'
 import { HIGH_RISK_TABLES, measure, measureCatalog, PRIVILEGED_ROLES, ReportDef, ReportOptions, runReport } from '../engine/report-measures.ts'
 import { ALL_TABLE_OPS } from '../engine/types.ts'
+import { cleanTabs, layoutJson, readLayout, Tile } from './dashboard-layout.ts'
+import { CACHE_OVER_MS, reportCacheKey } from './report-cache.ts'
 
 const REPORT = 'x_acllens_report'
 const DASHBOARD = 'x_acllens_dashboard'
@@ -27,6 +29,7 @@ export interface ReportJson {
     can_edit: boolean
 }
 
+const SYS_ID = /^[0-9a-f]{32}$/
 const bool = (v: string) => v === '1' || v === 'true'
 
 function parse(text: string): ReportOptions {
@@ -84,10 +87,11 @@ function getReport(id: string): any {
 function clean(def: any): { name: string; description: string; category: string; measure: string; chart: string; options: ReportOptions } {
     const m = measure(String(def.measure || ''))
     if (!m) throw new Error('Choose what the report measures')
-    const chart = ['tile', 'bar', 'donut', 'list'].indexOf(def.chart) >= 0 ? def.chart : 'bar'
+    const chart = ['tile', 'bar', 'overlay', 'pie', 'donut', 'list'].indexOf(def.chart) >= 0 ? def.chart : 'bar'
     const o = def.options || {}
     const strings = (v: unknown) => (Array.isArray(v) ? v.map((x) => String(x)).filter((x) => !!x).slice(0, 200) : undefined)
     const options: ReportOptions = {
+        run: SYS_ID.test(String(o.run || '')) ? String(o.run) : undefined,
         ops: strings(o.ops),
         statuses: strings(o.statuses),
         kinds: strings(o.kinds),
@@ -144,11 +148,6 @@ export function deleteReport(id: string) {
 
 // ---- dashboards ---------------------------------------------------------------
 
-export interface Tile {
-    report: string
-    size: 1 | 2
-}
-
 function defaultLayout(): Tile[] {
     const r = gr(REPORT)
     r.addQuery('on_default', true)
@@ -170,39 +169,20 @@ function myDashboard(): any {
 
 export function getDashboard() {
     const d = myDashboard()
-    let layout: Tile[] = defaultLayout()
-    let custom = false
-    let run = ''
-    if (d) {
-        try {
-            const saved = JSON.parse(d.getValue('layout') || '[]')
-            if (Array.isArray(saved)) {
-                layout = saved
-                custom = true
-            }
-        } catch (e) {
-            /* keep the default */
-        }
-        run = d.getValue('run') || ''
-    }
-    return { layout, custom, run }
+    const { tabs, custom } = readLayout(d ? d.getValue('layout') : '', defaultLayout())
+    return { tabs, custom, run: d ? d.getValue('run') || '' : '' }
 }
 
 export function saveDashboard(body: any) {
-    const layout: Tile[] = Array.isArray(body.layout)
-        ? body.layout
-              .filter((t: any) => t && /^[0-9a-f]{32}$/.test(String(t.report)))
-              .slice(0, 40)
-              .map((t: any) => ({ report: String(t.report), size: t.size === 2 ? 2 : 1 }))
-        : []
+    const layout = layoutJson(cleanTabs(body.tabs))
     let d = myDashboard()
     if (!d) {
         d = gr(DASHBOARD)
         d.initialize()
         d.setValue('owner', gs.getUserID())
     }
-    d.setValue('layout', JSON.stringify(layout))
-    if (body.run !== undefined) d.setValue('run', /^[0-9a-f]{32}$/.test(String(body.run)) ? String(body.run) : '')
+    d.setValue('layout', layout)
+    if (body.run !== undefined) d.setValue('run', SYS_ID.test(String(body.run)) ? String(body.run) : '')
     if (d.isNewRecord()) d.insert()
     else d.update()
     return getDashboard()
@@ -228,37 +208,97 @@ function latestRunId(): string {
     return r.next() ? r.getUniqueValue() : ''
 }
 
+function chooseRun(runId: string): string {
+    return runId && SYS_ID.test(runId) ? runId : latestRunId()
+}
+
 function loadPayload(runId: string) {
-    const id = runId && /^[0-9a-f]{32}$/.test(runId) ? runId : latestRunId()
+    const id = chooseRun(runId)
     if (!id) return null
     const loaded = loadRun(id)
     if (!loaded || !loaded.results) return null
     return loaded
 }
 
-/** Calculates every tile of a dashboard from one run (loaded once). Only aggregates are returned. */
+/** Loads each run at most once per request, and remembers which ones are slow to load. */
+function runLoader() {
+    const loaded: { [run: string]: ReturnType<typeof loadPayload> } = {}
+    const slow: { [run: string]: boolean } = {}
+    return {
+        get(id: string) {
+            if (loaded[id] === undefined) {
+                const started = new Date().getTime()
+                loaded[id] = loadPayload(id)
+                slow[id] = new Date().getTime() - started >= CACHE_OVER_MS
+            }
+            return loaded[id]
+        },
+        isSlow: (id: string) => !!slow[id],
+    }
+}
+
+/**
+ * A report's result for one run. A saved run never changes, so a result that was slow to work out is
+ * stored with the run and reused, which spares loading the whole run again. Stored results are
+ * removed with the run. Returns null when the run or its results no longer exist.
+ */
+function cachedReport(runId: string, def: { measure: string; chart: ReportDef['chart']; options: ReportOptions }, runs: ReturnType<typeof runLoader>) {
+    const { key, text } = reportCacheKey(def)
+    try {
+        const hit = loadBlob<{ def: string; data: unknown }>(runId, 'report', key)
+        if (hit && hit.def === text) return hit.data
+    } catch (e) {
+        // two sessions stored it at once: start again
+        deleteBlob(runId, 'report', key)
+    }
+    const loaded = runs.get(runId)
+    if (!loaded) return null
+    const started = new Date().getTime()
+    const data = runReport(def, loaded as any)
+    if (runs.isSlow(runId) || new Date().getTime() - started >= CACHE_OVER_MS) {
+        try {
+            saveBlob(runId, 'report', { def: text, data }, key)
+        } catch (e) {
+            gs.warn(`ACL Lens: could not store a calculated report for run ${runId}: ${e}`)
+        }
+    }
+    return data
+}
+
+/**
+ * Calculates the given tiles. A report saved from a run always uses that run; the others use the
+ * run the dashboard shows. Only aggregates are returned.
+ */
 export function dashboardData(body: any) {
-    const loaded = loadPayload(String(body.run || ''))
-    if (!loaded) return { run: null, reports: {} }
+    const shown = chooseRun(String(body.run || ''))
     const ids: string[] = Array.isArray(body.reports) ? body.reports.map((x: unknown) => String(x)).slice(0, 40) : []
+    const runs = runLoader()
     const reports: { [id: string]: unknown } = {}
     for (const id of ids) {
         try {
             const r = toJson(getReport(id))
-            reports[id] = runReport({ measure: r.measure, chart: r.chart, options: r.options }, loaded as any)
+            const pinned = r.options.run || ''
+            const runId = pinned || shown
+            const data: any = runId ? cachedReport(runId, { measure: r.measure, chart: r.chart, options: r.options }, runs) : null
+            if (!data) {
+                if (pinned) reports[id] = { error: 'The run this report was saved from no longer exists. Edit the report to use the run the dashboard shows, or remove it.' }
+                continue
+            }
+            const source = pinned ? getRun(pinned) : null
+            reports[id] = source ? { ...data, source: { sys_id: source.sys_id, number: source.number, name: source.name, created: source.created } } : data
         } catch (e: any) {
             reports[id] = { error: e && e.message ? e.message : String(e) }
         }
     }
-    return { run: loaded.run, reports }
+    return { run: shown ? getRun(shown) : null, reports }
 }
 
 /** One unsaved definition (the editor's live preview). */
 export function previewReport(body: any) {
-    const loaded = loadPayload(String(body.run || ''))
-    if (!loaded) return { run: null, data: null }
     const v = clean({ name: 'preview', ...(body.report || {}) })
-    return { run: loaded.run, data: runReport({ measure: v.measure, chart: v.chart as ReportDef['chart'], options: v.options }, loaded as any) }
+    const runId = chooseRun(v.options.run || String(body.run || ''))
+    const data = runId ? cachedReport(runId, { measure: v.measure, chart: v.chart as ReportDef['chart'], options: v.options }, runLoader()) : null
+    return data ? { run: getRun(runId), data } : { run: null, data: null }
 }
 
 export function reportCatalog() {
