@@ -4,6 +4,7 @@ import { queryText } from './search.ts'
 
 export const RUN_TABLE = 'x_acllens_run'
 export const DATA_TABLE = 'x_acllens_run_data'
+const ADMIN_ROLE = 'x_acllens.admin'
 const CHUNK = 60000
 /** Target size of one stored part. Parts are parsed one at a time, so this bounds the largest string held. */
 const PART_SIZE = 500000
@@ -245,13 +246,30 @@ export function runToJson(r: any) {
     }
 }
 
+/** Saved runs are private: the person who ran one, and ACL Lens admins. */
+export function mayReadRun(runBy: string, userId: string, isAdmin: boolean): boolean {
+    return isAdmin || (!!runBy && runBy === userId)
+}
+
+function isLensAdmin(): boolean {
+    return gs.hasRole(ADMIN_ROLE)
+}
+
+/** A run the signed-in user may see. Someone else's run looks the same as one that doesn't exist. */
 export function getRun(runId: string) {
     const r = gr(RUN_TABLE)
-    return r.get(runId) ? runToJson(r) : null
+    if (!r.get(runId) || !mayReadRun(r.getValue('run_by'), gs.getUserID(), isLensAdmin())) return null
+    return runToJson(r)
+}
+
+/** Limits a query on the run table to the runs the signed-in user may see. */
+export function onlyReadableRuns(r: any) {
+    if (!isLensAdmin()) r.addQuery('run_by', gs.getUserID())
 }
 
 export function listRuns(opts: { limit: number; text?: string; type?: string; originalRun?: string; archived?: boolean }) {
     const r = gr(RUN_TABLE)
+    onlyReadableRuns(r)
     r.addQuery('archived', !!opts.archived)
     if (opts.type) r.addQuery('run_type', opts.type)
     if (opts.originalRun) r.addQuery('original_run', opts.originalRun)

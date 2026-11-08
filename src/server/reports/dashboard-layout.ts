@@ -3,9 +3,14 @@
 
 export interface Tile {
     report: string
-    size: 1 | 2
+    /** width before columns could be chosen (2 full, 1 half); only kept when there's no span */
+    size?: 1 | 2
     /** how this card shows the report; without it, the report's own chart */
     chart?: string
+    /** width out of 6 columns (6, 3, 2 or 4); without it, size decides: 2 full, 1 half */
+    span?: number
+    /** starts a new row */
+    row?: boolean
 }
 
 const CHARTS = ['tile', 'bar', 'overlay', 'pie', 'donut', 'list']
@@ -37,7 +42,9 @@ function cleanTiles(value: unknown): Tile[] {
         const id = t ? String(t.report) : ''
         if (!SYS_ID.test(id) || seen[id] || out.length >= MAX_TILES) continue
         seen[id] = true
-        const tile: Tile = { report: id, size: t.size === 2 ? 2 : 1 }
+        // a span says it all, so size is only kept without one: that keeps the largest dashboard within the column
+        const tile: Tile = [2, 3, 4, 6].indexOf(t.span) >= 0 ? { report: id, span: t.span } : { report: id, size: t.size === 2 ? 2 : 1 }
+        if (t.row === true) tile.row = true
         if (CHARTS.indexOf(t.chart) >= 0) tile.chart = t.chart
         out.push(tile)
     }
@@ -60,8 +67,8 @@ export function cleanTabs(value: unknown): DashTab[] {
 }
 
 /** The JSON to store. Throws rather than letting the column cut the JSON off. */
-export function layoutJson(tabs: DashTab[]): string {
-    const text = JSON.stringify({ tabs })
+export function layoutJson(tabs: DashTab[], unreadable: unknown[] = []): string {
+    const text = JSON.stringify(unreadable.length ? { tabs, unreadable } : { tabs })
     if (text.length > MAX_JSON) throw new Error('This dashboard is too large to save. Remove some reports or tabs.')
     return text
 }
@@ -70,17 +77,44 @@ export function defaultTabs(tiles: Tile[]): DashTab[] {
     return [{ id: DEFAULT_TAB_ID, title: DEFAULT_TAB_TITLE, description: '', tiles }]
 }
 
+export interface LayoutRead {
+    tabs: DashTab[]
+    custom: boolean
+    /** titles of saved tabs that couldn't be shown */
+    skipped: string[]
+    /** those tabs as saved, kept so the next save doesn't lose them */
+    unreadable: unknown[]
+}
+
+function title(raw: any): string {
+    return raw && raw.title ? String(raw.title).substring(0, MAX_TITLE) : 'Untitled tab'
+}
+
 /**
- * Reads a stored layout. Dashboards saved before tabs existed hold a plain list of tiles, which
- * becomes one tab. Anything unreadable falls back to the default.
+ * Reads a stored layout one tab at a time: a tab that can't be read is left out and kept aside
+ * rather than costing the whole dashboard. Dashboards saved before tabs existed hold a plain list
+ * of tiles, which becomes one tab.
  */
-export function readLayout(text: string, fallback: Tile[]): { tabs: DashTab[]; custom: boolean } {
+export function readLayout(text: string, fallback: Tile[]): LayoutRead {
+    let saved: any = null
     try {
-        const saved = JSON.parse(text || 'null')
-        if (Array.isArray(saved)) return { tabs: defaultTabs(cleanTiles(saved)), custom: true }
-        if (saved && Array.isArray(saved.tabs)) return { tabs: cleanTabs(saved.tabs), custom: true }
+        saved = JSON.parse(text || 'null')
     } catch (e) {
-        /* keep the default */
+        return { tabs: defaultTabs(fallback), custom: !!text, skipped: text ? ['the saved layout'] : [], unreadable: [] }
     }
-    return { tabs: defaultTabs(fallback), custom: false }
+    if (Array.isArray(saved)) return { tabs: defaultTabs(cleanTiles(saved)), custom: true, skipped: [], unreadable: [] }
+    if (!saved || !Array.isArray(saved.tabs)) return { tabs: defaultTabs(fallback), custom: false, skipped: [], unreadable: [] }
+    const tabs: DashTab[] = []
+    const unreadable: unknown[] = Array.isArray(saved.unreadable) ? saved.unreadable.slice() : []
+    for (const raw of saved.tabs) {
+        let tab: DashTab | null = null
+        try {
+            tab = cleanTabs([raw])[0]
+        } catch (e) {
+            tab = null
+        }
+        if (tab && !tabs.some((x) => x.id === tab!.id) && tabs.length < MAX_TABS) tabs.push(tab)
+        else unreadable.push(raw)
+    }
+    return { tabs: tabs.length ? tabs : defaultTabs(fallback), custom: true, skipped: unreadable.map(title), unreadable }
 }

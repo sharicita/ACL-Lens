@@ -38,7 +38,9 @@ Large payloads split into ordered chunks of 60,000 characters ([ADR-0002](../adr
 | `seq` | integer | Chunk order |
 | `payload` | string(65000) | JSON fragment |
 
-Index: `run_kind_seq` (`run`, `kind`, `seq`).
+Indexes: `run`, `seq` and `cache_key`.
+
+Other indexes: run (`archived`, `sys_created_on`) and (`status`); AI message (`conversation`, `seq`); report (`system`, `shared`). Other application scopes can read these tables but not create, update, delete, configure or add fields. Changes to AI providers are audited, and two data policies require an API key for key-based providers and an endpoint for Azure and OpenAI-compatible ones.
 
 **Payload shapes** (TypeScript in `src/server/engine/types.ts`, `compare.ts`):
 - `results` — `AnalysisResult`:
@@ -109,7 +111,7 @@ Seed record (first install only): **Now Assist** (`type=now_assist`, order 10).
 | Table | Columns |
 |---|---|
 | conversation | `title`, `user` (→ `sys_user`, mandatory), `provider` (→ provider), `run` (→ run, cascade clear), `message_count` |
-| message | `conversation` (→ conversation, cascade delete), `seq`, `role` (`user` · `assistant`), `content` (65000), `tools_used` (4000), `provider_name` |
+| message | `conversation` (→ conversation, cascade delete), `seq`, `role` (`user` · `assistant`), `content` (65000), `tools_used` (4000), `tool_summary` (8000; compact tool calls and results resent as history, not shown in the UI), `provider_name` |
 
 ## System properties
 

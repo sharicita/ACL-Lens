@@ -5,6 +5,9 @@ import { Table, StringColumn, ReferenceColumn, IntegerColumn, BooleanColumn } fr
 export const x_acllens_run = Table({
     name: 'x_acllens_run',
     label: 'ACL Lens Run',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
+    allowNewFields: false,
     display: 'number',
     autoNumber: { prefix: 'ALR', number: 1000, numberOfDigits: 7 },
     schema: {
@@ -21,6 +24,7 @@ export const x_acllens_run = Table({
             dropdown: 'dropdown_without_none',
             choices: { analyze: 'Analysis', compare: 'Comparison' },
             default: 'analyze',
+            mandatory: true,
         }),
         status: StringColumn({
             label: 'Status',
@@ -28,6 +32,7 @@ export const x_acllens_run = Table({
             dropdown: 'dropdown_without_none',
             choices: { running: 'Running', complete: 'Complete', error: 'Error' },
             default: 'running',
+            mandatory: true,
         }),
         subject_summary: StringColumn({ label: 'Subjects', maxLength: 1000 }),
         subjects: StringColumn({ label: 'Subjects (JSON)', maxLength: 4000 }),
@@ -38,11 +43,15 @@ export const x_acllens_run = Table({
             referenceTable: 'x_acllens_run',
             cascadeRule: 'clear',
         }),
-        run_by: ReferenceColumn({ label: 'Run by', referenceTable: 'sys_user' }),
+        run_by: ReferenceColumn({ label: 'Run by', referenceTable: 'sys_user', mandatory: true }),
         table_count: IntegerColumn({ label: 'Tables analyzed' }),
         diff_count: IntegerColumn({ label: 'Differences' }),
         duration_ms: IntegerColumn({ label: 'Duration (ms)' }),
         error_message: StringColumn({ label: 'Error', maxLength: 4000 }),
         archived: BooleanColumn({ label: 'Archived', default: false }),
     },
+    index: [
+        { name: 'archived_created', unique: false, element: ['archived', 'sys_created_on'] },
+        { name: 'status', unique: false, element: 'status' },
+    ],
 })

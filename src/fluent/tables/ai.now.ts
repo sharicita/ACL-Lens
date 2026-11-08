@@ -13,6 +13,10 @@ import {
 export const x_acllens_ai_provider = Table({
     name: 'x_acllens_ai_provider',
     label: 'ACL Lens AI Provider',
+    audit: true,
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
+    allowNewFields: false,
     display: 'name',
     schema: {
         name: StringColumn({ label: 'Name', maxLength: 100, mandatory: true }),
@@ -70,6 +74,9 @@ export const x_acllens_ai_provider = Table({
 export const x_acllens_ai_conversation = Table({
     name: 'x_acllens_ai_conversation',
     label: 'ACL Lens AI Conversation',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
+    allowNewFields: false,
     display: 'title',
     schema: {
         title: StringColumn({ label: 'Title', maxLength: 200 }),
@@ -83,6 +90,9 @@ export const x_acllens_ai_conversation = Table({
 export const x_acllens_ai_message = Table({
     name: 'x_acllens_ai_message',
     label: 'ACL Lens AI Message',
+    actions: { read: true, create: false, update: false, delete: false },
+    allowConfiguration: false,
+    allowNewFields: false,
     schema: {
         conversation: ReferenceColumn({
             label: 'Conversation',
@@ -90,12 +100,14 @@ export const x_acllens_ai_message = Table({
             cascadeRule: 'delete',
             mandatory: true,
         }),
-        seq: IntegerColumn({ label: 'Sequence' }),
-        role: StringColumn({ label: 'Role', maxLength: 20, dropdown: 'dropdown_without_none', choices: { user: 'User', assistant: 'Assistant' } }),
+        seq: IntegerColumn({ label: 'Sequence', mandatory: true }),
+        role: StringColumn({ label: 'Role', maxLength: 20, mandatory: true, dropdown: 'dropdown_without_none', choices: { user: 'User', assistant: 'Assistant' } }),
         content: StringColumn({ label: 'Content', maxLength: 65000 }),
         tools_used: StringColumn({ label: 'Tools used', maxLength: 4000 }),
+        tool_summary: StringColumn({ label: 'Tool summary', maxLength: 8000 }),
         provider_name: StringColumn({ label: 'Provider', maxLength: 100 }),
     },
+    index: [{ name: 'conversation_seq', unique: false, element: ['conversation', 'seq'] }],
 })
 
 // Seed provider: Now Assist (used automatically when the instance has it).

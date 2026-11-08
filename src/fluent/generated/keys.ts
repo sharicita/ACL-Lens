@@ -81,6 +81,22 @@ declare global {
                         table: 'x_acllens_ai_provider'
                         id: 'aac2a8f37638451c88f2773d94010762'
                     }
+                    'ai-provider-policy-api-key': {
+                        table: 'sys_data_policy2'
+                        id: 'df12577c689b4b3cada0d8f8df4a51ef'
+                    }
+                    'ai-provider-policy-api-key-rule': {
+                        table: 'sys_data_policy_rule'
+                        id: '197484ba6f974aa896040841f75d12d2'
+                    }
+                    'ai-provider-policy-endpoint': {
+                        table: 'sys_data_policy2'
+                        id: '4a05b164fd334800a2d3b8d58a874dc7'
+                    }
+                    'ai-provider-policy-endpoint-rule': {
+                        table: 'sys_data_policy_rule'
+                        id: 'c95636e0803f4106ab9903fee5f96a66'
+                    }
                     'ai-provider-read': {
                         table: 'sys_security_acl'
                         id: 'd66e774684b84195b6e57bd6abeb11f4'
@@ -714,6 +730,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_index'
+                        id: '029dc2d2eb174e5a8f4dc70324e039e2'
+                        key: {
+                            logical_table_name: 'x_acllens_ai_message'
+                            col_name_string: 'conversation,seq'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '02e3dc95e81f42acbe8af8081f932df1'
                         key: {
@@ -747,6 +771,7 @@ declare global {
                     {
                         table: 'sys_index'
                         id: '03bdb51509854e879a2b0a189d58365e'
+                        deleted: true
                         key: {
                             logical_table_name: 'x_acllens_run_data'
                             col_name_string: 'run,kind,seq'
@@ -820,6 +845,14 @@ declare global {
                             name: 'x_acllens_run'
                             element: 'subjects'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_index'
+                        id: '07a95b5261b440c086b32a51344a6965'
+                        key: {
+                            logical_table_name: 'x_acllens_run'
+                            col_name_string: 'archived,sys_created_on'
                         }
                     },
                     {
@@ -926,11 +959,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '13448db22f1b4b51bb33e2b45fde0096'
+                        key: {
+                            name: 'x_acllens_ai_message'
+                            element: 'tool_summary'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '148b68d0b95842f3926092e5a8b34bf3'
                         key: {
                             name: 'x_acllens_ai_provider'
                             element: 'endpoint'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '1524771a9a52466384eea0b6fa9c5088'
+                        key: {
+                            name: 'x_acllens_ai_message'
+                            element: 'tool_summary'
                         }
                     },
                     {
@@ -1498,6 +1548,14 @@ declare global {
                             name: 'x_acllens_ai_provider'
                             element: 'type'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_index'
+                        id: '54318907c9204a2aafad160ce62c07b4'
+                        key: {
+                            logical_table_name: 'x_acllens_run_data'
+                            col_name_string: 'cache_key'
                         }
                     },
                     {
@@ -2380,6 +2438,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_index'
+                        id: 'b6f20e52d4b042478809779fe88f5708'
+                        key: {
+                            logical_table_name: 'x_acllens_run_data'
+                            col_name_string: 'run,seq'
+                        }
+                    },
+                    {
                         table: 'sys_ws_query_parameter_map'
                         id: 'b9ed57cd4cb34358b45fbea30ee03a79'
                         key: {
@@ -2436,6 +2502,14 @@ declare global {
                                     name: 'x_acllens.admin'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_index'
+                        id: 'c00a9ec2d55c45868f92a19a69ef1dca'
+                        key: {
+                            logical_table_name: 'x_acllens_run'
+                            col_name_string: 'status'
                         }
                     },
                     {
@@ -2891,6 +2965,14 @@ declare global {
                             name: 'x_acllens_ai_message'
                             element: 'role'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_index'
+                        id: 'f8c1fdb3173d414ebdb19f5e4a131e80'
+                        key: {
+                            logical_table_name: 'x_acllens_report'
+                            col_name_string: 'system,shared'
                         }
                     },
                     {

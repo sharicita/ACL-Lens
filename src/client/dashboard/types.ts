@@ -90,9 +90,16 @@ export interface ReportData {
     source?: { sys_id: string; number: string; name: string; created: string }
 }
 
+export type Span = 2 | 3 | 4 | 6
+
 export interface Tile {
     report: string
-    size: 1 | 2
+    /** width before columns could be chosen: 1 half, 2 full. Still written for older pages. */
+    size?: 1 | 2
+    /** width out of 6 columns: 6 full row, 3 half, 2 a third, 4 two thirds */
+    span?: Span
+    /** starts a new row, even if there's room beside the card before it */
+    row?: boolean
     /** how this card shows the report; without it, the report's own chart */
     chart?: ChartType
 }
@@ -108,7 +115,14 @@ export interface Dashboard {
     tabs: DashTab[]
     custom: boolean
     run: string
+    /** goes up with every save; a save must name the version it started from */
+    version?: number
+    /** titles of saved tabs this page couldn't show; they're kept unchanged */
+    skipped?: string[]
 }
+
+/** A save answer: the saved dashboard, or the latest one when the page was showing an older version. */
+export type DashboardSave = Dashboard & { conflict?: boolean; dashboard?: Dashboard }
 
 export const CATEGORY_LABEL: { [c: string]: string } = {
     overview: 'Overview',

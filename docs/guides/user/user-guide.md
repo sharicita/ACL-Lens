@@ -169,7 +169,8 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 - **Charts:** the icons at the top of a report card show it as a bar chart, overlay bars, pie chart, donut, number or list. Your choice is saved for that card. Overlay bars are available when a report's groups are broken down.
 - **Add a report:** the card with the plus at the end of a tab adds a report to this tab or to a new tab, or builds a new one.
 - **Tabs:** group reports on tabs with their own titles and descriptions. **+ New tab** adds one, then asks what to put on it. Choose a run under **Show data from** and it appears as a pill (× removes it); **Add report** adds a report of each run's data. **Choose specific reports** is optional: it lists your reports, with those on your other tabs first. **Add report** → *Add several, or from a previous run* does the same on any tab. Drag a tab to change the order. The buttons beside the tab's title edit it, move it or remove it (its reports stay available under **Add report**).
-- **Drag reports:** drag a report by its title bar to another position, or drop it on another tab.
+- **Arrange reports:** drag a report by its title bar. Drop it on the left or right half of another card to sit beside it, near a card's bottom edge to start a new row under it, or on another tab. The width button sets a card to a full row, half, two thirds or a third. The Move button does the same moves without dragging.
+- **A report's title** opens the run it shows in a new window; the copy button beside it copies the name.
 - **Save as report:** on a run page, **Save as report** adds a chart of that run to the tab you choose. It keeps showing that run, and its title bar names the run, whatever **Data from** says. To make it follow **Data from**, edit it and untick *Always use*.
 - **Arrange:** each tile has buttons to move it earlier or later, switch between half and full width, or remove it. **Add report** lists every report you can use (shipped, shared and your own) and **+ New report…**. **Reset** brings back the default reports and layout. Your layout is yours only.
 - **Customize:** the pencil on a shipped report opens it as *Customize*. Change the name, what it measures, the chart (bar, donut, number, list), the grouping, how many groups to show, and filters (operations, results, account types, table text, the high-risk table list or the privileged roles). A live preview shows the result. **Save my copy** creates your own report and puts it in the same place on your dashboard. Your own reports can be edited or deleted. ACL Lens admins can share a report with everyone.
@@ -177,6 +178,7 @@ Open it from the **Dashboard** tab, the **Reporting dashboard** link at the top 
 
 ## 5. History and reruns
 
+- **Who can see a run:** the person who ran it and ACL Lens admins. That covers History, opening or rerunning a run, the dashboard's **Data from**, and the assistant. A shared report tied to someone else's run says so instead of showing its data.
 - **Large runs:** a run analyzes up to **Max tables** tables in alphabetical order (1,500 unless you change it, up to 5,000). If more match, the run page shows which ones it covers. **Run next set** continues with the following tables, using the same subjects and filters, and saves a new run. Each set has its own results, so counts and reports cover only that set. **Edit in workspace** on a later set keeps its starting point until you choose *Start from the first table* or change the tables.
 
 - **History** lists saved runs. Search by number, name or subject.

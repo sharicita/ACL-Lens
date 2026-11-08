@@ -1,7 +1,7 @@
 import { gs } from '@servicenow/glide'
 import { gr } from '../engine/glide.ts'
 import { loadRun } from '../engine/runs.ts'
-import { deleteBlob, getRun, loadBlob, saveBlob } from '../engine/storage.ts'
+import { deleteBlob, getRun, loadBlob, onlyReadableRuns, saveBlob } from '../engine/storage.ts'
 import { HIGH_RISK_TABLES, measure, measureCatalog, PRIVILEGED_ROLES, ReportDef, ReportOptions, runReport } from '../engine/report-measures.ts'
 import { ALL_TABLE_OPS } from '../engine/types.ts'
 import { cleanTabs, layoutJson, readLayout, Tile } from './dashboard-layout.ts'
@@ -167,15 +167,31 @@ function myDashboard(): any {
     return d.next() ? d : null
 }
 
-export function getDashboard() {
-    const d = myDashboard()
-    const { tabs, custom } = readLayout(d ? d.getValue('layout') : '', defaultLayout())
-    return { tabs, custom, run: d ? d.getValue('run') || '' : '' }
+/** Each save of a dashboard raises this, so a page can tell whether it's showing the latest one. */
+function versionOf(d: any): number {
+    return d ? parseInt(d.getValue('sys_mod_count') || '0', 10) : -1
 }
 
+export function getDashboard() {
+    const d = myDashboard()
+    const { tabs, custom, skipped } = readLayout(d ? d.getValue('layout') : '', defaultLayout())
+    return { tabs, custom, run: d ? d.getValue('run') || '' : '', version: versionOf(d), skipped }
+}
+
+/**
+ * Saves the caller's dashboard, but only over the version their page started from. A page left
+ * open in another window or device would otherwise write back its older tabs; it gets the latest
+ * dashboard instead, and says so.
+ */
 export function saveDashboard(body: any) {
-    const layout = layoutJson(cleanTabs(body.tabs))
+    const tabs = cleanTabs(body.tabs)
+    if (body.version === undefined || body.version === null)
+        throw new Error("This page is out of date, so your dashboard change wasn't saved. Refresh the page and make the change again.")
     let d = myDashboard()
+    if (parseInt(String(body.version), 10) !== versionOf(d)) return { conflict: true, dashboard: getDashboard() }
+    // tabs this version couldn't read stay as they were
+    const kept = d ? readLayout(d.getValue('layout'), []).unreadable : []
+    const layout = layoutJson(tabs, kept)
     if (!d) {
         d = gr(DASHBOARD)
         d.initialize()
@@ -200,6 +216,7 @@ export function resetDashboard() {
 /** The newest complete, non-archived run. */
 function latestRunId(): string {
     const r = gr('x_acllens_run')
+    onlyReadableRuns(r)
     r.addQuery('status', 'complete')
     r.addQuery('archived', false)
     r.orderByDesc('sys_created_on')
@@ -238,7 +255,8 @@ function runLoader() {
 }
 
 /**
- * A report's result for one run. A saved run never changes, so a result that was slow to work out is
+ * A report's result for one run. Callers must already have checked the user may see the run: a
+ * stored result is read without loading the run. A saved run never changes, so a result that was slow to work out is
  * stored with the run and reused, which spares loading the whole run again. Stored results are
  * removed with the run. Returns null when the run or its results no longer exist.
  */
@@ -273,32 +291,39 @@ export function dashboardData(body: any) {
     const shown = chooseRun(String(body.run || ''))
     const ids: string[] = Array.isArray(body.reports) ? body.reports.map((x: unknown) => String(x)).slice(0, 40) : []
     const runs = runLoader()
+    // only runs this user may see: stored results are read directly, so this is the check for them
+    const seen: { [run: string]: ReturnType<typeof getRun> } = {}
+    const readable = (id: string) => {
+        if (seen[id] === undefined) seen[id] = getRun(id)
+        return seen[id]
+    }
     const reports: { [id: string]: unknown } = {}
     for (const id of ids) {
         try {
             const r = toJson(getReport(id))
             const pinned = r.options.run || ''
             const runId = pinned || shown
-            const data: any = runId ? cachedReport(runId, { measure: r.measure, chart: r.chart, options: r.options }, runs) : null
+            const run = runId ? readable(runId) : null
+            const data: any = run ? cachedReport(runId, { measure: r.measure, chart: r.chart, options: r.options }, runs) : null
             if (!data) {
-                if (pinned) reports[id] = { error: 'The run this report was saved from no longer exists. Edit the report to use the run the dashboard shows, or remove it.' }
+                if (pinned) reports[id] = { error: "This report shows a saved run that no longer exists or that only its owner and ACL Lens admins can see. Edit the report to use the run the dashboard shows, or remove it." }
                 continue
             }
-            const source = pinned ? getRun(pinned) : null
-            reports[id] = source ? { ...data, source: { sys_id: source.sys_id, number: source.number, name: source.name, created: source.created } } : data
+            reports[id] = pinned && run ? { ...data, source: { sys_id: run.sys_id, number: run.number, name: run.name, created: run.created } } : data
         } catch (e: any) {
             reports[id] = { error: e && e.message ? e.message : String(e) }
         }
     }
-    return { run: shown ? getRun(shown) : null, reports }
+    return { run: shown ? readable(shown) : null, reports }
 }
 
 /** One unsaved definition (the editor's live preview). */
 export function previewReport(body: any) {
     const v = clean({ name: 'preview', ...(body.report || {}) })
     const runId = chooseRun(v.options.run || String(body.run || ''))
-    const data = runId ? cachedReport(runId, { measure: v.measure, chart: v.chart as ReportDef['chart'], options: v.options }, runLoader()) : null
-    return data ? { run: getRun(runId), data } : { run: null, data: null }
+    const run = runId ? getRun(runId) : null
+    const data = run ? cachedReport(runId, { measure: v.measure, chart: v.chart as ReportDef['chart'], options: v.options }, runLoader()) : null
+    return data ? { run, data } : { run: null, data: null }
 }
 
 export function reportCatalog() {

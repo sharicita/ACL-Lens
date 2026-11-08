@@ -43,7 +43,7 @@ Base path: `/api/x_acllens/lens` (`x_acllens` = your app scope).
 | DELETE | `/reports/{id}` | — | `{deleted: true}` (own reports; admins: any non-shipped) |
 | POST | `/reports/preview` | `{run?, report}` | `{run, data}` for an unsaved definition (the editor's live preview) |
 | GET | `/dashboard` | — | `{tabs: [{id, title, description, tiles: [{report, size}]}], custom, run}`. Without a saved dashboard: one tab with the default reports |
-| PUT | `/dashboard` | `{tabs, run?}` (1–20 tabs, up to 40 tiles each; title required) | Saves the caller's tabs and chosen run |
+| PUT | `/dashboard` | `{tabs, run?, version}` (1–20 tabs, up to 40 tiles each; title required; `version` from the last read) | The saved dashboard, or `{conflict: true, dashboard}` when it changed since `version`. GET also returns `version` and `skipped` (titles of saved tabs it couldn't read, which are kept) |
 | DELETE | `/dashboard` | — | Back to the default (the caller's reports are kept) |
 | POST | `/dashboard/data` | `{run?, reports: [id]}` | `{run, reports: {id: data}}`: each run loaded once. A report whose `options.run` is set uses that run and adds `data.source = {sys_id, number, name, created}`; the others use `run`. `data` = `{total, unit, groupBy, groups[], columns[], rows[] (max 2,000), rowsTruncated, tables[], note?}` |
 

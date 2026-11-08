@@ -7,7 +7,7 @@ import path from 'node:path'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const out = path.join(root, '.test-build')
-const sources = ['engine/evaluator.ts', 'engine/storage.ts', 'engine/table-window.ts', 'reports/dashboard-layout.ts', 'reports/report-cache.ts', 'engine/attributes.ts', 'engine/account.ts', 'engine/report-measures.ts', 'engine/compare.ts', 'engine/types.ts', 'engine/api-access.ts', 'ai/agent.ts', 'ai/guidance.ts', 'ai/provider-safety.ts', 'ai/evaluation-view.ts'].map((f) =>
+const sources = ['engine/evaluator.ts', 'engine/storage.ts', 'engine/table-window.ts', 'reports/dashboard-layout.ts', 'reports/report-cache.ts', 'reports/reports.ts', 'engine/runs.ts', 'engine/attributes.ts', 'engine/account.ts', 'engine/report-measures.ts', 'engine/compare.ts', 'engine/types.ts', 'engine/api-access.ts', 'ai/agent.ts', 'ai/guidance.ts', 'ai/provider-safety.ts', 'ai/evaluation-view.ts'].map((f) =>
     path.join(root, 'src', 'server', f)
 )
 const tsc = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc')
@@ -20,7 +20,7 @@ spawnSync(process.execPath, [tsc, path.join(root, 'src', 'client', 'dashboard', 
 })
 
 let failed = false
-for (const t of ['engine.test.js', 'api-access.test.js', 'agent.test.js', 'safety.test.js', 'storage.test.js', 'dashboard.test.js']) {
+for (const t of ['engine.test.js', 'api-access.test.js', 'agent.test.js', 'safety.test.js', 'storage.test.js', 'dashboard.test.js', 'run-access.test.js']) {
     const r = spawnSync(process.execPath, [path.join(root, 'tests', 'offline', t)], { stdio: 'inherit' })
     if (r.status !== 0) failed = true
 }

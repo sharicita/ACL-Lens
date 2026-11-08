@@ -56,7 +56,7 @@ export default function Header({ view, isAdmin, onNavigate }: Props) {
             <nav className="lens-header__tabs" aria-label="ACL Lens views">
                 {tab('workspace', 'Workspace', 'Choose users and roles and run an analysis or comparison.')}
                 {tab('dashboard', 'Dashboard', 'Reporting dashboard: high-risk access, vulnerabilities and comparisons from saved runs.')}
-                {tab('history', 'History', 'Saved runs: open, export or rerun them.')}
+                {tab('history', 'History', 'Your saved runs: open, export or rerun them. ACL Lens admins see everyone\'s.')}
                 {isAdmin && tab('settings', 'Settings', 'Admin configuration: properties, MCP server and AI providers.')}
                 <span className="lens-header__divider" aria-hidden="true" />
                 <button

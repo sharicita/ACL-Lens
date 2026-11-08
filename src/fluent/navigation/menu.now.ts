@@ -65,7 +65,7 @@ Record({
         link_type: 'LIST',
         name: 'x_acllens_run',
         hint: 'Platform list of run records (attachments include comparison CSVs)',
-        roles: ['x_acllens.admin'],
+        roles: ['x_acllens.admin', 'admin'],
         active: true,
         order: 180,
     },

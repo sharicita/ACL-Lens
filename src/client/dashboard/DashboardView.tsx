@@ -13,8 +13,8 @@ import ReportDetail from './ReportDetail'
 import ReportEditor from './ReportEditor'
 import ReportPicker from './ReportPicker'
 import DashTabs from './DashTabs'
-import { addTileToTab, moveItem, moveTileToTab, readActiveTab, runReportDef, writeActiveTab } from './layout'
-import { Catalog, CATEGORY_LABEL, CHART_LABEL, CHART_TYPES, ChartType, DashTab, Dashboard, Report, ReportData, ReportGroup, Tile } from './types'
+import { addTileToTab, dropAtEnd, dropTile, DropSide, moveTileToTab, readActiveTab, rowsOf, runReportDef, spanOf, SPANS, toggleRow, withSpan, writeActiveTab } from './layout'
+import { Catalog, CATEGORY_LABEL, CHART_LABEL, CHART_TYPES, ChartType, DashTab, Dashboard, Report, ReportData, ReportGroup, Span, Tile } from './types'
 
 const CHART_ICON: { [c: string]: string } = { bar: 'chartBar', overlay: 'chartOverlay', pie: 'chartPie', donut: 'chartDonut', tile: 'chartNumber', list: 'table' }
 
@@ -83,13 +83,16 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     const [detail, setDetail] = useState<{ report: Report; group: ReportGroup | null } | null>(null)
     const [activeId, setActiveId] = useState(readActiveTab())
     const [dragReport, setDragReport] = useState('')
-    const [dropAt, setDropAt] = useState<{ report: string; after: boolean } | null>(null)
-    const [moveMenu, setMoveMenu] = useState('')
+    const [dropAt, setDropAt] = useState<{ report: string; side: DropSide } | null>(null)
+    const [menu, setMenu] = useState<{ report: string; kind: 'move' | 'width' } | null>(null)
     const addRef = useRef<HTMLDivElement>(null)
     const loaded = useRef<{ [report: string]: string }>({})
     const inflight = useRef<{ [key: string]: boolean }>({})
     const nextSave = useRef<{ tabs: DashTab[]; run: string } | null>(null)
     const saving = useRef(false)
+    // the dashboard version this page last saw; every save names it
+    const version = useRef<number | undefined>(undefined)
+    const [conflict, setConflict] = useState(false)
 
     const byId = useMemo(() => {
         const m: { [id: string]: Report } = {}
@@ -99,6 +102,8 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
     const tabs = dash?.tabs || []
     const activeTab = tabs.filter((t) => t.id === activeId)[0] || tabs[0]
     const tiles = (activeTab?.tiles || []).filter((t) => byId[t.report])
+    // cards that begin a row, so the move menu can say "Start a new row" only where it changes something
+    const rowStarts = new Set(rowsOf(tiles).map((r) => r[0]))
     // the run list is newest first, so the shown run needs no request; only a run too old for the list does
     const run = (dash?.run ? runs.filter((r) => r.sys_id === dash.run)[0] : runs[0]) || loadedRun
 
@@ -109,6 +114,7 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                 const [rep, d, rs] = await Promise.all([LensApi.reports(), LensApi.dashboard(), LensApi.listRuns({ limit: 30 })])
                 setReports(rep.reports)
                 setCatalog(rep.catalog)
+                version.current = d.version
                 setDash(d)
                 setRuns(rs.filter((r) => r.status === 'complete'))
                 setRunsLoaded(true)
@@ -201,7 +207,17 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
             while (nextSave.current) {
                 body = nextSave.current
                 nextSave.current = null
-                const saved = await LensApi.saveDashboard(body)
+                const saved = await LensApi.saveDashboard({ ...body, version: version.current })
+                if (saved.conflict && saved.dashboard) {
+                    // changed in another window or device: show that version rather than overwrite it
+                    nextSave.current = null
+                    version.current = saved.dashboard.version
+                    setDash(saved.dashboard)
+                    setConflict(true)
+                    break
+                }
+                version.current = saved.version
+                setConflict(false)
                 if (!nextSave.current) setDash(saved)
             }
             setSaveError('')
@@ -228,12 +244,10 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
         if (!window.confirm('Reset your dashboard to the default reports? Your tabs are removed. Your own reports are kept and can be added again.')) return
         nextSave.current = null
         setSaveError('')
-        setDash(await LensApi.resetDashboard())
-    }
-    const move = (i: number, d: number) => {
-        const j = i + d
-        if (j < 0 || j >= tiles.length) return
-        saveTiles(moveItem(tiles, i, d > 0 ? j + 1 : j))
+        setConflict(false)
+        const fresh = await LensApi.resetDashboard()
+        version.current = fresh.version
+        setDash(fresh)
     }
     // how a card shows its report: its own choice, or the report's chart. It only changes how the
     // same numbers are drawn, so nothing is recalculated.
@@ -246,25 +260,66 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                 return chart === byId[report].chart ? rest : { ...rest, chart }
             })
         )
-    const resize = (i: number) => saveTiles(tiles.map((t, k) => (k === i ? { ...t, size: t.size === 2 ? 1 : 2 } : t)))
+    const setSpan = (report: string, span: Span) => {
+        setMenu(null)
+        saveTiles(tiles.map((t) => (t.report === report ? withSpan(t, span) : t)))
+    }
+    // the same moves as dragging, for keyboards and touch screens
+    const moveBy = (report: string, step: -1 | 1) => {
+        setMenu(null)
+        const i = tiles.findIndex((t) => t.report === report)
+        const other = tiles[i + step]
+        if (other) saveTiles(dropTile(tiles, report, other.report, step < 0 ? 'before' : 'after'))
+    }
     const remove = (i: number) => saveTiles(tiles.filter((_t, k) => k !== i))
     const add = (id: string) => {
         setAdding(false)
         save(addTileToTab(tabs, id, activeTab.id))
     }
     const moveToTab = (report: string, tabId: string) => {
-        setMoveMenu('')
+        setMenu(null)
         save(moveTileToTab(tabs, report, activeTab.id, tabId))
     }
     const endDrag = () => {
         setDragReport('')
         setDropAt(null)
     }
-    const dropOnTile = (i: number, after: boolean) => {
-        const from = tiles.findIndex((t) => t.report === dragReport)
-        if (from >= 0 && tiles[i].report !== dragReport) saveTiles(moveItem(tiles, from, after ? i + 1 : i))
+    const dropOn = (target: string, side: DropSide) => {
+        if (dragReport && dragReport !== target) saveTiles(dropTile(tiles, dragReport, target, side))
         endDrag()
     }
+    // where a dragged card would land: beside this one, or under its row near the bottom edge
+    const sideAt = (e: React.DragEvent, box: DOMRect): DropSide => (e.clientY > box.top + box.height * 0.72 ? 'below' : e.clientX > box.left + box.width / 2 ? 'after' : 'before')
+
+    // Coming back to this window: pick up changes made in another window or device first, so a
+    // change made here starts from the latest dashboard.
+    useEffect(() => {
+        const onShow = () => {
+            if (document.visibilityState !== 'visible' || saving.current || nextSave.current) return
+            LensApi.dashboard()
+                .then((fresh) => {
+                    if (saving.current || nextSave.current || fresh.version === version.current) return
+                    version.current = fresh.version
+                    setDash(fresh)
+                })
+                .catch(() => undefined)
+        }
+        document.addEventListener('visibilitychange', onShow)
+        return () => document.removeEventListener('visibilitychange', onShow)
+    }, [])
+
+    // a card's menus close on a click anywhere else
+    useEffect(() => {
+        if (!menu) return
+        const away = (e: MouseEvent) => !(e.target as Element).closest('.lens-dash__menuwrap') && setMenu(null)
+        const key = (e: KeyboardEvent) => e.key === 'Escape' && setMenu(null)
+        document.addEventListener('mousedown', away)
+        document.addEventListener('keydown', key)
+        return () => {
+            document.removeEventListener('mousedown', away)
+            document.removeEventListener('keydown', key)
+        }
+    }, [menu])
 
     /**
      * From the picker. Runs alone: one report of each run's data. Ticked reports alone: added as they
@@ -440,6 +495,21 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                         </p>
                     )}
                     {error && <p className="lens-alert lens-alert--critical">{error}</p>}
+                    {conflict && (
+                        <p className="lens-alert lens-alert--warning" role="status">
+                            This dashboard was changed in another window or on another device, so that version is shown now. Your last change here wasn't saved; make it again if you still
+                            want it.{' '}
+                            <button type="button" className="lens-link" onClick={() => setConflict(false)}>
+                                OK
+                            </button>
+                        </p>
+                    )}
+                    {dash.skipped && dash.skipped.length > 0 && (
+                        <p className="lens-alert lens-alert--warning" role="status">
+                            {dash.skipped.length === 1 ? 'A saved tab' : `${dash.skipped.length} saved tabs`} couldn't be shown ({dash.skipped.join(', ')}). {dash.skipped.length === 1 ? "It's" : "They're"} kept
+                            unchanged, so nothing is lost; an ACL Lens admin can look at your dashboard record.
+                        </p>
+                    )}
                     {saveError && (
                         <p className="lens-alert lens-alert--critical" role="alert">
                             Your last dashboard change isn't saved yet. {saveError}{' '}
@@ -487,24 +557,27 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                         className="lens-dash__grid"
                         aria-busy={pending > 0}
                         onDragOver={(e) => {
-                            // the empty space after the last tile: drop there to move a report to the end
+                            // the empty space after the last card: drop there to move a report to a new row at the end
                             if (dragReport && e.target === e.currentTarget) e.preventDefault()
                         }}
                         onDrop={(e) => {
                             if (!dragReport || e.target !== e.currentTarget) return
                             e.preventDefault()
-                            const from = tiles.findIndex((t) => t.report === dragReport)
-                            if (from >= 0) saveTiles(moveItem(tiles, from, tiles.length))
+                            saveTiles(dropAtEnd(tiles, dragReport))
                             endDrag()
                         }}
                     >
                         {tiles.map((t, i) => {
                             const r = byId[t.report]
                             const d = data[t.report]
-                            const classes = ['lens-card', 'lens-dash__tile']
-                            if (t.size === 2) classes.push('lens-dash__tile--wide')
+                            const span = spanOf(t)
+                            const classes = ['lens-card', 'lens-dash__tile', `lens-dash__tile--span-${span}`]
+                            if (t.row) classes.push('lens-dash__tile--row')
                             if (dragReport === t.report) classes.push('lens-dash__tile--dragging')
-                            if (dropAt && dropAt.report === t.report) classes.push(dropAt.after ? 'lens-dash__tile--drop-after' : 'lens-dash__tile--drop-before')
+                            if (dropAt && dropAt.report === t.report) classes.push(`lens-dash__tile--drop-${dropAt.side}`)
+                            // the run this card's numbers come from, opened from its title
+                            const from = d && d.source ? d.source : run
+                            const rowStart = rowStarts.has(i)
                             return (
                                 <section
                                     key={t.report}
@@ -513,14 +586,13 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                                     onDragOver={(e) => {
                                         if (!dragReport || dragReport === t.report) return
                                         e.preventDefault()
-                                        const box = e.currentTarget.getBoundingClientRect()
-                                        const after = t.size === 2 ? e.clientY > box.top + box.height / 2 : e.clientX > box.left + box.width / 2
-                                        if (!dropAt || dropAt.report !== t.report || dropAt.after !== after) setDropAt({ report: t.report, after })
+                                        const side = sideAt(e, e.currentTarget.getBoundingClientRect())
+                                        if (!dropAt || dropAt.report !== t.report || dropAt.side !== side) setDropAt({ report: t.report, side })
                                     }}
                                     onDrop={(e) => {
                                         if (!dragReport) return
                                         e.preventDefault()
-                                        dropOnTile(i, !!dropAt && dropAt.report === t.report && dropAt.after)
+                                        dropOn(t.report, sideAt(e, e.currentTarget.getBoundingClientRect()))
                                     }}
                                 >
                                     <div
@@ -531,55 +603,57 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                                             e.dataTransfer.setData('text/plain', r.name)
                                             const tile = e.currentTarget.parentElement
                                             if (tile) e.dataTransfer.setDragImage(tile, 24, 16)
-                                            // after the browser has taken its picture of the tile
+                                            // after the browser has taken its picture of the card
                                             window.setTimeout(() => setDragReport(t.report), 0)
                                         }}
                                         onDragEnd={endDrag}
                                     >
-                                        <span className="lens-dash__grip" data-tip="Drag to move this report, or drop it on another tab">
-                                            <Icon name="grip" size={14} />
-                                        </span>
-                                        <span className={`lens-dash__cat lens-dash__cat--${r.category}`}>{CATEGORY_LABEL[r.category]}</span>
-                                        <span className="lens-dash__name">
-                                            <h3 data-tip={r.description} {...selectableText}>
-                                                {r.name}
-                                            </h3>
-                                            <CopyButton text={d && d.source && r.name.indexOf(d.source.number) < 0 ? `${d.source.number} ${r.name}` : r.name} label={`the name of ${r.name}`} />
-                                        </span>
-                                        {d && d.source && (
-                                            <a
-                                                className="lens-link lens-dash__source"
-                                                {...selectableText}
-                                                href={viewHref('run', d.source.sys_id)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                draggable={false}
-                                                aria-label={`Open run ${d.source.number} (opens in a new window)`}
-                                                data-tip={`This report always shows ${d.source.number} (${d.source.created}). Click to open the run in a new window.`}
-                                            >
-                                                {d.source.number}
-                                                <Icon name="external" size={12} />
-                                            </a>
-                                        )}
-                                        <span className="lens-dash__views" role="group" aria-label={`Show ${r.name} as`}>
-                                            {CHART_TYPES.map((c) => {
-                                                const unavailable = !!d && !d.error && (c === 'overlay' ? !canOverlay(d) : c !== 'tile' && c !== 'list' && !hasGroups(d))
-                                                return (
-                                                    <button
-                                                        key={c}
-                                                        type="button"
-                                                        className={`lens-icon-btn lens-dash__view${chartOf(t) === c ? ' lens-dash__view--on' : ''}`}
-                                                        aria-pressed={chartOf(t) === c}
-                                                        aria-label={CHART_LABEL[c]}
-                                                        disabled={unavailable}
-                                                        data-tip={unavailable ? (c === 'overlay' ? 'Overlay bars need a report whose groups are broken down, and this one isn\'t.' : 'This report has no groups to chart. Choose a Group by to use this.') : `Show as: ${CHART_LABEL[c]}`}
-                                                        onClick={() => setChart(t.report, c)}
-                                                    >
-                                                        <Icon name={CHART_ICON[c]} size={14} />
-                                                    </button>
-                                                )
-                                            })}
-                                        </span>
+                                        <div className="lens-dash__tiletop">
+                                            <span className="lens-dash__grip" data-tip="Drag to move this report: drop it beside another card, near a card's bottom edge for a new row, or on another tab">
+                                                <Icon name="grip" size={14} />
+                                            </span>
+                                            <span className={`lens-dash__cat lens-dash__cat--${r.category}`}>{CATEGORY_LABEL[r.category]}</span>
+                                            <span className="lens-dash__name">
+                                                <h3 data-tip={from ? undefined : r.description} {...selectableText}>
+                                                    {from ? (
+                                                        <a
+                                                            className="lens-dash__titlelink"
+                                                            href={viewHref('run', from.sys_id)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            draggable={false}
+                                                            aria-label={`${r.name}: open run ${from.number} (opens in a new window)`}
+                                                            data-tip={`${r.description ? `${r.description} ` : ''}Opens run ${from.number}${d && d.source ? '' : ', the run the dashboard shows,'} in a new window.`}
+                                                        >
+                                                            {r.name}
+                                                            <Icon name="external" size={12} />
+                                                        </a>
+                                                    ) : (
+                                                        r.name
+                                                    )}
+                                                </h3>
+                                                <CopyButton text={d && d.source && r.name.indexOf(d.source.number) < 0 ? `${d.source.number} ${r.name}` : r.name} label={`the name of ${r.name}`} />
+                                            </span>
+                                            <span className="lens-dash__views" role="group" aria-label={`Show ${r.name} as`}>
+                                                {CHART_TYPES.map((c) => {
+                                                    const unavailable = !!d && !d.error && (c === 'overlay' ? !canOverlay(d) : c !== 'tile' && c !== 'list' && !hasGroups(d))
+                                                    return (
+                                                        <button
+                                                            key={c}
+                                                            type="button"
+                                                            className={`lens-icon-btn lens-dash__view${chartOf(t) === c ? ' lens-dash__view--on' : ''}`}
+                                                            aria-pressed={chartOf(t) === c}
+                                                            aria-label={CHART_LABEL[c]}
+                                                            disabled={unavailable}
+                                                            data-tip={unavailable ? (c === 'overlay' ? "Overlay bars need a report whose groups are broken down, and this one isn't." : 'This report has no groups to chart. Choose a Group by to use this.') : `Show as: ${CHART_LABEL[c]}`}
+                                                            onClick={() => setChart(t.report, c)}
+                                                        >
+                                                            <Icon name={CHART_ICON[c]} size={14} />
+                                                        </button>
+                                                    )
+                                                })}
+                                            </span>
+                                        </div>
                                         <span className="lens-dash__tools">
                                             <button type="button" className="lens-icon-btn" onClick={() => d && setDetail({ report: r, group: null })} disabled={!d} aria-label={`Show all rows for ${r.name}`} data-tip="Show all rows">
                                                 <Icon name="list" size={14} />
@@ -587,35 +661,66 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                                             <button type="button" className="lens-icon-btn" onClick={() => setEditing({ report: r })} aria-label={`${r.can_edit ? 'Edit' : 'Customize'} ${r.name}`} data-tip={r.can_edit ? 'Edit' : 'Customize (saves your own copy)'}>
                                                 <Icon name="edit" size={14} />
                                             </button>
-                                            <button type="button" className="lens-icon-btn" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${r.name} earlier`} data-tip="Move earlier">
-                                                ↑
-                                            </button>
-                                            <button type="button" className="lens-icon-btn" onClick={() => move(i, 1)} disabled={i === tiles.length - 1} aria-label={`Move ${r.name} later`} data-tip="Move later">
-                                                ↓
-                                            </button>
-                                            {tabs.length > 1 && (
-                                                <span className="lens-dash__move">
-                                                    <button type="button" className="lens-icon-btn" aria-haspopup="menu" aria-expanded={moveMenu === t.report} aria-label={`Move ${r.name} to another tab`} data-tip="Move to another tab" onClick={() => setMoveMenu(moveMenu === t.report ? '' : t.report)}>
-                                                        <Icon name="move" size={14} />
-                                                    </button>
-                                                    {moveMenu === t.report && (
-                                                        <ul className="lens-menu__list" role="menu">
-                                                            {tabs
-                                                                .filter((x) => x.id !== activeTab.id)
-                                                                .map((x) => (
-                                                                    <li key={x.id} role="none">
-                                                                        <button type="button" role="menuitem" onClick={() => moveToTab(t.report, x.id)}>
-                                                                            {x.title}
-                                                                        </button>
-                                                                    </li>
-                                                                ))}
-                                                        </ul>
-                                                    )}
-                                                </span>
-                                            )}
-                                            <button type="button" className="lens-icon-btn" onClick={() => resize(i)} aria-label={`${t.size === 2 ? 'Narrow' : 'Widen'} ${r.name}`} data-tip={t.size === 2 ? 'Half width' : 'Full width'}>
-                                                <Icon name="columns" size={14} />
-                                            </button>
+                                            <span className="lens-dash__menuwrap">
+                                                <button type="button" className="lens-icon-btn" aria-haspopup="menu" aria-expanded={!!menu && menu.report === t.report && menu.kind === 'width'} aria-label={`Width of ${r.name}`} data-tip="Width: full row, half, two thirds or a third" onClick={() => setMenu(menu && menu.report === t.report && menu.kind === 'width' ? null : { report: t.report, kind: 'width' })}>
+                                                    <Icon name="columns" size={14} />
+                                                </button>
+                                                {menu && menu.report === t.report && menu.kind === 'width' && (
+                                                    <ul className="lens-menu__list" role="menu" aria-label={`Width of ${r.name}`}>
+                                                        {SPANS.map((s) => (
+                                                            <li key={s.span} role="none">
+                                                                <button type="button" role="menuitemradio" aria-checked={span === s.span} onClick={() => setSpan(t.report, s.span)}>
+                                                                    <span className={`lens-dash__spanicon lens-dash__spanicon--${s.span}`} aria-hidden="true" />
+                                                                    {s.label}
+                                                                    {span === s.span && <Icon name="check" size={12} />}
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </span>
+                                            <span className="lens-dash__menuwrap">
+                                                <button type="button" className="lens-icon-btn" aria-haspopup="menu" aria-expanded={!!menu && menu.report === t.report && menu.kind === 'move'} aria-label={`Move ${r.name}`} data-tip="Move: earlier, later, a new row or another tab. You can also drag the card." onClick={() => setMenu(menu && menu.report === t.report && menu.kind === 'move' ? null : { report: t.report, kind: 'move' })}>
+                                                    <Icon name="move" size={14} />
+                                                </button>
+                                                {menu && menu.report === t.report && menu.kind === 'move' && (
+                                                    <ul className="lens-menu__list" role="menu" aria-label={`Move ${r.name}`}>
+                                                        <li role="none">
+                                                            <button type="button" role="menuitem" disabled={i === 0} onClick={() => moveBy(t.report, -1)}>
+                                                                Earlier
+                                                            </button>
+                                                        </li>
+                                                        <li role="none">
+                                                            <button type="button" role="menuitem" disabled={i === tiles.length - 1} onClick={() => moveBy(t.report, 1)}>
+                                                                Later
+                                                            </button>
+                                                        </li>
+                                                        {i > 0 && (
+                                                            <li role="none">
+                                                                <button
+                                                                    type="button"
+                                                                    role="menuitem"
+                                                                    onClick={() => {
+                                                                        setMenu(null)
+                                                                        saveTiles(toggleRow(tiles, t.report))
+                                                                    }}
+                                                                >
+                                                                    {t.row ? 'Join the row above' : rowStart ? 'Keep on its own row' : 'Start a new row'}
+                                                                </button>
+                                                            </li>
+                                                        )}
+                                                        {tabs
+                                                            .filter((x) => x.id !== activeTab.id)
+                                                            .map((x) => (
+                                                                <li key={x.id} role="none">
+                                                                    <button type="button" role="menuitem" onClick={() => moveToTab(t.report, x.id)}>
+                                                                        To {x.title}
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                    </ul>
+                                                )}
+                                            </span>
                                             <button type="button" className="lens-icon-btn" onClick={() => remove(i)} aria-label={`Remove ${r.name} from this tab`} data-tip="Remove from this tab (the report is kept)">
                                                 <Icon name="close" size={14} />
                                             </button>
@@ -629,26 +734,26 @@ export default function DashboardView({ isAdmin, onOpenRun, onNavigate }: Props)
                         })}
                         {!tiles.length && <div className="lens-dash__empty">{picker()}</div>}
                         {tiles.length > 0 && picking && (
-                            <div className="lens-dash__tile--wide" ref={pickerSlot}>
+                            <div className="lens-dash__tile--span-6 lens-dash__tile--row" ref={pickerSlot}>
                                 {picker(() => setPicking(false))}
                             </div>
                         )}
                         {tiles.length > 0 && !picking && (
-                            <div className="lens-dash__addcard">
+                            <div className="lens-dash__addcard lens-dash__tile--span-3">
                                 <span className="lens-subject__plus" aria-hidden="true">
                                     +
                                 </span>
                                 <span className="lens-muted">Add a report</span>
                                 <span className="lens-dash__addactions">
-                                    <button type="button" className="lens-btn lens-btn--secondary" onClick={() => setPicking(true)} data-tip={`Choose runs or reports to add to ${activeTab.title}`}>
+                                    <button type="button" className="lens-btn lens-dash__addbtn" onClick={() => setPicking(true)} data-tip={`Choose runs or reports to add to ${activeTab.title}`}>
                                         To this tab
                                     </button>
                                     {tabs.length < 20 && (
-                                        <button type="button" className="lens-btn lens-btn--secondary" onClick={() => setNewTabRequest((n) => n + 1)} data-tip="Name a new tab, then choose what to put on it">
+                                        <button type="button" className="lens-btn lens-dash__addbtn" onClick={() => setNewTabRequest((n) => n + 1)} data-tip="Name a new tab, then choose what to put on it">
                                             To a new tab
                                         </button>
                                     )}
-                                    <button type="button" className="lens-btn lens-btn--tertiary" onClick={() => setEditing({ report: null })} data-tip={`Build a report from scratch. It's added to ${activeTab.title}.`}>
+                                    <button type="button" className="lens-btn lens-dash__addbtn" onClick={() => setEditing({ report: null })} data-tip={`Build a report from scratch. It's added to ${activeTab.title}.`}>
                                         Build a new report
                                     </button>
                                 </span>
