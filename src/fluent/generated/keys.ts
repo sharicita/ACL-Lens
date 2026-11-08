@@ -959,11 +959,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '13448db22f1b4b51bb33e2b45fde0096'
+                        key: {
+                            name: 'x_acllens_ai_message'
+                            element: 'tool_summary'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '148b68d0b95842f3926092e5a8b34bf3'
                         key: {
                             name: 'x_acllens_ai_provider'
                             element: 'endpoint'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '1524771a9a52466384eea0b6fa9c5088'
+                        key: {
+                            name: 'x_acllens_ai_message'
+                            element: 'tool_summary'
                         }
                     },
                     {

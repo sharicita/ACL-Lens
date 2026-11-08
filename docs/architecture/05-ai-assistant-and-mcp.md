@@ -52,9 +52,14 @@ Without a callable skill, use an external provider marked *Default*.
 
 - **System prompt** = operating rules + tool catalog + response protocol. It is identical on every request, so providers can cache it.
 - **Screen context:** the run number and sys_id, the subjects and the selected table are prefixed to the user's message.
-- **Response protocol:** the model returns one JSON object, either `{"action":"tool",…}` or `{"action":"answer","content":"markdown"}`. The parser tolerates fenced or chatty replies; anything unparseable becomes the answer.
-- **Limits:** at most 6 tool calls per turn; tool output truncated at 8,000 characters; the last 12 messages of history are resent.
-- **History** is resent as plain text. No provider thinking or reasoning blocks are replayed, so the Anthropic history-editing check never applies.
+- **Response protocol:** the model returns one JSON object: `{"action":"tool","tool":…,"arguments":…}`, a batch of independent lookups `{"action":"tools","calls":[{"tool":…,"arguments":…},…]}`, or `{"action":"answer","content":"markdown"}`. The parser tolerates fenced or chatty replies and drops malformed batch entries; anything unparseable becomes the answer.
+- **Budgets per turn:**
+  - at most 12 tool calls; each call in a batch counts, and at most 5 run per reply (extra calls are reported back as not run);
+  - a 90-second wall-clock budget, checked before each model call, so the synchronous scripted REST call stays inside the transaction quota (one provider call can still take up to the provider's timeout);
+  - each tool result is cut at 12,000 characters, and all results of one batch together at 30,000;
+  - every tool-result message tells the model how many calls are left.
+- **When a budget runs out** the model gets one more call with no tools: it is told tools are no longer available and to answer from the results it has, saying what it could not verify. The canned "could not finish gathering" text is used only if that reply is empty (or asks for yet another tool).
+- **History:** the last 12 messages are resent as plain text. Each assistant message is stored with a compact `tool_summary` (one line per call: arguments and the first 400 characters of the result, at most 4,000 characters). The summaries of the 4 most recent answers are prefixed to those answers in the history, so follow-up questions and retries build on earlier lookups instead of repeating them. If the provider fails after tools ran, an assistant message with the error and the summary is stored before the error is returned. No provider thinking or reasoning blocks are replayed, so the Anthropic history-editing check never applies.
 
 ## 4. Read-only tools (`tools.ts`)
 
@@ -83,7 +88,7 @@ All lookups use `GlideRecordSecure` as the signed-in user. A table the user can'
 
 ## 6. Storage
 
-Conversations (`_ai_conversation`) and messages (`_ai_message`) are stored per user. The panel's **History** button reopens them. The UI shows which tools were used for each answer.
+Conversations (`_ai_conversation`) and messages (`_ai_message`) are stored per user. The panel's **History** button reopens them. The UI shows which tools were used for each answer. The message's `tool_summary` is only resent to the model; it isn't shown in the panel.
 
 ## 7. Verification status
 
@@ -91,7 +96,7 @@ Conversations (`_ai_conversation`) and messages (`_ai_message`) are stored per u
 |---|---|
 | MCP initialize / notifications / tools/list / tools/call | Verified on the PDI (role-only user; access mirroring confirmed) |
 | Tools enforce the user's access | Verified (`search_acls` → `no_access`; `check_my_access` returns the user's real CRUD) |
-| Agent loop (parsing, tool feedback, context, history, step cap, ownership) | Offline tests (`tests/offline/agent.test.js`) |
+| Agent loop (parsing incl. batches, tool feedback, context, history with tool summaries, step and time budgets with the final no-tools answer, ownership) | Offline tests (`tests/offline/agent.test.js`, fake clock) |
 | A live answer from a language model | **Verified on PDI** (2026-10-08, Anthropic `claude-opus-5-5`, role-only user). 4 questions: own access (`check_my_access`), ACL listing correctly refused (`no_access`), Conditional explanation (`evaluate_access`), request to deactivate an ACL refused with safe-change guidance and no invented link |
 | `evaluate_access` hides ACL detail from users who can't read ACLs (decision A) | **Verified on PDI**: role-only user gets outcomes and reasons only; the assistant explains Beth's Conditional write without naming roles and says why |
 | Endpoint check and key masking | Offline tests (`tests/offline/safety.test.js`, including the api.openai.com case); live provider still passes |

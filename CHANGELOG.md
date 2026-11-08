@@ -11,6 +11,9 @@ All notable changes to ACL Lens are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Added
+- **The Security Assistant can do more per question:** up to 12 lookups and 90 seconds per turn, up to 5 independent lookups at once, and when it runs out it answers from what it found and says what it couldn't check, instead of a canned "could not finish" message. A short summary of each answer's lookups is kept (new `tool_summary` column) so follow-up questions reuse them. Written in an earlier session and brought in now.
+
 ### Fixed
 - **Dashboard tabs can't be lost to an older window.** Each save names the version of the dashboard it started from. A page left open in another window or on another device can no longer save its older tabs over newer ones: it shows the latest dashboard and says the change wasn't saved. Pages also pick up changes when you come back to them.
 - **One unreadable tab no longer resets the dashboard.** The other tabs still show, and the unreadable one is kept unchanged instead of being lost on the next save.

@@ -764,3 +764,21 @@ Why: ACL Lens's results disagreed with the platform's Access Analyzer for an API
 - **Checkpoint:** tag `pre-port-checkpoint`, and the instance's settings before the port in [pdi-state-before-port.md](pdi-state-before-port.md).
 - **Record IDs:** the data policies and rules keep the instance's IDs, so a deploy updates them. `keys.ts` holds the instance's IDs for the indexes too, but the build creates indexes from the dictionary file, so check for duplicates after the first deploy.
 - **Run privacy:** owner and admins, decided by the app's owner. The 4 run ACLs keep the instance's scripts, and because the app reads runs with plain `GlideRecord`, which ignores ACLs, `getRun`, `listRuns` and the dashboard apply the same rule in code. Stored report results are read without loading the run, so the dashboard checks access first. Covered by `tests/offline/run-access.test.js`, not yet tried with a non-admin user on an instance.
+
+## 1.39 Security Assistant budgets (from an earlier session, brought in on 2026-11-07)
+
+| | |
+|---|---|
+| **Date** | 2026-10-10 |
+
+A complex requirements question (two PPM tables × CRUD + fields + roles for a machine account) ended twice in "I could not finish gathering the information needed".
+
+- **Cause:** 6 tool calls per turn, one call per model reply, a canned failure as soon as the cap was hit, tool output cut at 8,000 characters, and history that kept only the final answer text (so a retry re-ran every lookup).
+- **Fix (`src/server/ai/agent.ts`, `guidance.ts`):**
+  - 12 tool calls and 90 seconds per turn (time checked before each model call);
+  - batched calls `{"action":"tools","calls":[…]}`, at most 5 per reply, each counted; the single-tool form still works;
+  - on budget exhaustion one final no-tools call answers from the gathered results and says what couldn't be verified; the canned text only if that reply is empty;
+  - tool results up to 12,000 characters each, 30,000 per batch;
+  - new column `x_acllens_ai_message.tool_summary` (bounded) resent with the 4 most recent answers; also stored when the provider fails after tools ran.
+- **Tests:** offline tests for batch parsing and execution, the per-reply and per-turn caps, the final answer on step and time budget exhaustion (fake clock), the canned fallback, tool summaries in history, and the retry after a provider failure.
+- **Brought in:** written on 2026-10-10 in a separate worktree that was never merged; added to the port branch on 2026-11-07 with the column and tests intact.

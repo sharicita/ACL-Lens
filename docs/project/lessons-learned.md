@@ -75,6 +75,7 @@ These came up repeatedly as feedback. Build them in from the start.
 | A-03 | The assistant must never see more than the user. | All tools run with the user's permissions (`GlideRecordSecure`); hide ACL names/roles from users who can't read ACLs ("strict" detail). |
 | A-05 | User and AI text was concatenated into encoded queries (`^` adds conditions). | Sanitize every free-text value before it goes into an encoded query (`queryText()`), especially for unsecured lookups and AI-tool input; prefer `addQuery(field, op, value)`. |
 | A-04 | Anthropic defaults. | `claude-opus-5-5`, effort medium, prompt caching, refusal fallback; keep the model admin-configurable. |
+| A-06 | A multi-table design question (2 PPM tables × CRUD + fields + roles) hit the 6-step cap twice and returned only a canned failure; the retry started from scratch because history kept answers only. | Budget an agent loop by tool calls **and** wall-clock time; let the model batch independent lookups; when the budget runs out, make one last no-tools call so it answers with what it has and states what it couldn't verify; store a bounded summary of tool results with each answer so follow-ups and retries reuse them. |
 
 ## 5. Publishing, install and supply chain
 

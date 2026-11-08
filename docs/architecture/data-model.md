@@ -111,7 +111,7 @@ Seed record (first install only): **Now Assist** (`type=now_assist`, order 10).
 | Table | Columns |
 |---|---|
 | conversation | `title`, `user` (→ `sys_user`, mandatory), `provider` (→ provider), `run` (→ run, cascade clear), `message_count` |
-| message | `conversation` (→ conversation, cascade delete), `seq`, `role` (`user` · `assistant`), `content` (65000), `tools_used` (4000), `provider_name` |
+| message | `conversation` (→ conversation, cascade delete), `seq`, `role` (`user` · `assistant`), `content` (65000), `tools_used` (4000), `tool_summary` (8000; compact tool calls and results resent as history, not shown in the UI), `provider_name` |
 
 ## System properties
 

@@ -104,6 +104,7 @@ export const x_acllens_ai_message = Table({
         role: StringColumn({ label: 'Role', maxLength: 20, mandatory: true, dropdown: 'dropdown_without_none', choices: { user: 'User', assistant: 'Assistant' } }),
         content: StringColumn({ label: 'Content', maxLength: 65000 }),
         tools_used: StringColumn({ label: 'Tools used', maxLength: 4000 }),
+        tool_summary: StringColumn({ label: 'Tool summary', maxLength: 8000 }),
         provider_name: StringColumn({ label: 'Provider', maxLength: 100 }),
     },
     index: [{ name: 'conversation_seq', unique: false, element: ['conversation', 'seq'] }],
